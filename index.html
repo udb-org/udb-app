@@ -2,13 +2,59 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>electron-shadcn Template</title>
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval';" />
+    <title>UDB</title>
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="script-src 'self' 'unsafe-inline' 'unsafe-eval';"
+    />
     <link rel="stylesheet" href="/src/styles/global.css" />
     <link rel="stylesheet" href="/src/styles/message-markdown.css" />
   </head>
   <body>
-    <div id="app"/>
+    <div id="app">
+      <div class="flex h-screen w-screen flex-col">
+        <div class="flex h-[40px] w-full flex-shrink-0 items-center"></div>
+        <div class="flex flex-1">
+          <div class="h-full w-[40px] flex-shrink-0"></div>
+          <div class="flex h-full w-full flex-1 flex-row">
+            <div
+              class="relative flex-shrink-0 overflow-hidden rounded-xl"
+              style="width: 200px"
+            >
+              <div
+                class="bg-card absolute top-0 right-[0px] bottom-0 left-[0px] overflow-hidden rounded-lg p-2"
+              ></div>
+            </div>
+            <div class="group h-full w-[9px]">
+              <div
+                class="group-hover:bg-primary ml-[4px] h-full w-[1px] cursor-col-resize rounded-full"
+              ></div>
+            </div>
+            <div class="relative flex-1 overflow-hidden rounded-xl">
+              <div
+                class="bg-card absolute top-0 right-[0px] bottom-0 left-[0px] overflow-hidden rounded-lg p-2"
+              ></div>
+            </div>
+            <div class="group h-full w-[9px]">
+              <div
+                class="group-hover:bg-primary ml-[4px] h-full w-[1px] cursor-col-resize rounded-full"
+              ></div>
+            </div>
+            <div
+              class="relative flex-shrink-0 overflow-hidden rounded-xl"
+              style="width: 300px"
+            >
+              <div
+                class="bg-card absolute top-0 right-[5px] bottom-0 left-[0px] overflow-hidden rounded-lg"
+              ></div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="text-muted-foreground flex h-[32px] w-full flex-shrink-0 items-center gap-1 text-sm"
+        ></div>
+      </div>
+    </div>
     <script type="module" src="/src/renderer.ts"></script>
   </body>
 </html>

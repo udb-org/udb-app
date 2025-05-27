@@ -8,7 +8,12 @@ import { Toaster } from "./components/ui/sonner";
 export default function App() {
   const { i18n } = useTranslation();
   useEffect(() => {}, [i18n]);
-  return  <ThemeProvider  storageKey="vite-ui-theme"> <Workbench /> <Toaster /></ThemeProvider>
+  return (
+    <ThemeProvider storageKey="vite-ui-theme">
+      <Workbench />
+      <Toaster />
+    </ThemeProvider>
+  );
 }
 const root = createRoot(document.getElementById("app")!);
 root.render(

@@ -2,10 +2,8 @@ import React, { useEffect } from "react";
 import TitleBar from "./title-bar";
 import StatusBar from "./status-bar";
 import ActiveBar from "./active-bar";
-
 import { View } from "./view";
 import { Dialogs } from "./dialog";
-import { ConnectionConfig } from "@/types/db";
 import { Explorer } from "./explorer";
 import { AssistantPanel } from "./assistant";
 import {
@@ -14,7 +12,10 @@ import {
   ResizablePanelHandle,
 } from "@/components/resizable-panel";
 import { useLayoutStore } from "@/store/layout-store";
-// import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
+/**
+ * tet the workbench layout
+ * @returns
+ */
 export default function Workbench() {
   const {
     leftPanelSize,
@@ -26,12 +27,7 @@ export default function Workbench() {
     rightVisible,
     setRightVisible,
   } = useLayoutStore();
-
   useEffect(() => {
-    // const openConnectioning = (conf: ConnectionConfig) => {
-    //   setLeftPanelSize(20);
-    //   setRightPanelSize(20);
-    // }
     //监听窗口大小变化
     const onResize = () => {
       const width = window.innerWidth;
@@ -45,9 +41,7 @@ export default function Workbench() {
       }
     };
     window.addEventListener("resize", onResize);
-
     return () => {
-      // window.api.removeListener("storage:openConnectioning", openConnectioning);
       window.removeEventListener("resize", onResize);
     };
   }, []);
@@ -119,32 +113,8 @@ export default function Workbench() {
             </div>
           </ResizablePanel>
         </ResizablePanelGroup>
-        {/* <ResizablePanelGroup direction="horizontal">
-            <ResizablePanel className=" relative" defaultSize={leftPanelSize}>
-              <div className="absolute top-0 left-[0px] overflow-hidden bottom-0 right-[5px] bg-card rounded-lg p-2">
-                <Explorer/>
-              </div>
-            </ResizablePanel>
-            <ResizableHandle></ResizableHandle>
-            <ResizablePanel  className=" relative " >
-            <div className="absolute top-0 left-[5px] overflow-hidden bottom-0 right-[5px] bg-card rounded-lg  p-2"> <View/></div>
-
-            </ResizablePanel>
-            <ResizableHandle>
-
-            </ResizableHandle>
-            <ResizablePanel  className=" relative" defaultSize={rightPanelSize} >
-            <div className="absolute top-0 left-[5px]  overflow-hidden bottom-0 right-[5px] bg-card rounded-lg">
-              <AssistantPanel/>
-            </div>
-
-            </ResizablePanel>
-        </ResizablePanelGroup> */}
       </div>
       <StatusBar />
-      {
-        //
-      }
       <Dialogs />
     </div>
   );

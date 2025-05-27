@@ -6,14 +6,8 @@ import { MakerRpm } from "@electron-forge/maker-rpm";
 import { VitePlugin } from "@electron-forge/plugin-vite";
 import { FusesPlugin } from "@electron-forge/plugin-fuses";
 import { FuseV1Options, FuseVersion } from "@electron/fuses";
-
 const config: ForgeConfig = {
   packagerConfig: {
-<<<<<<< HEAD
-    executableName: pkg.name,
-    name: pkg.productName,
-=======
->>>>>>> 7c7563f5c79ca318293875b6ba309fa5f41cf828
     asar: true,
     icon: "./icons/icon",
   },
@@ -21,7 +15,6 @@ const config: ForgeConfig = {
   makers: [
     new MakerSquirrel({}),
     new MakerZIP({}, ["darwin"]),
-
     new MakerRpm({}),
     new MakerDeb({}),
   ],

@@ -1,5 +1,4 @@
-import { app, BrowserWindow, ipcMain } from "electron";
-
+import { app, BrowserWindow } from "electron";
 // "electron-squirrel-startup" seems broken when packaging with vite
 //import started from "electron-squirrel-startup";
 import path from "path";
@@ -8,14 +7,13 @@ import {
   REACT_DEVELOPER_TOOLS,
 } from "electron-devtools-installer";
 import { registerListeners } from "./listeners";
-import { startStorage } from "./services/storage";
-import { runServer } from "./services/db-client";
-
+// import { startStorage } from "./services/storage";
+// import { runServer } from "./services/db-client";
 const inDevelopment = process.env.NODE_ENV === "development";
 //启动存储
-startStorage();
+// startStorage();
 //启动服务器
-runServer();
+// runServer();
 function createWindow() {
   const preload = path.join(__dirname, "preload.js");
   const mainWindow = new BrowserWindow({
