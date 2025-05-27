@@ -1,0 +1,447 @@
+@import "tailwindcss";
+
+@plugin 'tailwindcss-animate';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --font-sans: Geist, sans-serif;
+  --font-mono: Geist Mono, monospace;
+  --font-tomorrow: Tomorrow, sans-serif;
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+}
+
+@utility container {
+  margin-inline: auto;
+  padding-inline: 2rem;
+  @media (width >= --theme(--breakpoint-sm)) {
+    max-width: none;
+  }
+  @media (width >= 1400px) {
+    max-width: 1400px;
+  }
+}
+/*
+@layer base {
+  @font-face {
+    font-family: "Geist";
+
+    src: url("../assets/fonts/geist/geist.ttf") format("truetype");
+  }
+  @font-face {
+    font-family: "Geist Mono";
+    font-display: swap;
+
+    src: url("../assets/fonts/geist-mono/geist-mono.ttf") format("truetype");
+  }
+
+  @font-face {
+    font-family: "Tomorrow";
+    font-weight: 400;
+    font-style: normal;
+
+    src: url("../assets/fonts/tomorrow/tomorrow-regular.ttf") format("truetype");
+  }
+  @font-face {
+    font-family: "Tomorrow";
+    font-weight: 400;
+    font-style: italic;
+
+    src: url("../assets/fonts/tomorrow/tomorrow-italic.ttf") format("truetype");
+  }
+  @font-face {
+    font-family: "Tomorrow";
+    font-weight: 700;
+    font-style: normal;
+
+    src: url("../assets/fonts/tomorrow/tomorrow-bold.ttf") format("truetype");
+  }
+  @font-face {
+    font-family: "Tomorrow";
+    font-weight: 700;
+    font-style: italic;
+
+    src: url("../assets/fonts/tomorrow/tomorrow-bold-italic.ttf")
+      format("truetype");
+  }
+} */
+
+@layer base {
+  :root {
+    --background: 236 20% 95%;
+    --foreground: 0 0% 20%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 20%;
+    --popover: 200 0% 100%;
+    --popover-foreground: 224 71.4% 4.1%;
+    --primary: 262.1 83.3% 57.8%;
+    --primary-foreground: 210 20% 98%;
+    --secondary: 220 14.3% 95.9%;
+    --secondary-foreground: 220.9 39.3% 11%;
+    --muted: 220 14.3% 95.9%;
+    --muted-foreground: 220 8.9% 46.1%;
+    --accent: 220 14.3% 95.9%;
+    --accent-foreground: 220.9 39.3% 11%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 262.1 83.3% 57.8%;
+    --radius: 0.5rem;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+  }
+
+  .dark {
+    --background: 0 0% 10%;
+    --foreground: 210 20% 98%;
+    --card: 0 0% 5%;
+    --card-foreground: 210 20% 98%;
+    --popover: 224 71.4% 4.1%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 263.4 70% 50.4%;
+    --primary-foreground: 210 20% 98%;
+    --secondary: 215 27.9% 16.9%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 215 27.9% 16.9%;
+    --muted-foreground: 217.9 10.6% 64.9%;
+    --accent: 215 27.9% 16.9%;
+    --accent-foreground: 210 20% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 215 27.9% 16.9%;
+    --input: 215 27.9% 16.9%;
+    --ring: 263.4 70% 50.4%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+
+@layer base {
+  body {
+    @apply overflow-hidden;
+  }
+  .draglayer {
+    @apply bg-background;
+    -webkit-app-region: drag;
+  }
+  button {
+    @apply cursor-pointer;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+.app-region {
+  -webkit-app-region: drag;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+.mac {
+  font-family:
+    SF Pro Text,
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+}
+
+.mac:lang(zh-Hans) {
+  font-family:
+    SF Pro Text,
+    -apple-system,
+    BlinkMacSystemFont,
+    PingFang SC,
+    Hiragino Sans GB,
+    sans-serif;
+}
+
+.mac:lang(zh-Hant) {
+  font-family:
+    SF Pro Text,
+    -apple-system,
+    BlinkMacSystemFont,
+    PingFang TC,
+    sans-serif;
+}
+
+.mac:lang(ja) {
+  font-family:
+    SF Pro Text,
+    -apple-system,
+    BlinkMacSystemFont,
+    Hiragino Kaku Gothic Pro,
+    sans-serif;
+}
+
+.mac:lang(ko) {
+  font-family:
+    SF Pro Text,
+    -apple-system,
+    BlinkMacSystemFont,
+    Apple SD Gothic Neo,
+    Nanum Gothic,
+    AppleGothic,
+    sans-serif;
+}
+
+.windows {
+  font-family:
+    SF Pro Text,
+    Segoe WPC,
+    Segoe UI,
+    sans-serif;
+}
+
+.windows:lang(zh-Hans) {
+  font-family:
+    SF Pro Text,
+    Segoe WPC,
+    Segoe UI,
+    Microsoft YaHei,
+    sans-serif;
+}
+
+.windows:lang(zh-Hant) {
+  font-family:
+    SF Pro Text,
+    Segoe WPC,
+    Segoe UI,
+    Microsoft Jhenghei,
+    sans-serif;
+}
+
+.windows:lang(ja) {
+  font-family:
+    SF Pro Text,
+    Segoe WPC,
+    Segoe UI,
+    Yu Gothic UI,
+    Meiryo UI,
+    sans-serif;
+}
+
+.windows:lang(ko) {
+  font-family:
+    SF Pro Text,
+    Segoe WPC,
+    Segoe UI,
+    Malgun Gothic,
+    Dotom,
+    sans-serif;
+}
+
+.linux {
+  font-family:
+    SF Pro Text,
+    system-ui,
+    Ubuntu,
+    Droid Sans,
+    sans-serif;
+}
+
+.linux:lang(zh-Hans) {
+  font-family:
+    SF Pro Text,
+    system-ui,
+    Ubuntu,
+    Droid Sans,
+    Source Han Sans SC,
+    Source Han Sans CN,
+    Source Han Sans,
+    sans-serif;
+}
+
+.linux:lang(zh-Hant) {
+  font-family:
+    SF Pro Text,
+    system-ui,
+    Ubuntu,
+    Droid Sans,
+    Source Han Sans TC,
+    Source Han Sans TW,
+    Source Han Sans,
+    sans-serif;
+}
+
+.linux:lang(ja) {
+  font-family:
+    SF Pro Text,
+    system-ui,
+    Ubuntu,
+    Droid Sans,
+    Source Han Sans J,
+    Source Han Sans JP,
+    Source Han Sans,
+    sans-serif;
+}
+
+.linux:lang(ko) {
+  font-family:
+    SF Pro Text,
+    system-ui,
+    Ubuntu,
+    Droid Sans,
+    Source Han Sans K,
+    Source Han Sans JR,
+    Source Han Sans,
+    UnDotum,
+    FBaekmuk Gulim,
+    sans-serif;
+}
+
+.mac {
+  --monaco-monospace-font: "SF Mono", Monaco, Menlo, Courier, monospace;
+}
+
+.windows {
+  --monaco-monospace-font: Consolas, "Courier New", monospace;
+}
+
+.linux {
+  --monaco-monospace-font:
+    "Ubuntu Mono", "Liberation Mono", "DejaVu Sans Mono", "Courier New",
+    monospace;
+}
+html {
+  font-size: 14px;
+}
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  width: 100%;
+}
+
+/* 状态图标样式 */
+.monaco-editor .line-numbers.state-icon::before {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  margin-right: 5px;
+  position: relative;
+  top: 3px;
+}
+
+/* 不同状态的颜色 */
+.monaco-editor .line-numbers.state-error::before {
+  content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="red" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-x-icon lucide-circle-x"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>');
+}
+.monaco-editor .line-numbers.state-warning::before {
+  content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="yellow" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-alert-icon lucide-circle-alert"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>');
+}
+.monaco-editor .line-numbers.state-success::before {
+  content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="green" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-icon lucide-check"><path d="M20 6 9 17l-5-5"/></svg>');
+}
+.monaco-editor .line-numbers.state-running::before {
+  content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="violet" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-loader-icon lucide-loader"><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></svg>');
+}
+
+/* 修改垂直滚动条 */
+.monaco-editor .scrollbar.vertical .slider {
+  /* background: #666 !important; */
+  border-radius: 20px !important;
+  width: 6px !important;
+}
+/* 修改水平滚动条 */
+.monaco-editor .scrollbar.horizontal .slider {
+  /* background: #666 !important; */
+  border-radius: 20px !important;
+  height: 6px !important;
+}
+
+.ai-inline {
+  z-index: 9999;
+}
+.ai-inline > div {
+  margin: 5px;
+  display: flex;
+  border-width: 1px;
+  box-shadow: var(--shadow-lg);
+  width: min-content;
+  border-radius: var(--radius);
+}
+.ai-inline-input {
+  display: flex;
+  align-items: center;
+}
+.ai-inline-input textarea {
+  padding: 5px;
+  width: 200px;
+  height: 32px;
+  resize: none;
+}
+.ai-inline-input svg {
+  width: 16px;
+  height: 16px;
+  margin-right: 10px;
+  margin-left: 5px;
+}
