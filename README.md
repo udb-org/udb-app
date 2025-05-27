@@ -3,6 +3,8 @@ UDB, an open-source, multi-agent based modern database management tool.
 ## Introduction
 UDB is a powerful database management tool built on Electron.js, Shadcn, and AI technologies. It supports multiple database types and offers unique features such as table structure generation and SQL writing based on large - language models.
 
+![UDB Logo](./images/Screenshots/Screenshot%202025-05-27%20at%203.07.12 PM.png "UDB Logo")
+
 ## Features
 1. **Multi - Database Support**: Connect and manage various databases, including but not limited to MySQL, PostgreSQL, SQLite, etc.
 2. **AI - Powered Assistance**: Leverage the capabilities of large - language models to generate table structures and write SQL queries effortlessly.

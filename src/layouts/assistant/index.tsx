@@ -362,10 +362,10 @@ export function AssistantPanel() {
               <div
                 className="bg-accent/60 hover:bg-accent text-muted-foreground flex items-center gap-2 overflow-hidden rounded p-2 text-sm overflow-ellipsis"
                 onClick={() => {
-                  handleSend("新建表");
+                  handleSend("Add a new user information table.");
                 }}
               >
-                查询所有的表
+                Add a new user information table.
               </div>
             </div>
           </div>

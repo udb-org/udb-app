@@ -28,7 +28,7 @@ export default function StatusBar() {
 
   </div>
 
-  Ctrl/Cmd+I 开启/关闭聚焦
+  Ctrl/Cmd+I Open/Close AI Inline
   <div className="w-8"></div>
 
   </div>
