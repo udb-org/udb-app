@@ -45,6 +45,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Separator } from "@/components/ui/separator";
+import { useTranslation } from "react-i18next";
 
 const formSchema = z.object({
   provider: z.string().min(2, {
@@ -60,7 +61,7 @@ const formSchema = z.object({
 });
 
 export function AddModelSetting(props: {
-  onSuccess?: () => void;
+  onSuccess?: (model:any) => void;
   onCancel?: () => void;
 }) {
   const [models, setModels] = React.useState<any[]>([]);
@@ -80,17 +81,30 @@ export function AddModelSetting(props: {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
     console.log(values);
-    window.api.send(
-      "storage:addModel",
-      JSON.stringify({
-        ...values,
+    props.onSuccess?.(
+      {
+         ...values,
         key: values.provider + ":" + values.model,
         baseUrl: providers.find((provider) => provider.name === values.provider)
           .baseUrl,
-      }),
+      }
     );
+    setOpen(false);
+    
+
+
+    // window.api.send(
+    //   "storage:addModel",
+    //   JSON.stringify({
+    //     ...values,
+    //     key: values.provider + ":" + values.model,
+    //     baseUrl: providers.find((provider) => provider.name === values.provider)
+    //       .baseUrl,
+    //   }),
+    // );
   }
   const [isCustom, setIsCustom] = React.useState(false);
+  const [open, setOpen] = React.useState(false);
   useEffect(() => {
     window.api.invoke("storage:getConfigItem", "providers").then((res: any) => {
       console.log("getConfigItem:providers", res);
@@ -100,10 +114,12 @@ export function AddModelSetting(props: {
     });
   }, []);
 
+  const {t}=useTranslation();
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant={"outline"}>Add</Button>
+        <Button variant={"outline"}>{t("settings.ai.add")}</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>

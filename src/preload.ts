@@ -9,6 +9,7 @@ type ElectronAPI = {
   once: (channel: string, listener: (...args: any[]) => void) => void;
   removeListener: (channel: string, listener: (...args: any[]) => void) => void;
   removeAllListeners: (channel: string) => void;
+  isFirstRun: () => boolean;
 };
 
 // 自定义的 API 对象
@@ -49,6 +50,13 @@ const electronAPI: ElectronAPI = {
   },
   removeAllListeners: (channel) => {
     ipcRenderer.removeAllListeners(channel);
+  },
+  isFirstRun: () => {
+    const fs=require('fs');
+    const path=require('path');
+    const userHomeDir = require('os').homedir();
+      const udbFolderPath = path.join(userHomeDir, '.udb');
+      return !fs.existsSync(udbFolderPath);
   }
 };
 

@@ -5,12 +5,18 @@ import "./localization/i18n";
 import Workbench from "./layouts/workbench";
 import { ThemeProvider } from "./components/theme-provider";
 import { Toaster } from "./components/ui/sonner";
+import { Setup } from "./layouts/setup";
 export default function App() {
   const { i18n } = useTranslation();
-  useEffect(() => {}, [i18n]);
+  useEffect(() => { }, [i18n]);
   return (
     <ThemeProvider storageKey="vite-ui-theme">
-      <Workbench />
+      {
+        window.api.isFirstRun() && <Setup />
+      }
+      {
+        !window.api.isFirstRun() && <Workbench />
+      }
       <Toaster />
     </ThemeProvider>
   );

@@ -1,30 +1,32 @@
+/**
+ * This file is the entry point for the main process of the application.
+ * It is responsible for creating the main window and registering listeners.
+ * It also checks if the app is already running and quits if it is.
+ * @author udb
+ * @date 2025/04/21
+ * @version 1.0.0
+ */
 import { app, BrowserWindow } from "electron";
-// "electron-squirrel-startup" seems broken when packaging with vite
-//import started from "electron-squirrel-startup";
+//Check if the app is already running
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  app.quit();
+}
 import path from "path";
 import {
   installExtension,
   REACT_DEVELOPER_TOOLS,
 } from "electron-devtools-installer";
 import { registerListeners } from "./listeners";
-// import { startStorage } from "./services/storage";
-// import { runServer } from "./services/db-client";
-const inDevelopment = process.env.NODE_ENV === "development";
-//启动存储
-// startStorage();
-//启动服务器
-// runServer();
 function createWindow() {
   const preload = path.join(__dirname, "preload.js");
   const mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
     webPreferences: {
-      // devTools: true,
       contextIsolation: true,
       nodeIntegration: true,
       nodeIntegrationInSubFrames: false,
-
       preload: preload,
     },
     titleBarStyle: "hidden",
@@ -33,8 +35,9 @@ function createWindow() {
       y: 12,
     },
   });
+
   registerListeners(mainWindow);
-  // mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
   } else {
@@ -43,7 +46,6 @@ function createWindow() {
     );
   }
 }
-
 async function installExtensions() {
   try {
     const result = await installExtension(REACT_DEVELOPER_TOOLS);
@@ -52,14 +54,11 @@ async function installExtensions() {
     console.error("Failed to install extensions");
   }
 }
-
 app.whenReady().then(createWindow).then(installExtensions);
-
 //osX only
 app.on("window-all-closed", () => {
   app.quit();
 });
-
 app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();

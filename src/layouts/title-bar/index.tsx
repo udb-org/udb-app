@@ -6,13 +6,22 @@ import { MoreHorizontalIcon, PanelLeftDashed, PanelLeftDashedIcon, PanelLeftIcon
 import { useActiveStore } from "@/store/active-store";
 import { DropdownMenuProject } from "./DropdownMenuProject";
 import { useLayoutStore } from "@/store/layout-store";
+/**
+ * The title bar layout
+ * 
+ * 
+ */
 export default function TitleBar() {
   const [platform, setPlatform] = useState<any>(null);
+  //Global states, listen to active store
   const active = useActiveStore((state: any) => state.active);
+  //Global states, listen to layout store
   const { leftPanelSize, setLeftPanelSize, rightPanelSize, setRightPanelSize,
     leftVisible, setLeftVisible,
     rightVisible, setRightVisible } = useLayoutStore();
+
   useEffect(() => {
+    //Get platform info
     getPlatformInfo().then((info: any) => {
       setPlatform(info);
       console.log(info);
@@ -42,7 +51,7 @@ export default function TitleBar() {
       }
       <div className="app-region h-full flex-1"></div>
       {
-        //操作
+        //Options
       }
       {
         leftVisible && <Button variant={"ghost"} size={"icon"} className="h-[24px] w-[24px] p-[2px]"
@@ -80,9 +89,6 @@ export default function TitleBar() {
           <PanelRightDashedIcon size={12} />
         </Button>
       }
-
-
-
       <Button variant={"ghost"} size={"icon"} className="h-[24px] w-[24px] p-[2px]">
         <User2Icon size={14} />
       </Button>

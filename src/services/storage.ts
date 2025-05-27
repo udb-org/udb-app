@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import crypto from 'crypto';
 import { IProject } from '@/types/project';
+import { configTemplate } from './config-template';
 const userHomeDir = require('os').homedir();
 const udbFolderPath = path.join(userHomeDir, '.udb');
 /**
@@ -18,7 +19,6 @@ export function startStorage() {
  * 检查用户目录是否存在.udb文件夹，同步创建
  */
 export function checkUdbFolderExists() {
-   
     if (!fs.existsSync(udbFolderPath)) {
         return false;
     }
@@ -177,9 +177,14 @@ export function getConfigItem(key:string){
  * @returns 
  */
 export function getConfig(){
+    if(!fs.existsSync(udbFolderPath)){
+        return configTemplate
+    }
+
     const configPath = path.join(udbFolderPath,'config.json');
     if(!fs.existsSync(configPath)){
-        return {};
+        fs.writeFileSync(configPath,JSON.stringify(configTemplate,null,4),'utf-8');
+        return configTemplate;
     }
     return JSON.parse(fs.readFileSync(configPath,'utf-8'));
 }

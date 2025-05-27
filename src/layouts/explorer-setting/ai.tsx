@@ -18,69 +18,38 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import {
-    Form,
-    FormControl,
-    FormDescription,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
-} from "@/components/ui/form";
+
 import { Pen, PenIcon, TrashIcon } from "lucide-react";
 import { SettingDescription, SettingTitle, SettingTopic } from "./common";
 import { Button } from "@/components/ui/button";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Separator } from "@/components/ui/separator";
+
 import { AddModelSetting } from "./add-model";
-
-
+import { useTranslation } from "react-i18next";
 
 export function AiSetting(   props:{
     config:any;
     onConfigChange:(key:string,value:any)=>void;
 }) {
-    const [models, setModels] = React.useState<any[]>([
-    ]);
-
- 
-    useEffect(() => {
-        const getModels=(models:any[])=>{
-            console.log("getModels",models);
-            // props.onConfigChange("models",models);
-            setModels(models);
-        }
-        window.api.on("storage:getModelsing",getModels);
-
-        window.api.send("storage:getModels");
-        return () => {
-            window.api.removeListener("storage:getModelsing",getModels);
-        }
-    }, [])
-
+    const models=props.config.models||[];
+    const {t}=useTranslation();
 
     return <div>
-        <SettingTopic topic="AI Settings" />
-        <SettingTitle title="Model Management" />
-        <SettingDescription description="Configure the API key and secret key for the OpenAI API." />
-
+        <SettingTopic topic={
+            t("settings.ai.title")
+        } />
+        <SettingTitle title={
+            t("settings.ai.subtitle")
+        } />
+        <SettingDescription description={
+            t("settings.ai.desc")
+        } />
         <div className="py-1">
-
-            <AddModelSetting onSuccess={() => {
-
+            <AddModelSetting onSuccess={(model) => {
+                console.log("onSuccess",model);
+                let _models = [...models];
+                _models.push(model);
+                // setModels(_models);
+                props.onConfigChange("models",_models);
             }} onCancel={() => {
 
             }} />
@@ -114,8 +83,8 @@ export function AiSetting(   props:{
                 ))}
             </TableBody>
         </Table>
-        <SettingTitle title="Chat Default Model" />
-        <SettingDescription description="Select the default model for the application." />
+        <SettingTitle title={t("settings.ai.chat.title")} />
+        <SettingDescription description={t("settings.ai.chat.desc")} />
         <Select value={props.config.defaultModelKey} onValueChange={(value) => {
          
             console.log("onValueChange",value);
@@ -135,8 +104,12 @@ export function AiSetting(   props:{
                 </SelectGroup>
             </SelectContent>
         </Select>
-        <SettingTitle title="Suggestions Model" />
-        <SettingDescription description="Select the suggestions model for the application." />
+        <SettingTitle title={
+            t("settings.ai.suggestion.title")
+        } />
+        <SettingDescription description={
+            t("settings.ai.suggestion.desc")
+        } />
         <Select value={props.config.suggestionModelKey} onValueChange={(value) => {
          
             console.log("onValueChange",value);

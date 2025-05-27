@@ -1,6 +1,6 @@
 import { testConnection } from "@/services/db";
 import { executeSql } from "@/services/db-client";
-import { addModel, getConfig, getConfigItem, getModels, getRecentProjects, readConnectionConfig, removeModel, setConfig, setRecentProjects, writeConnectionConfig } from "@/services/storage";
+import { addModel, getConfig, getConfigItem, getModels, getRecentProjects, initUdbFolder, readConnectionConfig, removeModel, setConfig, setRecentProjects, writeConnectionConfig } from "@/services/storage";
 import { ConnectionConfig, IDataSource } from "@/types/db";
 import { IProject } from "@/types/project";
 import { ViewParams } from "@/types/view";
@@ -15,6 +15,15 @@ export function getCurrentConnection() {
 }
 
 export function registerStorageListeners(mainWindow: Electron.BrowserWindow) {
+
+  //初始化设置
+  ipcMain.handle("storage:init", (event,config:any) => {
+    initUdbFolder();
+    setConfig(config);
+    return true;
+  });
+
+
   //获取连接配置信息
   ipcMain.on("storage:getConnectionConfig", (event) => {
     const configs = readConnectionConfig();
