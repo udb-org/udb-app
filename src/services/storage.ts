@@ -6,9 +6,8 @@ import { IProject } from '@/types/project';
 import { configTemplate } from './config-template';
 const userHomeDir = require('os').homedir();
 const udbFolderPath = path.join(userHomeDir, '.udb');
-/**
- * 启动存储
- */
+
+// Initialize storage
 export function startStorage() {
     if (!checkUdbFolderExists()) {
         initUdbFolder();
@@ -16,7 +15,7 @@ export function startStorage() {
 }
 
 /**
- * 检查用户目录是否存在.udb文件夹，同步创建
+ * Check if .udb folder exists in user directory (synchronously creates if not)
  */
 export function checkUdbFolderExists() {
     if (!fs.existsSync(udbFolderPath)) {
@@ -25,12 +24,12 @@ export function checkUdbFolderExists() {
     return true;
 }
 /**
- * 初始化.udb文件夹目录,同步创建
+ * Initialize .udb folder structure (synchronously creates)
  */
-const algorithm = 'aes-256-cbc'; // 使用AES-256-CBC算法
+const algorithm = 'aes-256-cbc'; // Using AES-256-CBC algorithm
 const keyPath = path.join(udbFolderPath, 'secure.key');
 
-// 初始化安全密钥
+// Initialize security key
 function initSecureKey() {
     if (!fs.existsSync(keyPath)) {
         // 生成32字节（256位）的随机密钥
@@ -39,7 +38,7 @@ function initSecureKey() {
     }
 }
 
-// 加密密码
+// Encrypt password
 function encryptPassword(password: string): { iv: string; encrypted: string } {
     const iv = crypto.randomBytes(16);
     const key = fs.readFileSync(keyPath, 'utf-8');
@@ -49,7 +48,7 @@ function encryptPassword(password: string): { iv: string; encrypted: string } {
     return { iv: iv.toString('hex'), encrypted };
 }
 
-// 解密密码 
+// Decrypt password 
 function decryptPassword(encrypted: string, ivHex: string): string {
     const key = fs.readFileSync(keyPath, 'utf-8');
     const iv = Buffer.from(ivHex, 'hex');
@@ -59,18 +58,18 @@ function decryptPassword(encrypted: string, ivHex: string): string {
     return decrypted;
 }
 
-// 修改初始化函数
+// Modified initialization function
 export function initUdbFolder() {
-    //创建目录
+    // Create directory
     if (!fs.existsSync(udbFolderPath)) {
         fs.mkdirSync(udbFolderPath);
     }
-    //创建文件
+    // Create files
     initConnectionConfig();
-    initSecureKey(); // 初始化密钥文件
+    initSecureKey(); // Initialize key file
 }
 /**
- * 初始化连接配置文件，json格式
+ * Initialize connection config file (JSON format)
  */
 export function initConnectionConfig() {
     const confPath = path.join(udbFolderPath, 'connections.json');
@@ -79,10 +78,10 @@ export function initConnectionConfig() {
     }
 }
 /**
- * 读取连接配置文件,json格式
+ * Read connection config file (JSON format)
  */
 export function readConnectionConfig(): ConnectionConfig[]  {
-    //读取文件
+    // Reading file
     const confPath = path.join(udbFolderPath, 'connections.json');
     if (!fs.existsSync(confPath)) {
         return [];
@@ -102,10 +101,10 @@ export function readConnectionConfig(): ConnectionConfig[]  {
     return conf;
 }
 /**
- * 写入连接配置文件,json格式.utf-8编码
+ * Write connection config file (JSON format, UTF-8 encoding)
  */
 export function writeConnectionConfig(conf: ConnectionConfig[]) {
-    //加密密码
+    // Encrypt passwords
     conf.forEach(item => {
         if (item.password) {
             const { iv, encrypted } = encryptPassword(item.password);
@@ -113,7 +112,7 @@ export function writeConnectionConfig(conf: ConnectionConfig[]) {
         }
       
     });
-    //写入文件
+    // Writing file
     const confPath = path.join(udbFolderPath, 'connections.json');
     fs.writeFileSync(confPath, JSON.stringify(conf, null, 4), 'utf-8');
 }

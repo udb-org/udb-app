@@ -13,16 +13,25 @@ export function ExplorerFolder(props: {
 }) {
   const {project,setProject}=useProjectStore();
   const [files, setFiles] = React.useState<IVirtualTreeItem[]>([]);
-  function transformFiles(files: any[]) {
+  /**
+ * Transforms an array of file objects into an array of virtual tree items.
+ * @param files - An array of file objects with 'type' and 'name' properties.
+ * @returns An array of IVirtualTreeItem objects.
+ */
+function transformFiles(files: any[]) {
+    // Initialize an empty array to store virtual tree items
     const _files: IVirtualTreeItem[] = [];
+    // Iterate through each file in the input array
     files.forEach(file => {
+      // Check if the file is a directory
       if(file.type==="directory"){
         _files.push({
           name: file.name,
           isFolder: true,
 
         })
-      }else if(file.type==="file"){
+      } else if(file.type==="file"){
+        // Get the file icon based on the file name
         const icon=getFileIcon(file.name);
         _files.push({
           name: file.name,

@@ -1,4 +1,4 @@
-//AI服务
+// AI Service
 import OpenAI from "openai";
 import { executeSql } from "./db-client";
 import { getCurrentConnection } from "@/listeners/storage";
@@ -10,14 +10,14 @@ import { getTableNames } from "@/utils/sql";
 
 let history: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [];
 
-//清楚历史记录
+// Clear history records
 export function clearHistory() {
   history = [];
 }
 /**
- * 提问
- * @param input
- * @param model
+ * Ask a question
+ * @param input 
+ * @param model 
  */
 export async function ask(
   input: string,
@@ -35,15 +35,15 @@ export async function ask(
     message,
   ];
   history.push(message);
-  //调用内部函数
+  // Call internal function
   let lastFunction = "";
   askInner(input, model, messages, mode, lastFunction, context, sender);
 }
 /**
- * 提问，内部调用
- * @param input
- * @param model
- * @param messages
+ * Internal ask function
+ * @param input 
+ * @param model 
+ * @param messages 
  */
 export async function askInner(
   input: string,
@@ -76,7 +76,7 @@ export async function askInner(
     tools: tools,
     stream: true,
   });
-  //保存ai的回复
+  // Save ai's reply
   let aiContent = "";
   let aiToolCallId: string | null = null;
   let aiToolCallIndex: number | null = null;
@@ -244,7 +244,7 @@ const tools: OpenAI.Chat.Completions.ChatCompletionTool[] = [
       },
     },
   },
-  //根据多个表名称，查询读个表的字段信息，返回表名称及字段信息
+  // Query the field information of multiple tables based on multiple table names, and return the table names and field information
   {
     type: "function",
     function: {
@@ -308,7 +308,7 @@ const Tools_Funs: any = {
       return executeSql(sql, currentDataSource);
     }
   },
-  //根据多个表名称，查询读个表的字段信息，返回表名称及字段信息
+  // Query the field information of multiple tables based on multiple table names, and return the table names and field information
   query_table_columns: (args: any) => {
     const currentDataSource = getCurrentDataSource();
     if (currentDataSource == null) {
@@ -321,7 +321,7 @@ const Tools_Funs: any = {
       });
     } else {
       const tables: string[] = args.tables;
-      //根据多个表名称，查询读个表的字段信息，返回表名称及字段信息
+      // Query the field information of multiple tables based on multiple table names, and return the table names and field information
       const sql = `
                 SELECT table_name, column_name, data_type, column_comment
                 FROM information_schema.columns
@@ -356,18 +356,18 @@ const Tools_Funs: any = {
  * @param model
  */
 export async function optimizeSql(content: string, model: any) {
-  //如果包含太多的sql语句或者长度太大，不能执行
+  // If the content contains too many SQL statements or is too long, it cannot be executed
   if (content.length > 10000) {
     return;
   }
   const cleanSql = content
-    .replace(/\/\*[\s\S]*?\*\//g, "") // 移除多行注释
-    .replace(/--.*$/gm, ""); // 移除单行注释
+    .replace(/\/\*[\s\S]*?\*\//g, "") // Remove multi-line comments
+    .replace(/--.*$/gm, ""); // Remove single-line comments
   const sqls = cleanSql.split(";");
   if (sqls.length > 5) {
     return;
   }
-  //解析content，提供可能用到的表和表结构
+  // Parse the content and provide the possible tables and table structures
   let tableInfo: string = "";
   let tables: string[] = [];
   sqls.forEach((sql) => {
@@ -375,11 +375,11 @@ export async function optimizeSql(content: string, model: any) {
     tables = tables.concat(tableNames);
   });
   if (tables.length > 0) {
-    //获得表结构
+    // Get the table structure
     const currentDataSource = getCurrentDataSource();
     if (currentDataSource == null) {
     } else {
-      //根据多个表名称，查询读个表的字段信息，返回表名称及字段信息
+      // Query the field information of multiple tables based on multiple table names, and return the table names and field information
       const sql = `
                 SELECT table_name, column_name, data_type, column_comment
                 FROM information_schema.columns
@@ -392,7 +392,7 @@ export async function optimizeSql(content: string, model: any) {
   if (tables.length > 0 && tableInfo.length == 0) {
     tableInfo = JSON.stringify(tables);
   }
-  //询问ai，根据表结构，优化sql
+  // Ask AI to optimize the SQL based on the table structure
   let client: OpenAI = new OpenAI({
     apiKey: model.apiKey,
     baseURL: model.baseUrl,
@@ -428,18 +428,18 @@ export async function optimizeSql(content: string, model: any) {
  * @param model
  */
 export async function fixSql(content: string, model: any) {
-  //如果包含太多的sql语句或者长度太大，不能执行
+  // If the content contains too many SQL statements or is too long, it cannot be executed
   if (content.length > 10000) {
     return;
   }
   const cleanSql = content
-    .replace(/\/\*[\s\S]*?\*\//g, "") // 移除多行注释
-    .replace(/--.*$/gm, ""); // 移除单行注释
+    .replace(/\/\*[\s\S]*?\*\//g, "") // Remove multi-line comments
+    .replace(/--.*$/gm, ""); // Remove single-line comments
   const sqls = cleanSql.split(";");
   if (sqls.length > 5) {
     return;
   }
-  //解析content，提供可能用到的表和表结构
+  // Parse the content and provide the possible tables and table structures
   let tableInfo: string = "";
   let tables: string[] = [];
   sqls.forEach((sql) => {
@@ -447,11 +447,11 @@ export async function fixSql(content: string, model: any) {
     tables = tables.concat(tableNames);
   });
   if (tables.length > 0) {
-    //获得表结构
+    // Get the table structure
     const currentDataSource = getCurrentDataSource();
     if (currentDataSource == null) {
     } else {
-      //根据多个表名称，查询读个表的字段信息，返回表名称及字段信息
+      // Query the field information of multiple tables based on multiple table names, and return the table names and field information
       const sql = `
                 SELECT table_name, column_name, data_type, column_comment
                 FROM information_schema.columns
@@ -464,7 +464,7 @@ export async function fixSql(content: string, model: any) {
   if (tables.length > 0 && tableInfo.length == 0) {
     tableInfo = JSON.stringify(tables);
   }
-  //询问ai，根据表结构，优化sql
+  // Ask AI to optimize the SQL based on the table structure
   let client: OpenAI = new OpenAI({
     apiKey: model.apiKey,
     baseURL: model.baseUrl,

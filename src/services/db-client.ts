@@ -5,9 +5,12 @@ import path from "path";
 const userHomeDir = require("os").homedir();
 const udbFolderPath = path.join(userHomeDir, ".udb");
 import fs from "fs";
+import { getLatestRelease } from "./github";
+import os from 'os';
+import { downloadJdk } from "./jdk";
 /**
- * 异步执行sql，
- * 服务器返回一个id，客户端可以通过id来获取结果
+ * 
+ * The server returns an id, and the client can use this id to fetch the result
  *
  * @param sql
  * @param datasource
@@ -26,10 +29,9 @@ export function db_exec(
   });
 }
 /**
- * 获取结果
- *
- * @param id
- * @returns  {status:string,message:string,startTime:string,endTime:string,results:any}
+ * Get execution result
+ * @param id 
+ * @returns {status:string,message:string,startTime:string,endTime:string,results:any}
  */
 export function db_result(id: string) {
   return db_func("getResult", {
@@ -37,8 +39,8 @@ export function db_result(id: string) {
   });
 }
 /**
- * 停止执行
- * @param id
+ * Stop execution
+ * @param id 
  * @returns {status:string,message:string}
  */
 export function db_stop(id: string) {
@@ -47,7 +49,7 @@ export function db_stop(id: string) {
   });
 }
 /**
- * 提交事务
+ * Commit transaction
  *
  * @param id
  * @returns  {status:string,message:string}
@@ -58,7 +60,7 @@ export function db_commit(id: string) {
   });
 }
 /**
- * 回滚事务
+ * Rollback transaction
  *
  * @param id
  * @returns  {status:string,message:string}
@@ -69,7 +71,7 @@ export function db_rollback(id: string) {
   });
 }
 /**
- * 获取所有的任务
+ * Get all tasks
  *
  * @returns
  */
@@ -89,8 +91,8 @@ function db_func(url: string, args: any) {
 }
 
 /**
- * 获取数据库列表的方法
- * @returns 返回一个 Promise，该 Promise 解析为数据库列表
+ * Method to get database list
+ * @returns Promise that resolves to database list
  */
 
 export function execFuntion(url: string, args: any) {
@@ -129,50 +131,99 @@ export function executeSql(sql: string, datasource: IDataSource) {
     });
 }
 let PORT: number = 10001;
+
+let isServerRunning = false;
 /**
  * 启动服务器
  */
-export function runServer() {
+export function runServer(callback: (status: string, message: string) => void) {
+  if (isServerRunning) {
+    return;
+  }
+  isServerRunning = true;
   getAvailablePort(10000, (err, port) => {
     if (err) {
       console.log("获取端口失败", err);
+      callback("error", err.message);
+      isServerRunning = false;
       return;
     }
     console.log("获取到的闲置端口:", port);
+    callback("running", "Getting port...");
     if (port) {
       PORT = port;
-      RunJar();
+      try {
+        RunJar(callback);
+      } catch (e) {
+        callback("error", e.message);
+        isServerRunning = false;
+      }
     }
   });
 }
-function RunJar() {
+async function RunJar(callback: (status: string, message: string) => void) {
   const serverpath = path.join(udbFolderPath, "server");
   //如果不存在的话，则创建
   if (!fs.existsSync(serverpath)) {
     fs.mkdirSync(serverpath);
   }
-  const javaPath = path.join(serverpath, "java", "bin", "java");
+  callback("running", "Found server folder");
+  const javaPath = path.join(serverpath, "java");
   if (!fs.existsSync(javaPath)) {
     //需要从服务下载
+    fs.mkdirSync(javaPath);
+    callback("running", "Downloading java...");
+    await downloadJdk(javaPath);
+  }
+  let javaBinPath = "";
+
+  const platform = os.platform();
+  if (platform === 'win32') {
+    javaBinPath = path.join(javaPath, "jdk-21.0.2.jdk", "bin", "java.exe");
+  } else if (platform === 'darwin') {
+    javaBinPath = path.join(javaPath, "jdk-21.0.2.jdk", "Contents", "Home", "bin", "java");
+  } else if (platform === 'linux') {
+    javaBinPath = path.join(javaPath, "jdk-21.0.2.jdk", "bin", "java");
   }
 
-  const jarP = path.join(serverpath, "jar", "udb-java-0.0.1-SNAPSHOT.jar");
+  const jarPath = path.join(serverpath, "jar");
   //如果不存在的话，则创建
-  if (!fs.existsSync(jarP)) {
-    fs.mkdirSync(path.join(serverpath, "jar"));
+  if (!fs.existsSync(jarPath)) {
+    fs.mkdirSync(jarPath);
+  }
+  const serverJarPath = path.join(jarPath, "udb-java.jar");
+  //如果不存在的话，则创建
+  if (!fs.existsSync(serverJarPath)) {
     //需要从服务下载
+    callback("running", "Downloading jar...");
+    getLatestRelease(serverJarPath).then(() => {
+
+      runJar(javaBinPath, serverJarPath, callback);
+    }).catch((e) => {
+      console.log("Download failed", e);
+      callback("error", e.message);
+    });
+  } else {
+    runJar(javaBinPath, serverJarPath, callback);
+    callback("success", "Server started successfully");
   }
 
+
+}
+function runJar(javaBinPath: string, serverJarPath: string, callback: (status: string, message: string) => void) {
   const childProcess = require("child_process");
   childProcess.execFile(
-    "java",
-    ["-jar", jarP, PORT],
+    javaBinPath,
+    ["-jar", serverJarPath, PORT],
     (error: any, stdout: any, stderr: any) => {
       //如果有错误
       if (error) {
         //显示提示
         dialog.showErrorBox("服务器启动失败", error.message);
+        callback("error", error.message);
         return;
+      } else {
+        callback("success", "Server started successfully");
       }
       console.log(stdout);
       console.log(stderr);

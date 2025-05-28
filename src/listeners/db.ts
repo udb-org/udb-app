@@ -6,12 +6,14 @@ import {
   db_rollback,
   db_stop,
   executeSql,
+  runServer,
 } from "@/services/db-client";
 import { IDataSource } from "@/types/db";
 import { ipcMain, dialog } from "electron";
 // import { dialog } from "electron/main";
 import { getCurrentConnection } from "./storage";
 import { addHistory } from "@/services/history";
+import { ITask } from "@/types/task";
 
 let currentDataSource: IDataSource | null = null;
 
@@ -22,8 +24,22 @@ export function getCurrentDataSource() {
 export function registerDbListeners(mainWindow: Electron.BrowserWindow) {
  
  
-  ipcMain.on("db:startServer", (event) => {
+  ipcMain.once("db:startServer", (event) => {
     console.log("db:startServer");
+    const task:ITask={
+      id:"startServer",
+      status:"running",
+      message:"Starting server...",
+      startTime:new Date().toLocaleString(),
+      endTime:"",
+    }
+    runServer((status,message)=>{
+      mainWindow.webContents.send("status:tasked",{
+        ...task,
+        status:status,
+        message:message
+      });
+    });
   
   });
  
