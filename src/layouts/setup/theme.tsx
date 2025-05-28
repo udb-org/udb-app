@@ -10,10 +10,8 @@ export function SetupTheme(
     props: {
         onNext?: () => void;
         onPrev?: () => void;
-        theme:string;
-        onThemeChange:(theme:string)=>void;
-        language:string;
-        onLanguageChange:(language:string)=>void;
+        config: any;
+        onConfigChange: (key: string, value: any) => void;
     }
 ) {
     const {t,i18n}=useTranslation();
@@ -28,11 +26,11 @@ export function SetupTheme(
         <div className="flex gap-5">
             <div className={
                 cn("bg-accent p-5 rounded-2xl ",
-                    props.theme == "light" && " outline-2"
+                    props.config["app.theme"] == "light" && " outline-2"
                 )
             }
                 onClick={() => {
-                    props.onThemeChange("light");
+                    props.onConfigChange("app.theme", "light");
                 }}
 
             >
@@ -84,11 +82,11 @@ export function SetupTheme(
 
             <div className={
                 cn("bg-accent p-5 rounded-2xl ",
-                    props.theme == "dark" && " outline-2"
+                    props.config["app.theme"]  == "dark" && " outline-2"
                 )
             }
                 onClick={() => {
-                    props.onThemeChange("dark");
+                    props.onConfigChange("app.theme", "dark");
                 }}
 
             >
@@ -149,8 +147,9 @@ export function SetupTheme(
         </div>
 
         <div className="pt-2">
-            <Select value={props.language} onValueChange={(value) => {
-                props.onLanguageChange(value);
+            <Select value={props.config["app.language"]} onValueChange={(value) => {
+                props.onConfigChange("app.language", value);
+             
                 setAppLanguage(value, i18n);
 
             }}>

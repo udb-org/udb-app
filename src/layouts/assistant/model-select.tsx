@@ -28,6 +28,7 @@ import {
 import { cn } from "@/utils/tailwind";
 import { Separator } from "@/components/ui/separator";
 import { AddModelSetting } from "../explorer-setting/add-model";
+import { AppConfig } from "@/api/config";
 
 type Status = {
   value: string;
@@ -42,23 +43,17 @@ export function ModelSelect(props: { onSelect: (model: any) => void }) {
     props.onSelect(selectedStatus);
   }, [selectedStatus]);
   const [models, setModels] = React.useState<any[]>([]);
+  const [providers, setProviders] = React.useState<any[]>([]);
   React.useEffect(() => {
-    const getModels = (models: any[]) => {
-      console.log("getModels", models);
+    AppConfig.getAiModels().then((models:any) => {
       setModels(models);
-      window.api
-        .invoke("storage:getConfigItem", "defaultModelKey")
-        .then((res: any) => {
-          console.log("getConfigItem", res);
-          const model = models.find((model) => model.key === res);
-          setSelectedStatus(model);
-        });
-    };
-    window.api.on("storage:getModelsing", getModels);
-    window.api.send("storage:getModels");
-    return () => {
-      window.api.removeAllListeners("storage:getModelsing");
-    };
+      AppConfig.getAiChatModel().then((model:any) => {
+        setSelectedStatus(models.find((m:any) => m.key === model) || null);
+      });
+    });
+    AppConfig.getAiProviders().then((providers:any) => {
+      setProviders(providers);
+    });
   }, []);
 
   return (
@@ -112,7 +107,14 @@ export function ModelSelect(props: { onSelect: (model: any) => void }) {
         </Command>
         <Separator></Separator>
         <div className="ml-1 p-1 text-sm">Custom Model</div>
-        <AddModelSetting onSuccess={() => {}} onCancel={() => {}} />
+        <AddModelSetting providers={providers} onSuccess={() => {
+          let _models = [...models];
+          _models.push(selectedStatus);
+          setModels(_models);
+          AppConfig.saveConfig({
+            "ai.models": _models,
+          });
+        }} onCancel={() => {}} />
       </PopoverContent>
     </Popover>
   );

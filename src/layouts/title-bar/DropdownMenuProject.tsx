@@ -1,25 +1,9 @@
-import * as React from "react"
 import {
-  CheckCheckIcon,
   CheckIcon,
   ChevronDownIcon,
-  Cloud,
-  CreditCard,
-  FolderOpenIcon,
-  Github,
-  Keyboard,
-  LifeBuoy,
-  LinkIcon,
-  LogOut,
-  Mail,
-  MessageSquare,
-  Plus,
-  PlusCircle,
-  Settings,
-  User,
-  UserPlus,
-  Users,
+  FolderOpenIcon
 } from "lucide-react"
+import * as React from "react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -28,24 +12,16 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuPortal,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
+  DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback } from "@radix-ui/react-avatar"
-import { Label } from "@radix-ui/react-dropdown-menu"
-import { openDialog } from "../dialog"
-import { DialogType } from "@/types/dialog"
 import { useEffect } from "react"
 
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { useProjectStore } from "@/store/project-store"
 import { IProject } from "@/types/project"
 import { cn, colors } from "@/utils/tailwind"
+import { useTranslation } from "react-i18next"
 
 
 export function DropdownMenuProject() {
@@ -57,7 +33,7 @@ export function DropdownMenuProject() {
       setFolders(res);
     })
   },[]);
-
+  const { t } = useTranslation();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -66,7 +42,7 @@ export function DropdownMenuProject() {
             {project && project.name.substring(0, 2).toUpperCase()}
           </div>
           {project && project.name!=""&&project.name}
-          {(!project||project.name=="") && "Please select a folder"}
+          {(!project||project.name=="") && t("title.bar.select.project")}
           <ChevronDownIcon size={14} />
         </Button>
       </DropdownMenuTrigger>
@@ -87,10 +63,10 @@ export function DropdownMenuProject() {
             })
           }}>
             <FolderOpenIcon />
-            <span>Open Folder</span>
+            <span>{t("title.bar.open.folder")}</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
-        <DropdownMenuLabel>Recent</DropdownMenuLabel>
+        <DropdownMenuLabel>{t("title.bar.recent.project")}</DropdownMenuLabel>
         <DropdownMenuSeparator />
 
         <ScrollArea className="w-full h-[200px]">

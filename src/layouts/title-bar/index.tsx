@@ -44,10 +44,10 @@ export default function TitleBar() {
         //Workbench
       }
       {
-        active == "Database" && <DropdownMenuConnect />
+        active == "database" && <DropdownMenuConnect />
       }
       {
-        active == "Folder" && <DropdownMenuProject />
+        active == "folder" && <DropdownMenuProject />
       }
       <div className="app-region h-full flex-1"></div>
       {

@@ -5,6 +5,7 @@ import { LinkIcon } from "lucide-react";
 import React, { useEffect } from "react";
 import { openDialog } from "../dialog";
 import { DialogType } from "@/types/dialog";
+import { useTranslation } from "react-i18next";
 export function ViewWebcome(props: { viewKey: string }) {
   const [connections, setConnections] = React.useState<ConnectionConfig[]>([]);
   const [showConnections, setShowConnections] = React.useState<
@@ -29,7 +30,7 @@ export function ViewWebcome(props: { viewKey: string }) {
       );
     };
   }, []);
-
+  const { t } = useTranslation();
   return (
     <div className="box-border flex h-full w-full flex-col items-center justify-center">
       <div className="w-[300px]">
@@ -45,7 +46,7 @@ export function ViewWebcome(props: { viewKey: string }) {
           }}
         >
           <LinkIcon size={16}></LinkIcon>
-          <span className="ml-2">New Connection</span>
+          <span className="ml-2">{t("title.bar.new.connection")}</span>
         </Button>
         <div className="mt-5">
           {showConnections.map((connection, i) => (
@@ -66,7 +67,7 @@ export function ViewWebcome(props: { viewKey: string }) {
           ))}
         </div>
         <Button size={"sm"} variant={"ghost"} className="w-full">
-          <span className="text-muted-foreground ml-2 text-sm">More</span>
+          <span className="text-muted-foreground ml-2 text-sm">{t("welcome.button.more")}</span>
         </Button>
       </div>
     </div>

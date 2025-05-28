@@ -1,21 +1,22 @@
 import { cn } from "@/utils/tailwind";
-import React, { useEffect, useState } from "react";
+import React, {  useState } from "react";
 import { SetupHome } from "./home";
 import { SetupTheme } from "./theme";
-import { SetupLogin } from "./login";
 import { SetupEnd } from "./end";
 import { SetupAi } from "./ai";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { configTemplate } from "@/services/config-template";
 
 export function Setup() {
     const [steps, setSteps] = useState<number[]>([
         1, 2, 3, 4
     ]);
     const [current, setCurrent] = useState<number>(1);
-    const [theme, setTheme] = useState<string>("light");
-    const [aiConfig, setAiConfig] = useState<any>({});
-    const [language, setLanguage] = useState<string>("en");
+
+    const [config, setConfig] = useState<any>(
+        configTemplate
+    );
     const { t } = useTranslation();
     const [isLoading, setIsLoading] = useState<boolean>(false);
     return <div className="h-screen w-screen flex flex-col">
@@ -35,13 +36,12 @@ export function Setup() {
                 }
                 {
                     current == 2 && <SetupTheme
-                        theme={theme}
-                        language={language}
-                        onLanguageChange={(language) => {
-                            setLanguage(language);
-                        }}
-                        onThemeChange={(theme) => {
-                            setTheme(theme);
+                        config={config}
+                        onConfigChange={(key, value) => {
+                            setConfig({
+                                ...config,
+                                [key]: value
+                            });
                         }}
                         onNext={() => {
                             setCurrent(3);
@@ -53,10 +53,10 @@ export function Setup() {
                     />
                 }
                 {
-                    current == 3 && <SetupAi config={aiConfig}
+                    current == 3 && <SetupAi config={config}
                         onConfigChange={(key, value) => {
-                            setAiConfig({
-                                ...aiConfig,
+                            setConfig({
+                                ...config,
                                 [key]: value
                             });
                         }}
@@ -71,39 +71,22 @@ export function Setup() {
                     current == 4 && <SetupEnd onNext={() => {
                         //检查所有的设置是否都已经配置了，主要是模型
                         //如果没有配置，则提示用户去配置
-                        console.log("aiConfig", aiConfig);
-                        if ("models" in aiConfig) {
-                            if (aiConfig.models.length == 0) {
-                                toast.error(t("setup.error.configAiModels"));
-                                return;
-                            }
-                        } else {
+                        console.log("config", config);
+                        if (config["ai.models"].length == 0) {
                             toast.error(t("setup.error.configAiModels"));
                             return;
                         }
-                        if ("suggestionModelKey" in aiConfig) {
-                            if (aiConfig.suggestionModelKey === "") {
-                                toast.error(t("setup.error.suggestionModelKey"));
-                                return;
-                            }
-                        } else {
+                        if (config["ai.suggestion.model"] === "") {
                             toast.error(t("setup.error.suggestionModelKey"));
                             return;
                         }
-                        if ("defaultModelKey" in aiConfig) {
-                            if (aiConfig.defaultModelKey === "") {
-                                toast.error("setup.error.defaultModelKey");
-                                return;
-                            }
-                        } else {
+                        if (config["ai.chat.model"] === "") {
                             toast.error("setup.error.defaultModelKey");
                             return;
                         }
                         setIsLoading(true);
                         window.api.invoke("storage:init", {
-                            ...aiConfig,
-                            language: language,
-                            theme: theme
+                            ...config
                         }).then(() => {
                             //设置完成,强制属性页面
                             window.location.reload();

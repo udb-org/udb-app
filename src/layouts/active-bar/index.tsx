@@ -20,11 +20,18 @@ import {
   SettingsIcon,
 } from "lucide-react";
 import React from "react";
+import { useTranslation } from "react-i18next";
+
+
+export default function ActiveBar() {
+
+  const {t}=useTranslation();
 
 const explorers = [
   {
-    name: "Database",
+    name: t("active.bar.database"),
     icon: DatabaseIcon,
+    key: "database",
     explorer: {
       type: "db",
       params: {},
@@ -47,7 +54,8 @@ const explorers = [
   //   }
   // },
   {
-    name: "Folder",
+    name: t("active.bar.folder"),
+    key: "folder",
     icon: FolderIcon,
     explorer: {
       type: "folder",
@@ -55,7 +63,8 @@ const explorers = [
     },
   },
   {
-    name: "History",
+    name: t("active.bar.history"),
+    key: "history",
     icon: HistoryIcon,
     explorer: {
       type: "history",
@@ -63,7 +72,8 @@ const explorers = [
     },
   },
   {
-    name: "Setting",
+    name: t("active.bar.setting"),
+    key: "setting",
     icon: SettingsIcon,
     explorer: {
       type: "setting",
@@ -82,7 +92,6 @@ const explorers = [
   // }
 ];
 
-export default function ActiveBar() {
   const { active, setActive } = useActiveStore();
   const { leftVisible, setLeftVisible } = useLayoutStore();
   return (
@@ -94,10 +103,10 @@ export default function ActiveBar() {
           size={"icon"}
           className={cn(
             "hover:bg-primary/10 m-[4px] h-[28px] w-[28px]",
-            active === item.name && "bg-primary/20",
+            active === item.key && "bg-primary/20",
           )}
           onClick={() => {
-            setActive(item.name);
+            setActive(item.key);
             if (item.explorer) {
               openExplorer(item.explorer);
               if (!leftVisible) {

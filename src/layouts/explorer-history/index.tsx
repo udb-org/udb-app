@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import SearchInput from "@/components/SearchInput";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { useTranslation } from "react-i18next";
 
 export function ExplorerHistory(props: { isVisible: boolean }) {
   const [history, setHistory] = React.useState<any[]>([]);
@@ -151,7 +152,7 @@ export function ExplorerHistory(props: { isVisible: boolean }) {
       </div>
     );
   }
-
+  const {t}=useTranslation();
   return (
     <div
       className="h-full w-full flex-col"
@@ -160,7 +161,9 @@ export function ExplorerHistory(props: { isVisible: boolean }) {
       }}
     >
       <div className="flex flex-shrink-0 items-center text-sm font-bold">
-        <div className="text-sm font-bold">Suggestions</div>
+        <div className="text-sm font-bold">
+          {t("active.bar.suggestion")}
+        </div>
         <div className="flex-1"></div>
       </div>
       <div className="pt-1">
@@ -168,7 +171,9 @@ export function ExplorerHistory(props: { isVisible: boolean }) {
       </div>
 
       <div className="flex flex-shrink-0 items-center text-sm font-bold">
-        <div className="text-sm font-bold">History</div>
+        <div className="text-sm font-bold">
+          {t("active.bar.history")}
+        </div>
         <div className="flex-1"></div>
         <Button
           variant={"ghost"}

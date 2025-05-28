@@ -6,6 +6,7 @@ import { IVirtualTreeItem, VirtualTree } from "@/components/virtual-tree";
 import { openMenu } from "@/api/menu";
 import { getFileIcon } from "./file-icons";
 import { useProjectStore } from "@/store/project-store";
+import { useTranslation } from "react-i18next";
 
 export function ExplorerFolder(props: {
   isVisible: boolean;
@@ -49,7 +50,7 @@ export function ExplorerFolder(props: {
   
     }
   }, []);
-
+  const {t}=useTranslation();
   return (
     <div className="h-full w-full  flex-col"
       style={{
@@ -58,7 +59,7 @@ export function ExplorerFolder(props: {
     >
       <div className="font-bold text-sm flex items-center flex-shrink-0 ">
         <div className="text-sm font-bold">
-          Folder
+          {t("active.bar.folder")}
         </div>
         <div className="flex-1"></div>
         <Button variant={"ghost"} size={"icon"} className="w-[28px] h-[28px] m-[0px]">

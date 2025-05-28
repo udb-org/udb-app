@@ -61,6 +61,7 @@ const formSchema = z.object({
 });
 
 export function AddModelSetting(props: {
+  providers: any[];
   onSuccess?: (model:any) => void;
   onCancel?: () => void;
 }) {
@@ -74,8 +75,8 @@ export function AddModelSetting(props: {
       customModel: "",
     },
   });
-  const [providers, setProviders] = React.useState<any[]>([]);
-  const [provider, setProvider] = React.useState<string>("Qwen");
+  const providers=props.providers;
+  const [provider, setProvider] = React.useState<string>("");
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof formSchema>) {
     // Do something with the form values.
@@ -105,14 +106,7 @@ export function AddModelSetting(props: {
   }
   const [isCustom, setIsCustom] = React.useState(false);
   const [open, setOpen] = React.useState(false);
-  useEffect(() => {
-    window.api.invoke("storage:getConfigItem", "providers").then((res: any) => {
-      console.log("getConfigItem:providers", res);
-      if (res) {
-        setProviders(res);
-      }
-    });
-  }, []);
+
 
   const {t}=useTranslation();
 

@@ -13,7 +13,7 @@ export function SetupAi(
     }
 ) {
     const {t}=useTranslation();
-    return <div className="space-y-5 w-[400px]">
+    return <div className="space-y-5 w-[400px] bg-card p-5 rounded-md shadow-lg">
       
         <AiSetting config={props.config} onConfigChange={(key, value) => {
             props.onConfigChange(key, value);

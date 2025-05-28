@@ -6,11 +6,23 @@ import Workbench from "./layouts/workbench";
 import { ThemeProvider } from "./components/theme-provider";
 import { Toaster } from "./components/ui/sonner";
 import { Setup } from "./layouts/setup";
+import { AppConfig } from "./api/config";
+import { updateDocumentTheme } from "./api/theme";
+import { setAppLanguage } from "./api/language";
 export default function App() {
   const { i18n } = useTranslation();
-  useEffect(() => { }, [i18n]);
+  useEffect(() => {
+    AppConfig.getAppTheme().then((theme) => {
+      updateDocumentTheme(theme === "dark");
+    });
+  }, []);
+  useEffect(() => {
+    AppConfig.getAppLanguage().then((language) => {
+      setAppLanguage(language as string, i18n);
+    });
+  }, []);
   return (
-    <ThemeProvider storageKey="vite-ui-theme">
+    <ThemeProvider storageKey="vite-ui-theme"  >
       {
         window.api.isFirstRun() && <Setup />
       }

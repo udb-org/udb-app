@@ -35,7 +35,6 @@ function createWindow() {
       y: 12,
     },
   });
-
   registerListeners(mainWindow);
   mainWindow.webContents.openDevTools();
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {

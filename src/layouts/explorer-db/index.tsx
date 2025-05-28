@@ -21,6 +21,7 @@ import { openView } from "@/api/view";
 import { openDialog } from "../dialog";
 import { DialogType } from "@/types/dialog";
 import { ViewType } from "@/types/view";
+import { useTranslation } from "react-i18next";
 
 export function ExplorerDb(props: { isVisible: boolean }) {
   const [files, setFiles] = React.useState<IVirtualTreeItem[]>([]);
@@ -110,6 +111,7 @@ export function ExplorerDb(props: { isVisible: boolean }) {
       window.api.removeListener("explorer:db-actioning", explorer_db_actioning);
     };
   }, []);
+  const {t}=useTranslation();
 
   return (
     <div
@@ -119,7 +121,7 @@ export function ExplorerDb(props: { isVisible: boolean }) {
       }}
     >
       <div className="flex flex-shrink-0 items-center text-sm font-bold">
-        <div className="text-sm font-bold">Databases</div>
+        <div className="text-sm font-bold">{t("active.bar.database")}</div>
         <div className="flex-1"></div>
         <Button
           variant={"ghost"}

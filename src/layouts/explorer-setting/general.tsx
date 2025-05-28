@@ -9,29 +9,33 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { SettingDescription, SettingTitle, SettingTopic } from "./common";
+import { useTranslation } from "react-i18next";
+import { setAppLanguage, updateAppLanguage } from "@/api/language";
 export function GeneralSetting(
     props:{
         config:any;
         onConfigChange:(key:string,value:any)=>void;
     }
 ) {
+    const {t,i18n}=useTranslation();
     return <div>
-        <SettingTopic topic="General" />
-        <SettingTitle title="Language" />
-        <SettingDescription description="Select the language for the application." />
+     
+        <SettingTitle title={t("settings.base.language")} />
+        <SettingDescription description={t("setup.theme.language")} />
         <Select
-            value={props.config.language}
+            value={props.config["app.language"]}
             onValueChange={(value) => {
-                props.onConfigChange("language", value);
+                props.onConfigChange("app.language", value);
+                setAppLanguage(value, i18n);
             }}
         >
             <SelectTrigger>
-                <SelectValue placeholder="Select a Language" />
+                <SelectValue  />
             </SelectTrigger>
             <SelectContent>
                 <SelectGroup>
-                    <SelectItem value="Chinese(Simplified)">Chinese(Simplified)中文简体</SelectItem>
-                    <SelectItem value="English">English</SelectItem>
+                    <SelectItem value="zh">Chinese(Simplified)中文简体</SelectItem>
+                    <SelectItem value="en">English</SelectItem>
                 </SelectGroup>
             </SelectContent>
         </Select>

@@ -19,10 +19,9 @@ import {
     TableRow,
 } from "@/components/ui/table";
 
-import { Pen, PenIcon, TrashIcon } from "lucide-react";
+import { TrashIcon } from "lucide-react";
 import { SettingDescription, SettingTitle, SettingTopic } from "./common";
 import { Button } from "@/components/ui/button";
-
 import { AddModelSetting } from "./add-model";
 import { useTranslation } from "react-i18next";
 
@@ -30,7 +29,7 @@ export function AiSetting(   props:{
     config:any;
     onConfigChange:(key:string,value:any)=>void;
 }) {
-    const models=props.config.models||[];
+    const models=props.config["ai.models"]||[];
     const {t}=useTranslation();
 
     return <div>
@@ -44,12 +43,15 @@ export function AiSetting(   props:{
             t("settings.ai.desc")
         } />
         <div className="py-1">
-            <AddModelSetting onSuccess={(model) => {
+            <AddModelSetting
+            providers={props.config["ai.providers"]}
+            
+            onSuccess={(model) => {
                 console.log("onSuccess",model);
                 let _models = [...models];
                 _models.push(model);
                 // setModels(_models);
-                props.onConfigChange("models",_models);
+                props.onConfigChange("ai.models",_models);
             }} onCancel={() => {
 
             }} />
@@ -72,7 +74,11 @@ export function AiSetting(   props:{
 
                             <Button variant={"ghost"} size={"sm"} className="h-[24px]"
                                 onClick={()=>{
-                                    window.api.send("storage:deleteModel",model.key);
+                                    // window.api.send("storage:deleteModel",model.key);
+                                    let _models = [...models];
+                                    _models.splice(i, 1);
+                                    props.onConfigChange("ai.models",_models);
+
                                 }}
                             >
                                 <TrashIcon size={12} ></TrashIcon>
@@ -85,10 +91,10 @@ export function AiSetting(   props:{
         </Table>
         <SettingTitle title={t("settings.ai.chat.title")} />
         <SettingDescription description={t("settings.ai.chat.desc")} />
-        <Select value={props.config.defaultModelKey} onValueChange={(value) => {
+        <Select value={props.config["ai.chat.model"]} onValueChange={(value) => {
          
             console.log("onValueChange",value);
-            props.onConfigChange("defaultModelKey",value);
+            props.onConfigChange("ai.chat.model",value);
         }}>
             <SelectTrigger size="sm" className="w-full bg-muted">
                 <SelectValue placeholder="Select a Model" />
@@ -110,10 +116,10 @@ export function AiSetting(   props:{
         <SettingDescription description={
             t("settings.ai.suggestion.desc")
         } />
-        <Select value={props.config.suggestionModelKey} onValueChange={(value) => {
+        <Select value={props.config["ai.suggestion.model"]} onValueChange={(value) => {
          
             console.log("onValueChange",value);
-            props.onConfigChange("suggestionModelKey",value);
+            props.onConfigChange("ai.suggestion.model",value);
         }}>
             <SelectTrigger size="sm" className="w-full bg-muted">
                 <SelectValue placeholder="Select a Model" />

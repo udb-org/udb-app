@@ -125,7 +125,7 @@ export function executeSql(sql: string, datasource: IDataSource) {
   })
     .then((res) => res.json())
     .catch((err) => {
-      dialog.showErrorBox("执行SQL失败", err.message);
+      dialog.showErrorBox("Failed to execute SQL", err);
     });
 }
 let PORT: number = 10001;

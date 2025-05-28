@@ -1,25 +1,11 @@
-import * as React from "react"
 import {
-  CheckCheckIcon,
   CheckIcon,
   ChevronDownIcon,
-  Cloud,
-  CreditCard,
-  Github,
-  Keyboard,
-  LifeBuoy,
-  LinkIcon,
-  LogOut,
-  Mail,
-  MessageSquare,
-  Plus,
-  PlusCircle,
-  Settings,
-  User,
-  UserPlus,
-  Users,
+  LinkIcon
 } from "lucide-react"
+import * as React from "react"
 
+import { getConnectionConfig, openConnection } from "@/api/storage"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -27,22 +13,15 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuPortal,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
+  DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback } from "@radix-ui/react-avatar"
-import { Label } from "@radix-ui/react-dropdown-menu"
-import { openDialog } from "../dialog"
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
+import { ConnectionConfig } from "@/types/db"
 import { DialogType } from "@/types/dialog"
 import { useEffect } from "react"
-import { getConnectionConfig, openConnection } from "@/api/storage"
-import { ConnectionConfig } from "@/types/db"
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
+import { useTranslation } from "react-i18next"
+import { openDialog } from "../dialog"
 
 
 export function DropdownMenuConnect() {
@@ -69,7 +48,7 @@ export function DropdownMenuConnect() {
       window.api.removeListener("storage:getConnectionConfiging", getConnectionConfiging);
     }
   }, []);
-
+  const { t } = useTranslation();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -78,7 +57,7 @@ export function DropdownMenuConnect() {
             {currentConnection && currentConnection.name.substring(0, 2).toUpperCase()}
           </div>
           {currentConnection && currentConnection.name}
-          {currentConnection == null && "Please select a connection"}
+          {currentConnection == null && t("title.bar.select.connection")}
           <ChevronDownIcon size={14} />
         </Button>
       </DropdownMenuTrigger>
@@ -91,10 +70,10 @@ export function DropdownMenuConnect() {
             })
           }}>
             <LinkIcon />
-            <span>New Connection</span>
+            <span>{t("title.bar.new.connection")}</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
-        <DropdownMenuLabel>Recent</DropdownMenuLabel>
+        <DropdownMenuLabel>{t("title.bar.recent.connection")}</DropdownMenuLabel>
         <DropdownMenuSeparator />
 
         <ScrollArea className="w-full h-[200px]">

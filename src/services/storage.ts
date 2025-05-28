@@ -177,10 +177,12 @@ export function getConfigItem(key:string){
  * @returns 
  */
 export function getConfig(){
+    if(configCache!=null){
+        return configCache;
+    }
     if(!fs.existsSync(udbFolderPath)){
         return configTemplate
     }
-
     const configPath = path.join(udbFolderPath,'config.json');
     if(!fs.existsSync(configPath)){
         fs.writeFileSync(configPath,JSON.stringify(configTemplate,null,4),'utf-8');

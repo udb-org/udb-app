@@ -1,5 +1,7 @@
 export const configTemplate = {
-    "providers": [
+    "app.language":"en",
+    "app.theme":"light",
+    "ai.providers":[
         {
             name: "Qwen",
             baseUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1",
@@ -14,6 +16,9 @@ export const configTemplate = {
             
             ]
         }
-    ]
+    ],
+    "ai.models":[],
+    "ai.chat.model":"",
+    "ai.suggestion.model":"",
 
 }

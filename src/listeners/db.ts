@@ -20,6 +20,13 @@ export function getCurrentDataSource() {
 }
 
 export function registerDbListeners(mainWindow: Electron.BrowserWindow) {
+ 
+ 
+  ipcMain.on("db:startServer", (event) => {
+    console.log("db:startServer");
+  
+  });
+ 
   //查询所有的数据库
   ipcMain.handle("db:getDatabases", async (event) => {
     if (currentDataSource == null) {
