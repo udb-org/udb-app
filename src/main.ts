@@ -6,7 +6,7 @@
  * @date 2025/04/21
  * @version 1.0.0
  */
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, ipcMain } from "electron";
 import path from "path";
 // import {
 //   installExtension,
@@ -31,7 +31,7 @@ function createWindow() {
     },
   });
   registerListeners(mainWindow);
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
   } else {
@@ -39,6 +39,7 @@ function createWindow() {
       path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`),
     );
   }
+ 
 }
 async function installExtensions() {
   try {
@@ -56,6 +57,8 @@ app.on("window-all-closed", () => {
 });
 app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) {
+    //Remove listeners
+    ipcMain.removeAllListeners();
     createWindow();
   }
 });
