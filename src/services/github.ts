@@ -1,7 +1,7 @@
-const fs = require('fs');
-const path = require('path');
-const axios = require('axios');
-const { pipeline } = require('stream/promises');
+import { pipeline } from 'stream/promises';
+import fs from 'fs';
+import path from 'path';
+import axios from 'axios';
 
 // 配置参数
 const owner = 'udb-org';      // 例如：google

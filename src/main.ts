@@ -7,11 +7,6 @@
  * @version 1.0.0
  */
 import { app, BrowserWindow } from "electron";
-//Check if the app is already running
-const gotTheLock = app.requestSingleInstanceLock();
-if (!gotTheLock) {
-  app.quit();
-}
 import path from "path";
 import {
   installExtension,
@@ -54,13 +49,13 @@ async function installExtensions() {
   }
 }
 app.whenReady().then(createWindow).then(installExtensions);
-//osX only
 app.on("window-all-closed", () => {
-  app.quit();
+  if (process.platform !== "darwin") {
+    app.quit();
+  }
 });
 app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
   }
 });
-//osX only ends

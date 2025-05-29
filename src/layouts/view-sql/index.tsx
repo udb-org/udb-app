@@ -633,7 +633,7 @@ export default function ViewSQL(props: { viewKey: string }) {
         console.log("exeSql", exeSql);
         dbExec(exeSql, false).then((res: any) => {
           console.log("dbExec", res);
-          if (res.status === "success") {
+          if (res.status === "running") {
             setSessionId(res.id);
           } else {
             if (res.error) {
@@ -704,8 +704,8 @@ export default function ViewSQL(props: { viewKey: string }) {
             toast.error(res.message);
             setSessionId("");
           } else {
-            if (res.results.length > 0) {
-              const resResults = JSON.parse(res.results);
+            if (res.data.length > 0) {
+              const resResults = JSON.parse(res.data);
               if (resResults.length > 0) {
                 saveViewValue(props.viewKey, "results", resResults, true);
                 setResults([...results, ...resResults]);

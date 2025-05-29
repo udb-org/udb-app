@@ -360,12 +360,12 @@ export function AssistantPanel() {
             </div>
             <div className="p-5">
               <div
-                className="bg-accent/60 hover:bg-accent text-muted-foreground flex items-center gap-2 overflow-hidden rounded p-2 text-sm overflow-ellipsis"
-                onClick={() => {
-                  handleSend("Add a new user information table.");
-                }}
+                className="bg-accent/60 rounded h-[100px]"
+                // onClick={() => {
+                //   handleSend("Add a new user information table.");
+                // }}
               >
-                Add a new user information table.
+                {/* Add a new user information table. */}
               </div>
             </div>
           </div>

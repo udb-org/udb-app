@@ -141,7 +141,7 @@ export function runServer(callback: (status: string, message: string) => void) {
     return;
   }
   isServerRunning = true;
-  getAvailablePort(10000, (err, port) => {
+  getAvailablePort(10001, (err, port) => {
     if (err) {
       console.log("获取端口失败", err);
       callback("error", err.message);
@@ -254,11 +254,3 @@ function getAvailablePort(
   });
   server.listen(port);
 }
-// 获取一个大于 10000 的闲置端口
-getAvailablePort(10000, (err, port) => {
-  if (err) {
-    console.error("获取端口失败:", err);
-  } else {
-    console.log("获取到的闲置端口:", port);
-  }
-});

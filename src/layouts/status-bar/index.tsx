@@ -40,7 +40,7 @@ export default function StatusBar() {
     window.api.on("status:tasked", tasked);
 
     //start server
-    window.api.send("db:startServer");
+    // window.api.send("db:startServer");
 
 
     return () => {
