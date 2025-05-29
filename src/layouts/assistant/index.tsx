@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useAiStore } from "@/store/ai-store";
-import { useTabStore } from "@/store/tab-store";
+import { getView, useTabStore } from "@/store/tab-store";
 import { AiMode } from "@/types/ai";
 import { ViewType } from "@/types/view";
 import { cn } from "@/utils/tailwind";
@@ -72,18 +72,12 @@ export function AssistantPanel() {
     }
   }
   const tab = useTabStore((state: any) => state.tab);
-  const view = useMemo(() => {
-    if (tab === null) {
-      return null;
-    }
-    const name = tab.name;
-    const viewStore = localStorage.getItem("vs_" + name) + "";
-    return JSON.parse(viewStore);
-  }, [tab]);
+
   function getContext() {
-    if (tab === null || view === null) {
+    if (tab === null) {
       return "";
     }
+    const view=getView(tab.name);
     if (contextType === "default") {
       //获取当前展示的tab,从store中获取
       const viewType = view.type;
