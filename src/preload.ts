@@ -1,7 +1,7 @@
 // preload.ts
 import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron";
 
-// 定义暴露给渲染进程的 API 类型
+// Define the Electron API interface
 type ElectronAPI = {
   invoke: <T>(channel: string, ...args: any[]) => Promise<T>;
   send: (channel: string, ...args: any[]) => void;
@@ -12,13 +12,13 @@ type ElectronAPI = {
   isFirstRun: () => boolean;
 };
 
-// 自定义的 API 对象
+//Safe API
 const electronAPI: ElectronAPI = {
   invoke: async (channel, ...args) => {
     try {
       return await ipcRenderer.invoke(channel, ...args);
     } catch (error) {
-      // 统一错误处理
+      //do not throw error, just log it
       console.error(`Invoke error [${channel}]:`, error);
       throw {
         name: "ElectronAPIError",
@@ -59,11 +59,7 @@ const electronAPI: ElectronAPI = {
       return !fs.existsSync(udbFolderPath);
   }
 };
-
-// 暴露安全 API 到 window 对象
 contextBridge.exposeInMainWorld("api", electronAPI);
-
-// 类型声明文件 (在项目中需要全局声明)
 declare global {
   interface Window {
     api: ElectronAPI;

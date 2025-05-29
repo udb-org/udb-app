@@ -6,10 +6,10 @@ const userHomeDir = require("os").homedir();
 const udbFolderPath = path.join(userHomeDir, ".udb");
 import fs from "fs";
 import { getLatestRelease } from "./github";
-import os from 'os';
+import os from "os";
 import { downloadJdk } from "./jdk";
 /**
- * 
+ *
  * The server returns an id, and the client can use this id to fetch the result
  *
  * @param sql
@@ -30,7 +30,7 @@ export function db_exec(
 }
 /**
  * Get execution result
- * @param id 
+ * @param id
  * @returns {status:string,message:string,startTime:string,endTime:string,results:any}
  */
 export function db_result(id: string) {
@@ -40,7 +40,7 @@ export function db_result(id: string) {
 }
 /**
  * Stop execution
- * @param id 
+ * @param id
  * @returns {status:string,message:string}
  */
 export function db_stop(id: string) {
@@ -79,6 +79,20 @@ export function db_getTasks() {
   return db_func("getTasks", {});
 }
 
+
+export function db_dump(args: any) {
+  return db_func("dump", args);
+}
+export function db_dump_result(id: string) {
+  return db_func("dump_result", {
+    id: id,
+  });
+}
+export function db_dump_stop(id: string) {
+  return db_func("dump_stop", {
+    id: id,
+  });
+}
 function db_func(url: string, args: any) {
   console.log("db_func", url, args);
   return fetch("http://localhost:" + PORT + "/api/base/" + url, {
@@ -127,7 +141,8 @@ export function executeSql(sql: string, datasource: IDataSource) {
   })
     .then((res) => res.json())
     .catch((err) => {
-      dialog.showErrorBox("Failed to execute SQL", err);
+      console.log("executeSql", err.message);
+      dialog.showErrorBox("Failed to execute SQL", err.message);
     });
 }
 let PORT: number = 10001;
@@ -178,11 +193,18 @@ async function RunJar(callback: (status: string, message: string) => void) {
   let javaBinPath = "";
 
   const platform = os.platform();
-  if (platform === 'win32') {
+  if (platform === "win32") {
     javaBinPath = path.join(javaPath, "jdk-21.0.2.jdk", "bin", "java.exe");
-  } else if (platform === 'darwin') {
-    javaBinPath = path.join(javaPath, "jdk-21.0.2.jdk", "Contents", "Home", "bin", "java");
-  } else if (platform === 'linux') {
+  } else if (platform === "darwin") {
+    javaBinPath = path.join(
+      javaPath,
+      "jdk-21.0.2.jdk",
+      "Contents",
+      "Home",
+      "bin",
+      "java",
+    );
+  } else if (platform === "linux") {
     javaBinPath = path.join(javaPath, "jdk-21.0.2.jdk", "bin", "java");
   }
 
@@ -196,21 +218,24 @@ async function RunJar(callback: (status: string, message: string) => void) {
   if (!fs.existsSync(serverJarPath)) {
     //需要从服务下载
     callback("running", "Downloading jar...");
-    getLatestRelease(serverJarPath).then(() => {
-
-      runJar(javaBinPath, serverJarPath, callback);
-    }).catch((e) => {
-      console.log("Download failed", e);
-      callback("error", e.message);
-    });
+    getLatestRelease(serverJarPath)
+      .then(() => {
+        runJar(javaBinPath, serverJarPath, callback);
+      })
+      .catch((e) => {
+        console.log("Download failed", e);
+        callback("error", e.message);
+      });
   } else {
     runJar(javaBinPath, serverJarPath, callback);
     callback("success", "Server started successfully");
   }
-
-
 }
-function runJar(javaBinPath: string, serverJarPath: string, callback: (status: string, message: string) => void) {
+function runJar(
+  javaBinPath: string,
+  serverJarPath: string,
+  callback: (status: string, message: string) => void,
+) {
   const childProcess = require("child_process");
   childProcess.execFile(
     javaBinPath,

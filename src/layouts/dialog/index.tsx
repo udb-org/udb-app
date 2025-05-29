@@ -4,6 +4,7 @@ import { AddConnectionDialog } from "./add-connection";
 import { AddDatabaseDialog } from "./add-database";
 import { DelDatabaseDialog } from "./del-database";
 import { DropTableDialog } from "./drop-table";
+
 /**
  * 打开对话框
  * @param params 对话框参数
@@ -77,6 +78,7 @@ export function Dialogs() {
           }}
         />
       )}
+    
     </>
   );
 }

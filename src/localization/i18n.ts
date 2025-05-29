@@ -8,7 +8,8 @@ i18n.use(initReactI18next).init({
       translation: {
         "setup.welcome": "Welcome to UDB!",
         "setup.theme.title": "Select your theme",
-        "setup.theme.subtitle": "You can change the theme later in the settings",
+        "setup.theme.subtitle":
+          "You can change the theme later in the settings",
         "setup.theme.dark": "Dark",
         "setup.theme.light": "Light",
         "setup.theme.language": "Select your language",
@@ -16,9 +17,10 @@ i18n.use(initReactI18next).init({
         "setup.button.continue": "Continue",
         "setup.button.start": "Start UDB",
 
-        "setup.error.configAiModels":"Please configure the AI models.",
-        "setup.error.suggestionModelKey":"Please configure the suggestion model.",
-        "setup.error.defaultModelKey":"Please configure the default model.",
+        "setup.error.configAiModels": "Please configure the AI models.",
+        "setup.error.suggestionModelKey":
+          "Please configure the suggestion model.",
+        "setup.error.defaultModelKey": "Please configure the default model.",
 
         "settings.base.title": "Base Settings",
         "settings.base.language": "Language",
@@ -28,12 +30,15 @@ i18n.use(initReactI18next).init({
 
         "settings.ai.title": "AI Settings",
         "settings.ai.subtitle": "Manage your AI settings",
-        "settings.ai.desc": "Configure the API key and secret key for the OpenAI API.",
+        "settings.ai.desc":
+          "Configure the API key and secret key for the OpenAI API.",
         "settings.ai.add": "Add",
         "settings.ai.suggestion.title": "Suggestions Model",
-        "settings.ai.suggestion.desc": "Select the suggestions model for the application.",
+        "settings.ai.suggestion.desc":
+          "Select the suggestions model for the application.",
         "settings.ai.chat.title": "Chat Default Model",
-        "settings.ai.chat.desc": "Select the default model for the application..",
+        "settings.ai.chat.desc":
+          "Select the default model for the application..",
 
         "active.bar.database": "Database",
         "active.bar.favorite": "Favorite",
@@ -49,10 +54,9 @@ i18n.use(initReactI18next).init({
         "title.bar.recent.connection": "Recent",
         "title.bar.recent.project": "Recent",
         "title.bar.open.folder": "Open Folder",
-       
+
         "welcome.title": "Welcome to UDB!",
         "welcome.button.more": "More",
-        
       },
     },
     zh: {
@@ -67,9 +71,9 @@ i18n.use(initReactI18next).init({
         "setup.button.continue": "下一步",
         "setup.button.start": "启动 UDB",
 
-        "setup.error.configAiModels":"请配置AI模型。",
-        "setup.error.suggestionModelKey":"请配置建议模型。",
-        "setup.error.defaultModelKey":"请配置默认模型。",
+        "setup.error.configAiModels": "请配置AI模型。",
+        "setup.error.suggestionModelKey": "请配置建议模型。",
+        "setup.error.defaultModelKey": "请配置默认模型。",
 
         "settings.base.title": "基础设置",
         "settings.base.language": "语言",
@@ -104,10 +108,6 @@ i18n.use(initReactI18next).init({
 
         "welcome.title": "欢迎使用 UDB!",
         "welcome.button.more": "更多",
-        
-        
-
-
       },
     },
   },

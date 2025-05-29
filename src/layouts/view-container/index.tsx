@@ -8,6 +8,7 @@ import { ViewWebcome } from "../view-welcome";
 import ViewText from "../view-text";
 import { useLayoutStore } from "@/store/layout-store";
 import ViewTables from "../view-tables";
+import ViewDump from "../view-dump";
 /**
  *
  * View 容器
@@ -39,6 +40,9 @@ export function ViewContainer() {
       )}
       {tab.name.length > 0 && tab.type === "tables" && (
         <ViewTables viewKey={tab.name} />
+      )}
+       {tab.name.length > 0 && tab.type === "dump" && (
+        <ViewDump viewKey={tab.name} />
       )}
     </div>
   );

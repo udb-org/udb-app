@@ -6,6 +6,7 @@ export enum ViewType {
   Data = "data",
   Welcome = "welcome",
   Tables = "tables",
+  Dump = "dump",
 }
 export interface ViewParams {
   name?: string;

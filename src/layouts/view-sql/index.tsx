@@ -704,6 +704,9 @@ export default function ViewSQL(props: { viewKey: string }) {
             toast.error(res.message);
             setSessionId("");
           } else {
+            if (res.status === "success") {
+              setSessionId("");
+            }
             if (res.data.length > 0) {
               const resResults = JSON.parse(res.data);
               if (resResults.length > 0) {
@@ -711,9 +714,7 @@ export default function ViewSQL(props: { viewKey: string }) {
                 setResults([...results, ...resResults]);
               }
             }
-            if (res.status === "success") {
-              setSessionId("");
-            }
+         
           }
         });
       }, 1000);

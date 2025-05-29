@@ -7,6 +7,7 @@ import {
   CodeIcon,
   CogIcon,
   FileIcon,
+  HardDriveDownloadIcon,
   HouseIcon,
   MoreHorizontalIcon,
   PlayIcon,
@@ -200,7 +201,7 @@ export function ViewTabsItem(props: {
           {props.type === "table" && <TableIcon className="w-[12px]" />}
           {props.type === "welcome" && <HouseIcon className="w-[12px]" />}
           {props.type === "text" && <FileIcon className="w-[12px]" />}
-
+          {props.type === "dump" && <HardDriveDownloadIcon className="w-[12px]" />}
           {props.type === "tables" && <Table2 className="w-[12px]" />}
         </div>
         <div className="max-w-[200px] overflow-hidden overflow-ellipsis whitespace-nowrap">

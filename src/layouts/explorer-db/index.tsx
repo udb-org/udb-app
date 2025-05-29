@@ -102,16 +102,24 @@ export function ExplorerDb(props: { isVisible: boolean }) {
           },
           path: [params.params.database],
         });
+      } else if (params.command === "exportDatabase") {
+       openView({
+          type: ViewType.Dump,
+          params: {
+            database: params.params.database,
+          },
+          path: [params.params.database],
+        });
       }
     };
     window.api.on("explorer:db-actioning", explorer_db_actioning);
 
     return () => {
       window.api.removeListener("db:getDatabasesing", getDatabasesing);
-      window.api.removeListener("explorer:db-actioning", explorer_db_actioning);
+      window.api.removeAllListeners("explorer:db-actioning");
     };
   }, []);
-  const {t}=useTranslation();
+  const { t } = useTranslation();
 
   return (
     <div

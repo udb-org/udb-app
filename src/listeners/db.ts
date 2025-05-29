@@ -1,5 +1,8 @@
 import {
   db_commit,
+  db_dump,
+  db_dump_result,
+  db_dump_stop,
   db_exec,
   db_getTasks,
   db_result,
@@ -408,4 +411,38 @@ export function registerDbListeners(mainWindow: Electron.BrowserWindow) {
   ipcMain.handle("db:getTasks", (event) => {
     return db_getTasks();
   });
+
+  ipcMain.handle("db:dump",async (event,args) => {
+    const conf = getCurrentConnection();
+    if (conf == null) {
+      dialog.showErrorBox("Error", "Please select a connection!");
+      return;
+    }
+    const datasource: IDataSource = {
+      name: conf.name + "_" + args.database,
+      type: conf.type,
+      driver: conf.driver,
+      host: conf.host,
+      port: conf.port,
+      username: conf.username,
+      password: conf.password,
+      database: args.database,
+    };
+    const arg={
+      ...args,
+      datasource:JSON.stringify(datasource)
+    }
+    const res= await db_dump(arg);
+    console.log("db:dump",res);
+    return res;
+  });
+  ipcMain.handle("db:dump_result", async (event, id: string) => {
+    const res= await db_dump_result(id);
+    console.log("db:dump_result",res);
+    return res;
+  });
+  ipcMain.handle("db:dump_stop", (event, id: string) => {
+    return db_dump_stop(id);
+    
+  })
 }
