@@ -8,10 +8,10 @@
  */
 import { app, BrowserWindow } from "electron";
 import path from "path";
-import {
-  installExtension,
-  REACT_DEVELOPER_TOOLS,
-} from "electron-devtools-installer";
+// import {
+//   installExtension,
+//   REACT_DEVELOPER_TOOLS,
+// } from "electron-devtools-installer";
 import { registerListeners } from "./listeners";
 function createWindow() {
   const preload = path.join(__dirname, "preload.js");
@@ -42,8 +42,8 @@ function createWindow() {
 }
 async function installExtensions() {
   try {
-    const result = await installExtension(REACT_DEVELOPER_TOOLS);
-    console.log(`Extensions installed successfully: ${result.name}`);
+    // const result = await installExtension(REACT_DEVELOPER_TOOLS);
+    // console.log(`Extensions installed successfully: ${result.name}`);
   } catch {
     console.error("Failed to install extensions");
   }

@@ -1,7 +1,6 @@
-import { pipeline } from 'stream/promises';
-import fs from 'fs';
-import path from 'path';
 import axios from 'axios';
+import fs from 'fs';
+import { pipeline } from 'stream/promises';
 
 // 配置参数
 const owner = 'udb-org';      // 例如：google

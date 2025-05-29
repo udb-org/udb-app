@@ -1,6 +1,5 @@
 // AICodeCompleter.ts
 import * as monaco from "monaco-editor";
-import OpenAI from "openai";
 
 export class AIInline {
   private editor: monaco.editor.IStandaloneCodeEditor;

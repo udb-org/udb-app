@@ -1,12 +1,11 @@
-import {
-    useState,
-    useRef,
+import React, {
+    memo,
     useCallback,
-    useEffect,
     useDeferredValue,
-    memo
+    useEffect,
+    useRef,
+    useState
 } from 'react';
-import React from 'react';
 // 默认高度缓存项
 const defaultHeight = 50;
 const VirtualList = ({

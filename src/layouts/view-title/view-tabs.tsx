@@ -1,5 +1,12 @@
+import { openMenu } from "@/api/menu";
 import { openView, sqlAction, tableAction } from "@/api/view";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { saveView, useTabStore } from "@/store/tab-store";
 import { ViewParams } from "@/types/view";
 import { cn } from "@/utils/tailwind";
@@ -10,23 +17,14 @@ import {
   HardDriveDownloadIcon,
   HouseIcon,
   MoreHorizontalIcon,
-  PlayIcon,
   PlusIcon,
   Table2,
   TableIcon,
-  XIcon,
+  XIcon
 } from "lucide-react";
 import React, { useEffect } from "react";
-import { ViewBreadcrumb } from "./view-breadcrumb";
 import { ViewSQLActions } from "../view-sql";
-import { openMenu } from "@/api/menu";
 import { ViewTableActions } from "../view-table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { ViewTablesActions } from "../view-tables";
 export function ViewTabs() {
   return (
@@ -189,7 +187,7 @@ export function ViewTabsItem(props: {
     >
       <div
         className={cn(
-          "hover:bg-muted text-primary flex h-[24px] cursor-pointer items-center gap-1 rounded-lg border border-transparent px-[8px] text-sm",
+          "hover:bg-muted  flex h-[24px] cursor-pointer items-center gap-1 rounded-lg border border-transparent px-[8px] text-sm",
 
           props.isActive && "bg-muted border-foreground/10",
         )}

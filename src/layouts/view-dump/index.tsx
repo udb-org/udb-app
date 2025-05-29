@@ -1,31 +1,11 @@
 import React, { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog";
 
-import { Label } from "@/components/ui/label";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 
-import {
-    Form,
-    FormControl,
-    FormDescription,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Progress } from "@/components/ui/progress";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
     Select,
     SelectContent,
@@ -33,16 +13,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { saveAndOpenConnection, testConnection } from "@/api/storage";
-import { ConnectionConfig, IDataBaseTable } from "@/types/db";
-import { Textarea } from "@/components/ui/textarea";
-import { addDatabase } from "@/api/db";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Checkbox } from "@/components/ui/checkbox";
-import { getView } from "@/store/tab-store";
 import { Separator } from "@/components/ui/separator";
+import { getView } from "@/store/tab-store";
+import { IDataBaseTable } from "@/types/db";
 import { toast } from "sonner";
-import { Progress } from "@/components/ui/progress";
 
 
 export default function ViewDump(

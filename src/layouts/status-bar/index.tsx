@@ -1,21 +1,16 @@
 import { Button } from "@/components/ui/button";
 import {
   Popover,
-  PopoverTrigger,
   PopoverContent,
+  PopoverTrigger,
 } from "@/components/ui/popover";
-import { ISqlResult } from "@/types/db";
 import { ITask } from "@/types/task";
-
 import {
   CheckCircleIcon,
   CircleXIcon,
   DatabaseIcon,
   GithubIcon,
-  ListTodo,
-  ListTodoIcon,
-  LoaderIcon,
-  XCircleIcon,
+  LoaderIcon
 } from "lucide-react";
 import React, { useEffect } from "react";
 export default function StatusBar() {
@@ -51,7 +46,7 @@ export default function StatusBar() {
     window.api.on("status:tasked", tasked);
 
     //start server
-    // window.api.send("db:startServer");
+    window.api.send("db:startServer");
 
     return () => {
       window.api.removeAllListeners("status:tasked");

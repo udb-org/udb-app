@@ -1,26 +1,22 @@
-import React, { useEffect, useMemo } from "react";
-import OpenAI from "openai";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { useAiStore } from "@/store/ai-store";
+import { useTabStore } from "@/store/tab-store";
+import { AiMode } from "@/types/ai";
+import { ViewType } from "@/types/view";
+import { cn } from "@/utils/tailwind";
+import { SiIcon } from "@icons-pack/react-simple-icons";
 import {
   MessageCirclePlusIcon,
-  MoreHorizontalIcon,
   SendIcon,
-  StopCircleIcon,
-  UserIcon,
+  UserIcon
 } from "lucide-react";
-import VirtualList from "@/components/virtual-scroll";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/utils/tailwind";
-import { ModelSelect } from "./model-select";
-import { Textarea } from "@/components/ui/textarea";
-import { SiIcon } from "@icons-pack/react-simple-icons";
-import { Message } from "./message";
-import { AiMode } from "@/types/ai";
+import OpenAI from "openai";
+import React, { useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { ContextSelect } from "./context-select";
-import { useTabStore } from "@/store/tab-store";
-import { ViewParams, ViewType } from "@/types/view";
-import { useAiStore } from "@/store/ai-store";
+import { Message } from "./message";
+import { ModelSelect } from "./model-select";
 
 export function AssistantPanel() {
   const [focused, setFocused] = React.useState<boolean>(false);

@@ -1,14 +1,12 @@
-import React, { useEffect } from "react";
-import { ViewTitle } from "../view-title";
-import ViewSQL from "../view-sql";
 import { useTabStore } from "@/store/tab-store";
-import ViewTable from "../view-table";
+import React from "react";
 import ViewData from "../view-data";
-import { ViewWebcome } from "../view-welcome";
-import ViewText from "../view-text";
-import { useLayoutStore } from "@/store/layout-store";
-import ViewTables from "../view-tables";
 import ViewDump from "../view-dump";
+import ViewSQL from "../view-sql";
+import ViewTable from "../view-table";
+import ViewTables from "../view-tables";
+import ViewText from "../view-text";
+import { ViewWebcome } from "../view-welcome";
 /**
  *
  * View 容器
