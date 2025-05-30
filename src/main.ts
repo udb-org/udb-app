@@ -8,11 +8,11 @@
  */
 import { app, BrowserWindow, ipcMain } from "electron";
 import path from "path";
-// import {
-//   installExtension,
-//   REACT_DEVELOPER_TOOLS,
-// } from "electron-devtools-installer";
-import { registerListeners } from "./listeners";
+import {
+  installExtension,
+  REACT_DEVELOPER_TOOLS,
+} from "electron-devtools-installer";
+import { registerListeners, unregisterListeners } from "./listeners";
 function createWindow() {
   const preload = path.join(__dirname, "preload.js");
   const mainWindow = new BrowserWindow({
@@ -30,8 +30,9 @@ function createWindow() {
       y: 12,
     },
   });
+
   registerListeners(mainWindow);
-  // mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
   } else {
@@ -39,12 +40,15 @@ function createWindow() {
       path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`),
     );
   }
- 
+  mainWindow.on("closed", () => {
+    unregisterListeners();
+  });
+
 }
 async function installExtensions() {
   try {
-    // const result = await installExtension(REACT_DEVELOPER_TOOLS);
-    // console.log(`Extensions installed successfully: ${result.name}`);
+    const result = await installExtension(REACT_DEVELOPER_TOOLS);
+    console.log(`Extensions installed successfully: ${result.name}`);
   } catch {
     console.error("Failed to install extensions");
   }
@@ -57,8 +61,6 @@ app.on("window-all-closed", () => {
 });
 app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) {
-    //Remove listeners
-    ipcMain.removeAllListeners();
     createWindow();
   }
 });

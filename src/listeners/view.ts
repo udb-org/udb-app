@@ -3,6 +3,11 @@ import { DialogParams } from "@/types/dialog";
 import { ViewParams } from "@/types/view";
 import { ipcMain } from "electron";
 import { argv } from "process";
+export function unregisterViewListeners() {
+  ipcMain.removeAllListeners("view:open");
+  ipcMain.removeAllListeners("view:sql-action");
+  ipcMain.removeAllListeners("view:table-action");
+}
 let viewsCounter:Map<string,number>=new Map();
 export function registerViewListeners(mainWindow: Electron.BrowserWindow) {
   //打开窗口

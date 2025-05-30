@@ -18,6 +18,33 @@ import { getCurrentConnection } from "./storage";
 import { addHistory } from "@/services/history";
 import { ITask } from "@/types/task";
 
+export function unregisterDbListeners() {
+  // Unregister all 'handle' and 'on' listeners related to the database operations
+  ipcMain.removeHandler("db:startServer");
+  ipcMain.removeHandler("db:getDatabases");
+  ipcMain.removeAllListeners("db:selectDatabase");
+  ipcMain.removeHandler("db:getTables");
+  ipcMain.removeHandler("db:getViews");
+  ipcMain.removeHandler("db:getFunctions");
+  ipcMain.removeHandler("db:getProcedures");
+  ipcMain.removeHandler("db:getColumns");
+  ipcMain.removeHandler("db:getIndexes");
+  ipcMain.removeHandler("db:getTriggers");
+  ipcMain.removeHandler("db:invokeSql");
+  ipcMain.removeAllListeners("db:execSql");
+  ipcMain.removeAllListeners("db:addDatabase");
+  ipcMain.removeAllListeners("db:delDatabase");
+  ipcMain.removeAllListeners("db:dropTable");
+  ipcMain.removeHandler("db:exec");
+  ipcMain.removeHandler("db:result");
+  ipcMain.removeHandler("db:stop");
+  ipcMain.removeHandler("db:commit");
+  ipcMain.removeHandler("db:rollback");
+  ipcMain.removeHandler("db:getTasks");
+  ipcMain.removeHandler("db:dump");
+  ipcMain.removeHandler("db:dump_result");
+  ipcMain.removeHandler("db:dump_stop");
+}
 let currentDataSource: IDataSource | null = null;
 
 export function getCurrentDataSource() {
@@ -25,27 +52,27 @@ export function getCurrentDataSource() {
 }
 
 export function registerDbListeners(mainWindow: Electron.BrowserWindow) {
- 
- 
+
+
   ipcMain.once("db:startServer", (event) => {
     console.log("db:startServer");
-    const task:ITask={
-      id:"startServer",
-      status:"running",
-      message:"Starting server...",
-      startTime:new Date().toLocaleString(),
-      endTime:"",
+    const task: ITask = {
+      id: "startServer",
+      status: "running",
+      message: "Starting server...",
+      startTime: new Date().toLocaleString(),
+      endTime: "",
     }
-    runServer((status,message)=>{
-      mainWindow.webContents.send("status:tasked",{
+    runServer((status, message) => {
+      mainWindow.webContents.send("status:tasked", {
         ...task,
-        status:status,
-        message:message
+        status: status,
+        message: message
       });
     });
-  
+
   });
- 
+
   //查询所有的数据库
   ipcMain.handle("db:getDatabases", async (event) => {
     if (currentDataSource == null) {
@@ -412,7 +439,7 @@ export function registerDbListeners(mainWindow: Electron.BrowserWindow) {
     return db_getTasks();
   });
 
-  ipcMain.handle("db:dump",async (event,args) => {
+  ipcMain.handle("db:dump", async (event, args) => {
     const conf = getCurrentConnection();
     if (conf == null) {
       dialog.showErrorBox("Error", "Please select a connection!");
@@ -428,21 +455,21 @@ export function registerDbListeners(mainWindow: Electron.BrowserWindow) {
       password: conf.password,
       database: args.database,
     };
-    const arg={
+    const arg = {
       ...args,
-      datasource:JSON.stringify(datasource)
+      datasource: JSON.stringify(datasource)
     }
-    const res= await db_dump(arg);
-    console.log("db:dump",res);
+    const res = await db_dump(arg);
+    console.log("db:dump", res);
     return res;
   });
   ipcMain.handle("db:dump_result", async (event, id: string) => {
-    const res= await db_dump_result(id);
-    console.log("db:dump_result",res);
+    const res = await db_dump_result(id);
+    console.log("db:dump_result", res);
     return res;
   });
   ipcMain.handle("db:dump_stop", (event, id: string) => {
     return db_dump_stop(id);
-    
+
   })
 }

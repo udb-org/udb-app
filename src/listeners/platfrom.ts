@@ -1,5 +1,9 @@
 import { ipcMain } from "electron";
 
+export function unregisterPlatformListeners() {
+  ipcMain.removeHandler("platfrom:getInfo");
+  ipcMain.removeAllListeners("platfrom:open");
+}
 export function registerPlatformListeners(mainWindow: Electron.BrowserWindow) {
   ipcMain.handle("platfrom:getInfo", async () => {
     return {

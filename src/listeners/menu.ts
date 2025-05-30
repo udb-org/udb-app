@@ -4,6 +4,9 @@ import { DialogParams } from "@/types/dialog";
 import { ViewParams } from "@/types/view";
 import { ipcMain, Menu } from "electron";
 let viewsCounter: Map<string, number> = new Map();
+export function unregisterMenuListeners() {
+  ipcMain.removeAllListeners("menu:open");
+}
 export function registerMenuListeners(mainWindow: Electron.BrowserWindow) {
   //打开菜单
   ipcMain.on("menu:open", (event, args: IMenuParams) => {

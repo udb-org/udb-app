@@ -1,7 +1,13 @@
 import { ask, clearHistory, fixSql, optimizeSql } from "@/services/ai";
 import { ipcMain } from "electron";
 import { AiMode } from "@/types/ai";
-
+export  function unregisterAiListeners() {
+  ipcMain.removeAllListeners("ai:ask");
+  ipcMain.removeAllListeners("ai:insert");
+  ipcMain.removeAllListeners("ai:clearHistory");
+  ipcMain.removeAllListeners("ai:optimizeSql");
+  ipcMain.removeAllListeners("ai:fixSql");
+}
 export function registerAiListeners(mainWindow: Electron.BrowserWindow) {
   //监听ask
   ipcMain.on(

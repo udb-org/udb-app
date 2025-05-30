@@ -1,6 +1,13 @@
 import { DialogParams } from "@/types/dialog";
 import { dialog, ipcMain } from "electron";
 
+export function unregisterDialogListeners() {
+
+  ipcMain.removeHandler("dialog:openFolder");
+  ipcMain.removeAllListeners("dialog:opening");
+
+}
+
 export function registerDialogListeners(mainWindow: Electron.BrowserWindow) {
   ipcMain.on("dialog:open", (event, args:DialogParams) => {
     console.log("dialog:open",args);

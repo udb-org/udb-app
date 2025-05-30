@@ -3,7 +3,9 @@ import { getHistory } from "@/services/history";
 import { ipcMain } from "electron";
 import { getCurrentDataSource } from "./db";
 import { getCurrentConnection } from "./storage";
-
+export function unregisterHistoryListeners() {
+    ipcMain.removeAllListeners("history:get");
+}
 export function registerHistoryListeners(mainWindow: Electron.BrowserWindow) {
     //获取历史记录
     ipcMain.on("history:get", (event, args) => {

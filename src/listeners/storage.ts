@@ -7,6 +7,32 @@ import { ViewParams } from "@/types/view";
 import { ipcMain, dialog } from "electron";
 import * as fs from 'fs';
 
+export function unregisterStorageListeners() {
+  ipcMain.removeHandler("storage:init");
+// Remove handlers for 'handle' type IPC events
+ipcMain.removeHandler("storage:init");
+ipcMain.removeHandler("storage:setConnectionConfig");
+ipcMain.removeHandler("storage:testConnection");
+ipcMain.removeHandler("storage:getRecentProjects");
+ipcMain.removeHandler("storage:setRecentProjects");
+ipcMain.removeHandler("storage:openFolder");
+ipcMain.removeHandler("storage:getConfig");
+ipcMain.removeHandler("storage:setConfig");
+ipcMain.removeHandler("storage:getConfigItem");
+
+// Remove listeners for 'on' type IPC events
+ipcMain.removeAllListeners("storage:getConnectionConfig");
+ipcMain.removeAllListeners("storage:saveAndOpenConnection");
+ipcMain.removeAllListeners("storage:openProject");
+ipcMain.removeAllListeners("storage:openFile");
+ipcMain.removeAllListeners("storage:openConnection");
+ipcMain.removeAllListeners("storage:deleteConnection");
+ipcMain.removeAllListeners("storage:getModels");
+ipcMain.removeAllListeners("storage:addModel");
+ipcMain.removeAllListeners("storage:deleteModel");
+  
+}
+
 //当前打开的连接
 let currentConnection: ConnectionConfig | null = null;
 

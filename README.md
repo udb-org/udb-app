@@ -20,7 +20,7 @@ UDB is a powerful database management tool built on Electron.js, Shadcn, and AI 
 ## Installation
 1. Clone the repository:
 ```bash
- git clone https://github.com/your - repo/udb-app.git
+ git clone https://github.com/udb-org/udb-app.git
 ```
 2. Navigate to the project directory:
 ```bash
@@ -49,6 +49,15 @@ If you'd like to contribute to UDB, please follow these steps:
 3. Commit your changes (`git commit -m 'Add some feature'`).
 4. Push to the branch (`git push origin feature/your - feature`).
 5. Open a pull request.
+
+
+## Documentation
+### English
+- [README](README.md)
+
+### 中文
+- [自述](/docs/zh/README.md)
+
 
 ## Frequently Asked Questions
 ### Troubleshooting: GitHub Connection Timeout for `udb-java` Download
@@ -79,7 +88,6 @@ After downloading the appropriate JDK package, follow these steps:
 2. **Move the extracted JDK**: Move the extracted JDK directory to the `.udb/server/java` directory under your user directory. For example, on a Mac, it might be `/Users/YourName/.udb/server/java/jdk-21.0.2.jdk`.
 
 3. **Restart the Application**: After completing the above steps, restart the UDB application for the changes to take effect.
-
 
 
 ## License
