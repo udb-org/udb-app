@@ -39,7 +39,6 @@ const config: ForgeConfig = {
         },
       ],
     }),
-
     new FusesPlugin({
       version: FuseVersion.V1,
       [FuseV1Options.RunAsNode]: false,
@@ -51,5 +50,4 @@ const config: ForgeConfig = {
     }),
   ],
 };
-
 export default config;

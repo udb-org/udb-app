@@ -4,7 +4,6 @@ import {
   LinkIcon
 } from "lucide-react"
 import * as React from "react"
-
 import { getConnectionConfig, openConnection } from "@/api/storage"
 import { Button } from "@/components/ui/button"
 import {
@@ -22,22 +21,15 @@ import { DialogType } from "@/types/dialog"
 import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { openDialog } from "../dialog"
-
-
 export function DropdownMenuConnect() {
   const [connections, setConnections] = React.useState<ConnectionConfig[]>([]);
   const [currentConnection, setCurrentConnection] = React.useState<ConnectionConfig | null>(null);
   useEffect(() => {
-
     const getConnectionConfiging = (connections: ConnectionConfig[]) => {
       setConnections(connections);
-
     }
     window.api.on("storage:getConnectionConfiging", getConnectionConfiging);
-
-
     getConnectionConfig();
-
     const openConnectioning = (conf: ConnectionConfig) => {
       console.log("openConnectioning", conf)
       setCurrentConnection(conf);
@@ -75,17 +67,14 @@ export function DropdownMenuConnect() {
         </DropdownMenuGroup>
         <DropdownMenuLabel>{t("title.bar.recent.connection")}</DropdownMenuLabel>
         <DropdownMenuSeparator />
-
         <ScrollArea className="w-full h-[200px]">
           <ScrollBar orientation="vertical" />
           <DropdownMenuGroup >
-
             {
               connections.map((conf) =>
                 <DropdownMenuItem key={conf.name} onClick={() => {
                   setCurrentConnection(conf);
                   openConnection(conf);
-
                 }}>
                   <div className="flex items-center gap-2">
                     <div className="bg-amber-800 rounded-md p-[2px] w-[32px] h-[32px] flex items-center justify-center">
@@ -103,14 +92,12 @@ export function DropdownMenuConnect() {
                       {
                         currentConnection && currentConnection.name == conf.name && <CheckIcon size={14} className="text-primary" />
                       }
-
                     </div>
                   </div>
                 </DropdownMenuItem>)
             }
           </DropdownMenuGroup>
         </ScrollArea>
-
       </DropdownMenuContent>
     </DropdownMenu>
   )

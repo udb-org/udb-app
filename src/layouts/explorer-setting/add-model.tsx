@@ -27,7 +27,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Pen, PenIcon, TrashIcon } from "lucide-react";
+import { Pen, PenIcon, PlusIcon, TrashIcon } from "lucide-react";
 import { SettingDescription, SettingTitle, SettingTopic } from "./common";
 import { Button } from "@/components/ui/button";
 import {
@@ -46,7 +46,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Separator } from "@/components/ui/separator";
 import { useTranslation } from "react-i18next";
-
+import { cn } from "@/utils/tailwind";
 const formSchema = z.object({
   provider: z.string().min(2, {
     message: "Provider is required",
@@ -59,11 +59,11 @@ const formSchema = z.object({
     message: "API Key is required",
   }),
 });
-
 export function AddModelSetting(props: {
   providers: any[];
-  onSuccess?: (model:any) => void;
+  onSuccess?: (model: any) => void;
   onCancel?: () => void;
+  hasLabel?: boolean;
 }) {
   const [models, setModels] = React.useState<any[]>([]);
   const form = useForm<z.infer<typeof formSchema>>({
@@ -75,7 +75,7 @@ export function AddModelSetting(props: {
       customModel: "",
     },
   });
-  const providers=props.providers;
+  const providers = props.providers;
   const [provider, setProvider] = React.useState<string>("");
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof formSchema>) {
@@ -84,16 +84,13 @@ export function AddModelSetting(props: {
     console.log(values);
     props.onSuccess?.(
       {
-         ...values,
+        ...values,
         key: values.provider + ":" + values.model,
         baseUrl: providers.find((provider) => provider.name === values.provider)
           .baseUrl,
       }
     );
     setOpen(false);
-    
-
-
     // window.api.send(
     //   "storage:addModel",
     //   JSON.stringify({
@@ -106,14 +103,20 @@ export function AddModelSetting(props: {
   }
   const [isCustom, setIsCustom] = React.useState(false);
   const [open, setOpen] = React.useState(false);
-
-
-  const {t}=useTranslation();
-
+  const { t } = useTranslation();
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant={"outline"}>{t("settings.ai.add")}</Button>
+        <Button variant={"outline"} size={props.hasLabel ? "default" : "icon"}
+
+          className={
+            cn(
+              props.hasLabel ? "w-full justify-start" : "h-5 w-5",
+            )
+          }>
+          <PlusIcon size={12} ></PlusIcon>
+          {props.hasLabel && "Add Model"}
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
@@ -158,7 +161,6 @@ export function AddModelSetting(props: {
                 </FormItem>
               )}
             />
-
             <FormField
               control={form.control}
               name="model"
@@ -227,7 +229,6 @@ export function AddModelSetting(props: {
                           const pro = providers.find(
                             (pro) => pro.name === provider,
                           );
-
                           window.api.send("platfrom:open", {
                             path: pro.getKeyUrl,
                           });

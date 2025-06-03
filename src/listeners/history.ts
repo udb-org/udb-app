@@ -19,6 +19,7 @@ export function registerHistoryListeners(mainWindow: Electron.BrowserWindow) {
             return;
         }
         const history = getHistory(currentConnection.name, currentDataSource.database);
+        console.log("history", history);
         mainWindow.webContents.send("history:geted", history);
     });
 }

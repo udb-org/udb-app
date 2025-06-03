@@ -1,48 +1,34 @@
 @import "tailwindcss";
-
 @plugin 'tailwindcss-animate';
-
 @custom-variant dark (&:is(.dark *));
-
 @theme {
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
-
   --color-primary: hsl(var(--primary));
   --color-primary-foreground: hsl(var(--primary-foreground));
-
   --color-secondary: hsl(var(--secondary));
   --color-secondary-foreground: hsl(var(--secondary-foreground));
-
   --color-destructive: hsl(var(--destructive));
   --color-destructive-foreground: hsl(var(--destructive-foreground));
-
   --color-muted: hsl(var(--muted));
   --color-muted-foreground: hsl(var(--muted-foreground));
-
   --color-accent: hsl(var(--accent));
   --color-accent-foreground: hsl(var(--accent-foreground));
-
   --color-popover: hsl(var(--popover));
   --color-popover-foreground: hsl(var(--popover-foreground));
-
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));
-
   --font-sans: Geist, sans-serif;
   --font-mono: Geist Mono, monospace;
   --font-tomorrow: Tomorrow, sans-serif;
-
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
-
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
-
   @keyframes accordion-down {
     from {
       height: 0;
@@ -60,7 +46,6 @@
     }
   }
 }
-
 @utility container {
   margin-inline: auto;
   padding-inline: 2rem;
@@ -75,47 +60,39 @@
 @layer base {
   @font-face {
     font-family: "Geist";
-
     src: url("../assets/fonts/geist/geist.ttf") format("truetype");
   }
   @font-face {
     font-family: "Geist Mono";
     font-display: swap;
-
     src: url("../assets/fonts/geist-mono/geist-mono.ttf") format("truetype");
   }
-
   @font-face {
     font-family: "Tomorrow";
     font-weight: 400;
     font-style: normal;
-
     src: url("../assets/fonts/tomorrow/tomorrow-regular.ttf") format("truetype");
   }
   @font-face {
     font-family: "Tomorrow";
     font-weight: 400;
     font-style: italic;
-
     src: url("../assets/fonts/tomorrow/tomorrow-italic.ttf") format("truetype");
   }
   @font-face {
     font-family: "Tomorrow";
     font-weight: 700;
     font-style: normal;
-
     src: url("../assets/fonts/tomorrow/tomorrow-bold.ttf") format("truetype");
   }
   @font-face {
     font-family: "Tomorrow";
     font-weight: 700;
     font-style: italic;
-
     src: url("../assets/fonts/tomorrow/tomorrow-bold-italic.ttf")
       format("truetype");
   }
 } */
-
 @layer base {
   :root {
     --background: 236 20% 95%;
@@ -144,7 +121,6 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
   }
-
   .dark {
     --background: 200 10% 15%;
     --foreground: 210 20% 98%;
@@ -172,7 +148,6 @@
     --chart-5: 340 75% 55%;
   }
 }
-
 @layer base {
   body {
     @apply overflow-hidden;
@@ -185,23 +160,20 @@
     @apply cursor-pointer;
   }
 }
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply  text-foreground;
   }
 }
-
 .app-region {
   -webkit-app-region: drag;
 }
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }
-
 .mac {
   font-family:
     SF Pro Text,
@@ -209,7 +181,6 @@
     BlinkMacSystemFont,
     sans-serif;
 }
-
 .mac:lang(zh-Hans) {
   font-family:
     SF Pro Text,
@@ -219,7 +190,6 @@
     Hiragino Sans GB,
     sans-serif;
 }
-
 .mac:lang(zh-Hant) {
   font-family:
     SF Pro Text,
@@ -228,7 +198,6 @@
     PingFang TC,
     sans-serif;
 }
-
 .mac:lang(ja) {
   font-family:
     SF Pro Text,
@@ -237,7 +206,6 @@
     Hiragino Kaku Gothic Pro,
     sans-serif;
 }
-
 .mac:lang(ko) {
   font-family:
     SF Pro Text,
@@ -248,7 +216,6 @@
     AppleGothic,
     sans-serif;
 }
-
 .windows {
   font-family:
     SF Pro Text,
@@ -256,7 +223,6 @@
     Segoe UI,
     sans-serif;
 }
-
 .windows:lang(zh-Hans) {
   font-family:
     SF Pro Text,
@@ -265,7 +231,6 @@
     Microsoft YaHei,
     sans-serif;
 }
-
 .windows:lang(zh-Hant) {
   font-family:
     SF Pro Text,
@@ -274,7 +239,6 @@
     Microsoft Jhenghei,
     sans-serif;
 }
-
 .windows:lang(ja) {
   font-family:
     SF Pro Text,
@@ -284,7 +248,6 @@
     Meiryo UI,
     sans-serif;
 }
-
 .windows:lang(ko) {
   font-family:
     SF Pro Text,
@@ -294,7 +257,6 @@
     Dotom,
     sans-serif;
 }
-
 .linux {
   font-family:
     SF Pro Text,
@@ -303,7 +265,6 @@
     Droid Sans,
     sans-serif;
 }
-
 .linux:lang(zh-Hans) {
   font-family:
     SF Pro Text,
@@ -315,7 +276,6 @@
     Source Han Sans,
     sans-serif;
 }
-
 .linux:lang(zh-Hant) {
   font-family:
     SF Pro Text,
@@ -327,7 +287,6 @@
     Source Han Sans,
     sans-serif;
 }
-
 .linux:lang(ja) {
   font-family:
     SF Pro Text,
@@ -339,7 +298,6 @@
     Source Han Sans,
     sans-serif;
 }
-
 .linux:lang(ko) {
   font-family:
     SF Pro Text,
@@ -353,15 +311,12 @@
     FBaekmuk Gulim,
     sans-serif;
 }
-
 .mac {
   --monaco-monospace-font: "SF Mono", Monaco, Menlo, Courier, monospace;
 }
-
 .windows {
   --monaco-monospace-font: Consolas, "Courier New", monospace;
 }
-
 .linux {
   --monaco-monospace-font:
     "Ubuntu Mono", "Liberation Mono", "DejaVu Sans Mono", "Courier New",
@@ -379,7 +334,6 @@ body {
   -webkit-user-select: none;
   width: 100%;
 }
-
 /* 状态图标样式 */
 .monaco-editor .line-numbers.state-icon::before {
   display: inline-block;
@@ -390,7 +344,6 @@ body {
   position: relative;
   top: 3px;
 }
-
 /* 不同状态的颜色 */
 .monaco-editor .line-numbers.state-error::before {
   content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="red" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-x-icon lucide-circle-x"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>');
@@ -404,7 +357,6 @@ body {
 .monaco-editor .line-numbers.state-running::before {
   content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="violet" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-loader-icon lucide-loader"><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></svg>');
 }
-
 /* 修改垂直滚动条 */
 .monaco-editor .scrollbar.vertical .slider {
   /* background: #666 !important; */
@@ -417,7 +369,6 @@ body {
   border-radius: 20px !important;
   height: 6px !important;
 }
-
 .ai-inline {
   z-index: 9999;
 }

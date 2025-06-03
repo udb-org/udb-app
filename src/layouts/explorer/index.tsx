@@ -16,7 +16,6 @@ export interface IExplorerParam {
     | string;
   params: any;
 }
-
 export function Explorer() {
   const [params, setParams] = React.useState<IExplorerParam>({
     type: "db",
@@ -31,7 +30,6 @@ export function Explorer() {
       window.api.removeListener("explorer:opening", opening);
     };
   }, []);
-
   return (
     <div className="box-border h-full w-full">
       <ExplorerDb isVisible={params.type === "db"} />

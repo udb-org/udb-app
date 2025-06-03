@@ -1,8 +1,6 @@
 import * as React from "react"
 import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area"
-
 import { cn } from "@/utils/tailwind"
-
 function ScrollArea({
   className,
   children,
@@ -22,11 +20,9 @@ function ScrollArea({
       </ScrollAreaPrimitive.Viewport>
       <ScrollBar />
       <ScrollAreaPrimitive.Corner />
-    
     </ScrollAreaPrimitive.Root>
   )
 }
-
 function ScrollBar({
   className,
   orientation = "vertical",
@@ -53,5 +49,4 @@ function ScrollBar({
     </ScrollAreaPrimitive.ScrollAreaScrollbar>
   )
 }
-
 export { ScrollArea, ScrollBar }

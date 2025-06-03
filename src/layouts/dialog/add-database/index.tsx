@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -10,12 +9,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-
 import { Label } from "@/components/ui/label"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-
 import {
   Form,
   FormControl,
@@ -31,18 +28,14 @@ import { saveAndOpenConnection, testConnection } from "@/api/storage";
 import { ConnectionConfig } from "@/types/db";
 import { Textarea } from "@/components/ui/textarea";
 import { addDatabase } from "@/api/db";
-
 const formSchema = z.object({
   database: z.string().min(1, "Name is required"),
-
 })
 export function AddDatabaseDialog(props: {
   params: any,
   onClose: () => void
 }) {
-
   const [isRunnind, setIsRunning] = useState(false)
-
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -50,7 +43,6 @@ export function AddDatabaseDialog(props: {
       database: "test",
     },
   })
-  
   // 保存配置处理
   const onSubmit=(e:any)=>{
     e.preventDefault();
@@ -70,18 +62,14 @@ export function AddDatabaseDialog(props: {
       if(e.status==="success"){
         props.onClose();
       }
-      
     }
     window.api.on("db:addDatabaseEnd", addDatabaseEnd);
     return () => {
       window.api.removeListener("db:addDatabaseEnd", addDatabaseEnd);
     }
-    
   }, []);
-
   return (
     <Dialog open={true} onOpenChange={props.onClose}>
-
       <DialogContent className="w-[600px]">
         <DialogHeader>
           <DialogTitle>Add Database</DialogTitle>
@@ -104,14 +92,11 @@ export function AddDatabaseDialog(props: {
                 </FormItem>
               )}
             />
-           
             <div className="flex gap-2 justify-end">
-              
               <Button type="submit" size={"sm"} disabled={isRunnind}>Add</Button>
             </div>
           </form>
         </Form>
-
       </DialogContent>
     </Dialog>
   )

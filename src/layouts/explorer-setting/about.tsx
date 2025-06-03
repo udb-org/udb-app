@@ -26,6 +26,5 @@ export function AboutSetting() {
                 <Button size={"sm"} variant={"link"} className="">
                     Open Source License
                 </Button>
-
     </div>
 }

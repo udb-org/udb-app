@@ -1,8 +1,8 @@
 "use client";
-
 import * as React from "react";
 import {
   ArrowUpCircle,
+  BrainIcon,
   CheckCircle2,
   Circle,
   HelpCircle,
@@ -10,7 +10,6 @@ import {
   PlusIcon,
   XCircle,
 } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -29,13 +28,11 @@ import { cn } from "@/utils/tailwind";
 import { Separator } from "@/components/ui/separator";
 import { AddModelSetting } from "../explorer-setting/add-model";
 import { AppConfig } from "@/api/config";
-
 type Status = {
   value: string;
   label: string;
   icon: LucideIcon;
 };
-
 export function ModelSelect(props: { onSelect: (model: any) => void }) {
   const [open, setOpen] = React.useState(false);
   const [selectedStatus, setSelectedStatus] = React.useState<any | null>();
@@ -45,17 +42,16 @@ export function ModelSelect(props: { onSelect: (model: any) => void }) {
   const [models, setModels] = React.useState<any[]>([]);
   const [providers, setProviders] = React.useState<any[]>([]);
   React.useEffect(() => {
-    AppConfig.getAiModels().then((models:any) => {
+    AppConfig.getAiModels().then((models: any) => {
       setModels(models);
-      AppConfig.getAiChatModel().then((model:any) => {
-        setSelectedStatus(models.find((m:any) => m.key === model) || null);
+      AppConfig.getAiChatModel().then((model: any) => {
+        setSelectedStatus(models.find((m: any) => m.key === model) || null);
       });
     });
-    AppConfig.getAiProviders().then((providers:any) => {
+    AppConfig.getAiProviders().then((providers: any) => {
       setProviders(providers);
     });
   }, []);
-
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -74,47 +70,42 @@ export function ModelSelect(props: { onSelect: (model: any) => void }) {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="p-0">
-        <Command>
-          <CommandList>
-            <CommandEmpty>No results found.</CommandEmpty>
-            <CommandGroup>
-              {models.map((status) => (
-                <CommandItem
-                  key={status.key}
-                  value={status.key}
-                  onSelect={(value) => {
-                    setSelectedStatus(
-                      models.find((m) => m.key === value) || null,
-                    );
-                    setOpen(false);
-                  }}
-                >
-                  {/* <status.icon
-                    className={cn(
-                      "mr-1 h-4 w-4",
-                      status.value === selectedStatus?.value
-                        ? "opacity-100"
-                        : "opacity-40"
-                    )}
-                  /> */}
-                  <span className="text-sm">
-                    {status.provider}:{status.model}
-                  </span>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
+        <div className="p-2 text-sm">
+          <div>
+            Models
+          </div>
+          <div className="space-y-1">
+            {models.map((model, i) => <Button key={i}
+            variant={"outline"}
+            className="w-full justify-start"
+              onClick={() => { 
+                setSelectedStatus(
+                  model
+                );
+                setOpen(false);
+              }}
+            >
+              <BrainIcon size={12} className="mr-2" />
+              {model.provider}:{model.model}
+
+            </Button>)}
+          </div>
+        </div>
+
         <Separator></Separator>
-        <div className="ml-1 p-1 text-sm">Custom Model</div>
-        <AddModelSetting providers={providers} onSuccess={() => {
-          let _models = [...models];
-          _models.push(selectedStatus);
-          setModels(_models);
-          AppConfig.saveConfig({
-            "ai.models": _models,
-          });
-        }} onCancel={() => {}} />
+        <div className="p-2">
+          <div className="ml-1 p-1 text-sm">Custom Model
+
+          </div>
+          <AddModelSetting hasLabel providers={providers} onSuccess={() => {
+            let _models = [...models];
+            _models.push(selectedStatus);
+            setModels(_models);
+            AppConfig.saveConfig({
+              "ai.models": _models,
+            });
+          }} onCancel={() => { }} />
+        </div>
       </PopoverContent>
     </Popover>
   );

@@ -1,5 +1,4 @@
 import { defineConfig, devices } from "@playwright/test";
-
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
@@ -13,7 +12,6 @@ export default defineConfig({
   use: {
     trace: "on-first-retry",
   },
-
   projects: [
     {
       name: "chromium",

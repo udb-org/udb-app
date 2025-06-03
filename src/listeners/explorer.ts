@@ -1,6 +1,5 @@
 import { DialogParams } from "@/types/dialog";
 import { ipcMain } from "electron";
-
 export function unregisterExplorerListeners() {
   ipcMain.removeAllListeners("explorer:opening");
 }

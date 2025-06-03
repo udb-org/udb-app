@@ -6,13 +6,15 @@
  * @date 2025/04/21
  * @version 1.0.0
  */
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain, nativeTheme } from "electron";
 import path from "path";
 import {
   installExtension,
   REACT_DEVELOPER_TOOLS,
 } from "electron-devtools-installer";
 import { registerListeners, unregisterListeners } from "./listeners";
+import { getConfigItem } from "./services/storage";
+import { getThemeBg } from "./listeners/app";
 function createWindow() {
   const preload = path.join(__dirname, "preload.js");
   const mainWindow = new BrowserWindow({
@@ -24,13 +26,13 @@ function createWindow() {
       nodeIntegrationInSubFrames: false,
       preload: preload,
     },
+    backgroundColor:getThemeBg(),
     titleBarStyle: "hidden",
     trafficLightPosition: {
       x: 10,
       y: 12,
     },
   });
-
   registerListeners(mainWindow);
   mainWindow.webContents.openDevTools();
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
@@ -43,7 +45,6 @@ function createWindow() {
   mainWindow.on("closed", () => {
     unregisterListeners();
   });
-
 }
 async function installExtensions() {
   try {

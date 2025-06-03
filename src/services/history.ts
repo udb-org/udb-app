@@ -1,7 +1,6 @@
 //历史记录管理
 import * as fs from 'fs';
 import * as path from 'path';
-
 /**
  * 检查和创建目录
  */
@@ -22,8 +21,6 @@ const historyFolderPath = path.join(udbFolderPath, 'history');
     }
     return true;
 }
-
-
 /**
  * 获取历史记录
  * @param connectionName 
@@ -78,5 +75,4 @@ const historyFolderPath = path.join(udbFolderPath, 'history');
             encoding:'utf-8'
         },()=>{});
     }
-
 }

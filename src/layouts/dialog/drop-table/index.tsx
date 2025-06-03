@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,12 +9,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-
 import { Label } from "@/components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-
 import {
   Form,
   FormControl,
@@ -37,7 +34,6 @@ import { saveAndOpenConnection, testConnection } from "@/api/storage";
 import { ConnectionConfig } from "@/types/db";
 import { Textarea } from "@/components/ui/textarea";
 import { addDatabase, deleteDatabase, dropTable } from "@/api/db";
-
 export function DropTableDialog(props: { params: any; onClose: () => void }) {
   const [isExpand, setIsExpand] = useState(false);
   const formSchema = z.object({
@@ -110,7 +106,6 @@ export function DropTableDialog(props: { params: any; onClose: () => void }) {
                 </FormItem>
               )}
             />
-
             <div className="flex justify-end gap-2">
               <Button type="submit" disabled={isRunnind} size={"sm"}>
                 Drop

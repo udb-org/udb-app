@@ -5,6 +5,7 @@ export enum DialogType {
   DeleteDatabase = "deleteDatabase",
   DropTable = "dropTable",
   ExportDatabase = "exportDatabase",
+  AddAgent = "addAgent",
 }
 export interface DialogParams {
   type: DialogType;

@@ -14,7 +14,6 @@ import { Popover, PopoverContent } from "./ui/popover";
 import { Dialog, DialogContent, DialogOverlay } from "./ui/dialog";
 import { Separator } from "./ui/separator";
 import { Input } from "./ui/input";
-
 export interface IVirtualTreeItem {
   name: string;
   isFolder: boolean;
@@ -54,9 +53,7 @@ export function VirtualTree(props: {
     }
   }, [props.data]);
   const [rows, setRows] = React.useState<IVirtualTreeRow[]>([]);
-
   const [selectedRow, setSelectedRow] = React.useState<IVirtualTreeRow>();
-
   /**
    * 转换items为rows
    *
@@ -93,7 +90,6 @@ export function VirtualTree(props: {
     const _rows = transformItems(items);
     setRows(_rows);
   }, [items]);
-
   /**
    * 更新items
    * @param parentPath
@@ -174,7 +170,6 @@ export function VirtualTree(props: {
       }
     }
   }
-
   /**
    * 点击行
    */
@@ -189,7 +184,6 @@ export function VirtualTree(props: {
       } else {
         row.expand = true;
       }
-
       if (row.expand) {
         if (props.onLoad) {
           props.onLoad(row.path).then((_items: IVirtualTreeItem[]) => {
@@ -204,11 +198,9 @@ export function VirtualTree(props: {
       console.log("打开文件", row.path);
     }
   }
-
   const [showPreview, setShowPreview] = React.useState(false);
   const [showRename, setShowRename] = React.useState(false);
   const [renameValue, setRenameValue] = React.useState("");
-
   /**
    * 重命名完成
    *
@@ -236,7 +228,6 @@ export function VirtualTree(props: {
       }
     }
   }
-
   return (
     <>
       <VirtualList
@@ -347,7 +338,6 @@ export function VirtualTree(props: {
           </div>
         )}
       ></VirtualList>
-
       {showPreview && (
         <div
           className="bg-background/20 fixed top-0 left-0 z-20 flex h-screen w-screen items-center justify-center"

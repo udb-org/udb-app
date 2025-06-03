@@ -1,15 +1,18 @@
 // AI Service
-import OpenAI from "openai";
-import { executeSql } from "./db-client";
-import { getCurrentConnection } from "@/listeners/storage";
 import { getCurrentDataSource } from "@/listeners/db";
-import { dialog } from "electron";
-import { boolean } from "zod";
-import { AiMode } from "@/types/ai";
+import { AiAgent } from "@/types/ai";
 import { getTableNames } from "@/utils/sql";
+import OpenAI from "openai";
+import { ChatCompletionTool } from "openai/resources/chat";
+import { executeSql } from "./db-client";
+import { IMCPServer } from "./mcp/mcp-server";
+import { SqlMcpServer } from "./mcp/sql-server";
+import { getConfigItem } from "./storage";
 
 let history: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [];
-
+const mcpServers:IMCPServer[]=[
+  new SqlMcpServer()
+];
 // Clear history records
 export function clearHistory() {
   history = [];
@@ -22,8 +25,8 @@ export function clearHistory() {
 export async function ask(
   input: string,
   model: any,
-  mode: AiMode,
   context: string,
+  agent: string|null,
   sender: (content: string, finished: boolean) => void,
 ) {
   let message: OpenAI.Chat.Completions.ChatCompletionMessageParam = {
@@ -37,7 +40,7 @@ export async function ask(
   history.push(message);
   // Call internal function
   let lastFunction = "";
-  askInner(input, model, messages, mode, lastFunction, context, sender);
+  askInner(input, model, messages, lastFunction, context,agent, sender);
 }
 /**
  * Internal ask function
@@ -49,22 +52,76 @@ export async function askInner(
   input: string,
   model: any,
   messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[],
-  mode: AiMode,
+
   lastFunction: string,
   context: string,
+  agent: string|null,
   sender: (content: string, finished: boolean) => void,
 ) {
-  const _messages: any = [
-    ...messages,
-    {
+  console.log("askInner", 
+    agent,sender
+  );
+  let _messages: any = [
+    ...messages
+  ];
+  // Get tools
+  let agentTools:ChatCompletionTool[]=[];
+  let agentObj:AiAgent|null=null;
+  //如果有代理，添加到消息中
+  if(agent!=null&&agent.length>0){
+    //Get agent
+    const agents=getConfigItem("ai.agents");
+    agentObj=agents.find((a:AiAgent)=>a.name=agent);
+    if(agentObj){
+      _messages.push({
+        role:"system",
+        content:agentObj.prompt
+      });
+     if( agentObj.servers){
+      agentObj.servers.forEach(server=>{
+        //获取server的方法
+        const serverObj=mcpServers.find(s=>s.name==server.name);
+        if(serverObj){
+          serverObj.getTools().forEach(tool=>{
+            const func={...tool.function,
+              //函数名称:服务名称.函数名称
+              name:server.name+"."+tool.function.name,
+            };
+            //添加到工具函数数组
+            agentTools.push({
+              type:"function",
+              function:func
+            })
+          })
+        }
+      })
+     }
+    } 
+
+  }
+  //如果有打开数据库，添加到消息中
+  const currentDataSource = getCurrentDataSource();
+  if(currentDataSource!=null){
+    _messages.push({
       role: "system",
-      content: mode === AiMode.sql ? SqlPrompt : TablePrompt,
-    },
-    {
+      content: "当前打开的数据库为："+JSON.stringify({
+        name:currentDataSource.name,
+        type:currentDataSource.type,
+        host:currentDataSource.host,
+        port:currentDataSource.port,
+        database:currentDataSource.database,
+      }),
+    });
+  }
+
+  //如果有上下文，添加到消息中
+  if(context.length>0){
+    _messages.push({
       role: "system",
       content: context.length > 0 ? "当前软件展示内容如下：\n" + context : "",
-    },
-  ];
+    });
+  }
+
   console.log("askInner", _messages);
   let client: OpenAI = new OpenAI({
     apiKey: model.apiKey,
@@ -73,7 +130,7 @@ export async function askInner(
   const stream = await client.chat.completions.create({
     model: model.model,
     messages: _messages,
-    tools: tools,
+    tools: agentTools,
     stream: true,
   });
   // Save ai's reply
@@ -133,59 +190,67 @@ export async function askInner(
           aiToolCallName.length > 0
         ) {
           lastFunction = key;
-          const fun = Tools_Funs[aiToolCallName];
-          console.log("toolName", aiToolCallName);
-          console.log("fun", fun);
-          if (fun) {
-            const call = (res: any) => {
-              console.log("res", res);
-
-              if (res.status === "error") {
-                sender(res.message, true);
-              } else if (res.status === "success") {
-                const aiMessage: OpenAI.Chat.Completions.ChatCompletionMessageParam =
-                  {
-                    role: "assistant",
-                    content: aiContent,
-                    tool_calls: [
+          //执行工具函数
+          if(agentObj&&agentObj.servers){
+            //获取服务
+            const callServerName=aiToolCallName.split(".")[0];
+            const callFuncName=aiToolCallName.split(".")[1];
+            const server=mcpServers.find(s=>s.name==callServerName);
+            if(server){
+              //获取服务的方法
+              const callFunc=server.getTools().find(t=>t.function.name==callFuncName);
+              if(callFunc){
+                //执行服务的方法
+                const callback = (res: any) => {
+                  console.log("res", res);
+                  if (res.status === "error") {
+                    sender(res.message, true);
+                  } else if (res.status === "success") {
+                    const aiMessage: OpenAI.Chat.Completions.ChatCompletionMessageParam =
                       {
-                        index: aiToolCallIndex,
-                        id: aiToolCallId + "",
-                        type: "function",
-                        function: {
-                          name: aiToolCallName + "",
-                          arguments: aiToolCallArguments + "",
-                        },
-                      },
-                    ],
-                  };
-                messages.push(aiMessage);
-                history.push(aiMessage);
-                const message: OpenAI.Chat.Completions.ChatCompletionMessageParam =
-                  {
-                    role: "tool",
-                    content: JSON.stringify(res.data),
-                    tool_call_id: aiToolCallId + "",
-                  };
-                messages.push(message);
-                history.push(message);
-                //将结果返回给AI
-                askInner(
-                  input,
-                  model,
-                  messages,
-                  mode,
-                  lastFunction,
-                  context,
-                  sender,
-                );
+                        role: "assistant",
+                        content: aiContent,
+                        tool_calls: [
+                          {
+                            index: aiToolCallIndex,
+                            id: aiToolCallId + "",
+                            type: "function",
+                            function: {
+                              name: aiToolCallName + "",
+                              arguments: aiToolCallArguments + "",
+                            },
+                          },
+                        ],
+                      };
+                    messages.push(aiMessage);
+                    history.push(aiMessage);
+                    const message: OpenAI.Chat.Completions.ChatCompletionMessageParam =
+                      {
+                        role: "tool",
+                        content: JSON.stringify(res.data),
+                        tool_call_id: aiToolCallId + "",
+                      };
+                    messages.push(message);
+                    history.push(message);
+                    //将结果返回给AI
+                    askInner(
+                      input,
+                      model,
+                      messages,
+                      lastFunction,
+                      context,
+                      agent,
+                      sender
+                    );
+                  }
+                };
+                //调用工具函数
+                if (aiToolCallArguments && aiToolCallArguments.length > 0) {
+                  server.executeTool(callFuncName,aiToolCallArguments).then(callback);
+                } else {
+                  server.executeTool(callFuncName,{}).then(callback);
+                }
               }
-            };
-            //调用工具函数
-            if (aiToolCallArguments && aiToolCallArguments.length > 0) {
-              fun(JSON.parse(aiToolCallArguments)).then(call);
-            } else {
-              fun().then(call);
             }
           }
         }
@@ -195,160 +260,9 @@ export async function askInner(
       } else {
       }
     }
-
-    // if(chunk.choices[0]){
-
-    //     if(chunk.choices[0].finish_reason){
-    //         //如果ai有回复
-    //         if (chunk.choices[0].message.content) {
-    //             messages.push(chunk.choices[0].message);
-    //             //结束整个会话，返回结果
-    //             sender(chunk.choices[0].message.content);
-    //         }
-    //     }
-    // }
   }
 }
 
-//提示词:sql
-const SqlPrompt = `你是一个数据库助手，根据用户的输入，生成对应的SQL语句。你可以使用工具函数来查询数据库中的信息。输出内容尽量简洁。sql语句必须使用代码块输出。
-如果需要绘制图表,请使用js代码块输出`;
-//提示词:table
-const TablePrompt = `
-`;
-//提示词:setting
-const SettingPrompt = `
-`;
-
-//注册工具函数
-const tools: OpenAI.Chat.Completions.ChatCompletionTool[] = [
-  //通过提供的字符，根据表名称和表备进行模糊查询，返回表名称和表备注的数组
-  {
-    type: "function",
-    function: {
-      name: "query_tables",
-      description:
-        "通过提供的字符，根据表名称和表备进行模糊查询，返回表名称和表备注的数组",
-      parameters: {
-        type: "object",
-        properties: {
-          names: {
-            type: "array",
-            items: {
-              type: "string",
-              description: "需要模糊查询的字符",
-            },
-            description: "需要模糊查询的字符数组",
-          },
-        },
-      },
-    },
-  },
-  // Query the field information of multiple tables based on multiple table names, and return the table names and field information
-  {
-    type: "function",
-    function: {
-      name: "query_table_columns",
-      description: "根据多个表名称，查询读个表的字段信息，返回表名称及字段信息",
-      parameters: {
-        type: "object",
-        properties: {
-          tables: {
-            type: "array",
-            items: {
-              type: "string",
-              description: "表名称",
-            },
-            description: "表名称数组",
-          },
-        },
-      },
-    },
-  },
-  //根据表名称，查询表的前5条数据
-  {
-    type: "function",
-    function: {
-      name: "query_table_data",
-      description: "根据表名称，查询表的前5条数据",
-      parameters: {
-        type: "object",
-        properties: {
-          table_name: {
-            type: "string",
-            description: "表名称",
-          },
-        },
-      },
-    },
-  },
-];
-
-const Tools_Funs: any = {
-  //通过提供的字符，根据表名称和表备进行模糊查询，返回表名称和表备注的数组
-  query_tables: (args: any) => {
-    const currentDataSource = getCurrentDataSource();
-    if (currentDataSource == null) {
-      return new Promise((resolve, reject) => {
-        resolve({
-          status: "error",
-          message: "Please select a database!",
-          data: [],
-        });
-      });
-    } else {
-      const names: string[] = args.names;
-      //通过提供的字符，根据表名称和表备进行模糊查询，返回表名称和表备注的数组
-      const sql = `
-                        SELECT table_name, table_comment
-                        FROM information_schema.tables
-                        WHERE
-                        ${names.map((name) => `(table_name LIKE '%${name}%' OR table_comment LIKE '%${name}%')`).join(" OR ")}
-                    `;
-      return executeSql(sql, currentDataSource);
-    }
-  },
-  // Query the field information of multiple tables based on multiple table names, and return the table names and field information
-  query_table_columns: (args: any) => {
-    const currentDataSource = getCurrentDataSource();
-    if (currentDataSource == null) {
-      return new Promise((resolve, reject) => {
-        resolve({
-          status: "error",
-          message: "Please select a database!",
-          data: [],
-        });
-      });
-    } else {
-      const tables: string[] = args.tables;
-      // Query the field information of multiple tables based on multiple table names, and return the table names and field information
-      const sql = `
-                SELECT table_name, column_name, data_type, column_comment
-                FROM information_schema.columns
-                WHERE table_name IN (${tables.map((name) => `'${name}'`).join(",")})
-            `;
-      return executeSql(sql, currentDataSource);
-    }
-  },
-  //根据表名称，查询表的前2条数据
-  query_table_data: (args: any) => {
-    const currentDataSource = getCurrentDataSource();
-    if (currentDataSource == null) {
-      return new Promise((resolve, reject) => {
-        resolve({
-          status: "error",
-          message: "Please select a database!",
-          data: [],
-        });
-      });
-    } else {
-      const tableName: string = args.table_name;
-      //根据表名称，查询表的前5条数据
-      const sql = `SELECT * FROM ${tableName} limit 2`;
-      return executeSql(sql, currentDataSource);
-    }
-  },
-};
 
 /**
  * 优化sql代码

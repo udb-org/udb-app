@@ -8,7 +8,6 @@ import { ViewParams } from "@/types/view";
 export function openView(params:ViewParams){
     window.api.send("view:open",params);
   }
-
 export interface SqlActionParams{
     command:string;
 }

@@ -33,6 +33,5 @@ export function SetupLogin(
                 Continue
             </Button>
        </div>
-
     </div>
 }

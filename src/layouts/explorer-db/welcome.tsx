@@ -6,7 +6,8 @@ import React, { useEffect } from "react";
 import { openDialog } from "../dialog";
 import { DialogType } from "@/types/dialog";
 import { useTranslation } from "react-i18next";
-export function ViewWebcome(props: { viewKey: string }) {
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+export function Webcome() {
   const [connections, setConnections] = React.useState<ConnectionConfig[]>([]);
   const [showConnections, setShowConnections] = React.useState<
     ConnectionConfig[]
@@ -21,7 +22,6 @@ export function ViewWebcome(props: { viewKey: string }) {
       }
     };
     window.api.on("storage:getConnectionConfiging", getConnectionConfiging);
-
     getConnectionConfig();
     return () => {
       window.api.removeListener(
@@ -33,11 +33,11 @@ export function ViewWebcome(props: { viewKey: string }) {
   const { t } = useTranslation();
   return (
     <div className="box-border flex h-full w-full flex-col items-center justify-center">
-      <div className="w-[300px]">
+      <div >
         <Button
           size={"sm"}
-          variant={"secondary"}
-          className="w-full"
+          variant={"outline"}
+          className="w-full border border-primary"
           onClick={() => {
             openDialog({
               type: DialogType.AddConnection,
@@ -66,9 +66,35 @@ export function ViewWebcome(props: { viewKey: string }) {
             </Button>
           ))}
         </div>
-        <Button size={"sm"} variant={"ghost"} className="w-full">
-          <span className="text-muted-foreground ml-2 text-sm">{t("welcome.button.more")}</span>
+
+        <Popover>
+          <PopoverTrigger asChild>
+          <Button size={"sm"} variant={"ghost"} className="w-full">
+          <span className="text-muted-foreground ml-2 text-xs">{t("welcome.button.more")}</span>
         </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[200px]">
+          {connections.map((connection, i) => (
+            <Button
+              key={i}
+              size={"sm"}
+              variant={"ghost"}
+              className="mb-1 w-full gap-1 text-sm"
+              onClick={() => {
+                openConnection(connection);
+              }}
+            >
+              <LinkIcon size={12}></LinkIcon>
+              <div>{connection.name}</div>
+              <div className="flex-1"></div>
+              <div className="text-muted-foreground">{connection.host}</div>
+            </Button>
+          ))}
+          </PopoverContent>
+
+        </Popover>
+
+       
       </div>
     </div>
   );

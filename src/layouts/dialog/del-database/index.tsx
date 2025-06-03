@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -10,12 +9,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-
 import { Label } from "@/components/ui/label"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-
 import {
   Form,
   FormControl,
@@ -31,18 +28,13 @@ import { saveAndOpenConnection, testConnection } from "@/api/storage";
 import { ConnectionConfig } from "@/types/db";
 import { Textarea } from "@/components/ui/textarea";
 import { addDatabase, deleteDatabase } from "@/api/db";
-
-
 export function DelDatabaseDialog(props: {
   params: any,
   onClose: () => void
 }) {
-
   const [isExpand, setIsExpand] = useState(false)
   const formSchema = z.object({
-
     database: z.string().min(1, "Name is required"),
-  
   })
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
@@ -79,18 +71,14 @@ export function DelDatabaseDialog(props: {
       if(e.status==="success"){
         props.onClose();
       }
-
-      
     }
     window.api.on("db:delDatabaseEnd", delDatabaseEnd);
     return () => {
       window.api.removeListener("db:delDatabaseEnd", delDatabaseEnd);
     }
-    
   }, []);
   return (
     <Dialog open={true} onOpenChange={props.onClose}>
-
       <DialogContent className="w-[600px]">
         <DialogHeader>
           <DialogTitle className="select-text">Delete Database : {props.params.database}</DialogTitle>
@@ -113,14 +101,11 @@ export function DelDatabaseDialog(props: {
                 </FormItem>
               )}
             />
-           
             <div className="flex gap-2 justify-end">
-              
               <Button type="submit" disabled={isRunnind} size={"sm"}>Drop</Button>
             </div>
           </form>
         </Form>
-
       </DialogContent>
     </Dialog>
   )

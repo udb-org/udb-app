@@ -4,7 +4,6 @@ import {
   FolderOpenIcon
 } from "lucide-react"
 import * as React from "react"
-
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -16,14 +15,11 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import { useEffect } from "react"
-
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { useProjectStore } from "@/store/project-store"
 import { IProject } from "@/types/project"
 import { cn, colors } from "@/utils/tailwind"
 import { useTranslation } from "react-i18next"
-
-
 export function DropdownMenuProject() {
   const [folders, setFolders] = React.useState<IProject[]>([]);
   const { project, setProject } = useProjectStore();
@@ -68,11 +64,9 @@ export function DropdownMenuProject() {
         </DropdownMenuGroup>
         <DropdownMenuLabel>{t("title.bar.recent.project")}</DropdownMenuLabel>
         <DropdownMenuSeparator />
-
         <ScrollArea className="w-full h-[200px]">
           <ScrollBar orientation="vertical" />
           <DropdownMenuGroup >
-
             {
               folders.map((conf,index) =>
                 <DropdownMenuItem key={conf.name} onClick={() => {
@@ -84,7 +78,6 @@ export function DropdownMenuProject() {
                     lastOpenTime: new Date().toLocaleString()
                   });
                   window.api.send("storage:openProject",conf.path);
-
                 }}>
                   <div className="flex items-center gap-2">
                     <div className={
@@ -106,14 +99,12 @@ export function DropdownMenuProject() {
                       {
                         project && project.name == conf.name && <CheckIcon size={14} className="text-primary" />
                       }
-
                     </div>
                   </div>
                 </DropdownMenuItem>)
             }
           </DropdownMenuGroup>
         </ScrollArea>
-
       </DropdownMenuContent>
     </DropdownMenu>
   )

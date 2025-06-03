@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -10,12 +9,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-
 import { Label } from "@/components/ui/label"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-
 import {
   Form,
   FormControl,
@@ -30,7 +27,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { saveAndOpenConnection, testConnection } from "@/api/storage";
 import { ConnectionConfig } from "@/types/db";
 import { Textarea } from "@/components/ui/textarea";
-
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
   type: z.string().min(1, "Database type is required"),
@@ -46,9 +42,7 @@ export function AddConnectionDialog(props: {
   params: any,
   onClose: () => void
 }) {
-
   const [isExpand, setIsExpand] = useState(false)
-
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -62,7 +56,6 @@ export function AddConnectionDialog(props: {
       driver: "",
       database: "",
       params: ""
-
     },
   })
   //ready,testing,success,fail
@@ -93,10 +86,8 @@ export function AddConnectionDialog(props: {
       }
     }).catch(() => {
       setTesting("fail")
-
     })
   }
-
   // 保存配置处理
   const handleSaveConfig = (values: z.infer<typeof formSchema>) => {
     console.log("保存配置:", values)
@@ -114,10 +105,8 @@ export function AddConnectionDialog(props: {
     };
     saveAndOpenConnection(conf);
   }
-
   return (
     <Dialog open={true} onOpenChange={props.onClose}>
-
       <DialogContent className="w-[600px]">
         <DialogHeader>
           <DialogTitle>Add Connection</DialogTitle>
@@ -171,7 +160,6 @@ export function AddConnectionDialog(props: {
               <FormField
                 control={form.control}
                 name="host"
-
                 render={({ field }) => (
                   <FormItem className="flex-1">
                     <FormLabel>Host *</FormLabel>
@@ -232,8 +220,6 @@ export function AddConnectionDialog(props: {
               {isExpand ? "Collapse" : "More Options"}
             </Button>
             {isExpand&&<>
-            
-            
             <FormField
               control={form.control}
               name="database"
@@ -284,7 +270,6 @@ export function AddConnectionDialog(props: {
             </div>
           </form>
         </Form>
-
       </DialogContent>
     </Dialog>
   )

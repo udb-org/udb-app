@@ -9,12 +9,6 @@ export default function ViewData(
 ) {
     const { views,setView } = useTabStore();
     const view=views[props.viewKey];
-
-    
-   
     return <div className="w-full h-full " >
-      
-     
-
     </div>
 }

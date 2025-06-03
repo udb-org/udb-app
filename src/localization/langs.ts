@@ -1,5 +1,4 @@
 import { Language } from "./language";
-
 export default [
   {
     key: "en",

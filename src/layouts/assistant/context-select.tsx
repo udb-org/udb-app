@@ -1,5 +1,4 @@
 "use client"
-
 import * as React from "react"
 import {
   ArrowUpCircle,
@@ -10,22 +9,16 @@ import {
   PlusIcon,
   XCircle,
 } from "lucide-react"
-
-
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { cn } from "@/utils/tailwind"
 import { Separator } from "@/components/ui/separator"
-
-
-
 type Status = {
   value: string
   label: string
   icon: string
 }
-
 const statuses: Status[] = [
   {
     value: "default",
@@ -42,10 +35,7 @@ const statuses: Status[] = [
     label: "All",
     icon: "%"
   },
- 
-
 ]
-
 export function ContextSelect(
   props:{
     onChange:(value:string)=>void,
@@ -53,7 +43,6 @@ export function ContextSelect(
   }
 ) {
   const [open, setOpen] = React.useState(false)
- 
   function getIcon(value:string){
   let icon="#";
    statuses.forEach(status=>{
@@ -93,7 +82,6 @@ export function ContextSelect(
         </PopoverTrigger>
         <PopoverContent className="p-0 " >
           <Command>
-           
             <CommandList>
               <CommandEmpty>No results found.</CommandEmpty>
               <CommandGroup>
@@ -106,7 +94,6 @@ export function ContextSelect(
                       setOpen(false)
                     }}
                   >
-           
                     <div
                       className={cn(
                         "",
@@ -123,8 +110,6 @@ export function ContextSelect(
               </CommandGroup>
             </CommandList>
           </Command>
-        
-
         </PopoverContent>
       </Popover>
   )

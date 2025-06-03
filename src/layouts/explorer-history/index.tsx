@@ -21,15 +21,10 @@ import SearchInput from "@/components/SearchInput";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useTranslation } from "react-i18next";
-
 export function ExplorerHistory(props: { isVisible: boolean }) {
   const [history, setHistory] = React.useState<any[]>([]);
   const [showHistory, setShowHistory] = React.useState<any[]>([]);
   const [suggestions, setSuggestions] = React.useState<any[]>([
-    {
-      sql: "SELECT * FROM users",
-      time: "2023-03-01 12:00:00",
-    },
   ]);
   React.useEffect(() => {
     //获取历史记录
@@ -59,7 +54,6 @@ export function ExplorerHistory(props: { isVisible: boolean }) {
       }),
     );
   }, [history, searchText]);
-
   function getSql(sql: string) {
     if (sql && sql.length > 35) {
       return sql.substring(0, 35) + "...";
@@ -67,7 +61,6 @@ export function ExplorerHistory(props: { isVisible: boolean }) {
       return sql;
     }
   }
-
   function getTime(time: string) {
     const date = new Date(time);
     const now = new Date();
@@ -76,7 +69,6 @@ export function ExplorerHistory(props: { isVisible: boolean }) {
     const oneHour = 60 * oneMinute;
     const oneDay = 24 * oneHour;
     const oneWeek = 7 * oneDay;
-
     if (timeDiff < oneMinute) {
       return "刚刚";
     } else if (timeDiff < oneHour) {
@@ -100,7 +92,6 @@ export function ExplorerHistory(props: { isVisible: boolean }) {
       return "很久很久以前";
     }
   }
-
   function renderItem(item: any, index: number) {
     return (
       <div
@@ -117,7 +108,6 @@ export function ExplorerHistory(props: { isVisible: boolean }) {
               {getTime(item.time)}
             </div>
             <div className="flex-1"></div>
-
             <Button
               variant={"outline"}
               size={"icon"}
@@ -169,7 +159,6 @@ export function ExplorerHistory(props: { isVisible: boolean }) {
       <div className="pt-1">
         {suggestions.map((item, index) => renderItem(item, index))}
       </div>
-
       <div className="flex flex-shrink-0 items-center text-sm font-bold">
         <div className="text-sm font-bold">
           {t("active.bar.history")}

@@ -1,6 +1,5 @@
 // preload.ts
 import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron";
-
 // Define the Electron API interface
 type ElectronAPI = {
   invoke: <T>(channel: string, ...args: any[]) => Promise<T>;
@@ -11,7 +10,6 @@ type ElectronAPI = {
   removeAllListeners: (channel: string) => void;
   isFirstRun: () => boolean;
 };
-
 //Safe API
 const electronAPI: ElectronAPI = {
   invoke: async (channel, ...args) => {
@@ -28,23 +26,19 @@ const electronAPI: ElectronAPI = {
       };
     }
   },
-
   send: (channel, ...args) => {
     ipcRenderer.send(channel, ...args);
   },
-
   on: (channel, listener) => {
     const subscription = (_event: IpcRendererEvent, ...args: any[]) =>
       listener(...args);
     ipcRenderer.on(channel, subscription);
   },
-
   once: (channel, listener) => {
     const subscription = (_event: IpcRendererEvent, ...args: any[]) =>
       listener(...args);
     ipcRenderer.once(channel, subscription);
   },
-
   removeListener: (channel, listener) => {
     ipcRenderer.removeListener(channel, listener);
   },

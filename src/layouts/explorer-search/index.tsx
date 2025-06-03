@@ -2,7 +2,6 @@ import React from "react"
 import { Button } from "@/components/ui/button"
 import { MoreHorizontalIcon } from "lucide-react"
 import VirtualList from "@/components/virtual-scroll";
-
 export function ExplorerSearch(props:{
   isVisible:boolean;
 }) {
@@ -23,13 +22,10 @@ export function ExplorerSearch(props:{
     </div>
     {/* <ScrollArea className="flex-1">
       <ScrollBar orientation="vertical" />
-      
-
     </ScrollArea> */}
     {/* <VirtualList items={rows}  estimateHeight={32} renderItem={(item: IExplorerDbRow, i: number) => {
       return <div></div>
     }}></VirtualList> */}
     </div>
-    
   )
 }

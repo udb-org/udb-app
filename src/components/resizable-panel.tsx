@@ -53,7 +53,6 @@ export function ResizablePanelHandle(
                 const startX = e.clientX;
                 const startY = e.clientY;
                 const move = (e: MouseEvent) => {
-
                     if (props.onMove) {
                         props.onMove(e.clientX - startX, e.clientY - startY);
                     }
@@ -64,9 +63,6 @@ export function ResizablePanelHandle(
                 };
                 document.addEventListener("mousemove", move);
                 document.addEventListener("mouseup", up);
-
-
-
             }}
         ></div>
     </div>

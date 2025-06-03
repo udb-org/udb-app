@@ -5,8 +5,6 @@ import os from 'os';
 import path from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-
-
 const jdkUrl = {
     "Windows": "https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c558476027ac/13/GPL/openjdk-21.0.2_windows-x64_bin.zip",
     "Mac/AArch64": "https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c558476027ac/13/GPL/openjdk-21.0.2_macos-aarch64_bin.tar.gz",
@@ -14,7 +12,6 @@ const jdkUrl = {
     "Linux/AArch64": "https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c558476027ac/13/GPL/openjdk-21.0.2_macos-aarch64_bin.tar.gz",
     "Linux/x64": "https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c558476027ac/13/GPL/openjdk-21.0.2_macos-aarch64_bin.tar.gz"
 };
-
 /**
  * Download the JDK based on the system environment.
  * @param outputPath - The path where the JDK will be saved.
@@ -23,7 +20,6 @@ export async function downloadJdk(outputPath: string) {
     let url: string | undefined;
     const platform = os.platform();
     const arch = os.arch();
-
     if (platform === 'win32') {
         url = jdkUrl["Windows"];
     } else if (platform === 'darwin') {
@@ -36,11 +32,7 @@ export async function downloadJdk(outputPath: string) {
     }
     //name
     const name = url.substring(url.lastIndexOf('/GPL/') + 5);
-
-
-
     const zipPath = path.join(outputPath, name);
-
     try {
         console.log('Starting JDK download...');
         const writer = fs.createWriteStream(zipPath);
@@ -49,7 +41,6 @@ export async function downloadJdk(outputPath: string) {
             url: url,
             responseType: 'stream'
         });
-
         await pipeline(response.data, writer);
         console.log(`JDK download completed! Saved to: ${outputPath}`);
         const execAsync = promisify(exec);

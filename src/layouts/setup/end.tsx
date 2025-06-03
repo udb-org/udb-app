@@ -10,7 +10,6 @@ export function SetupEnd(
 ) {
     const { t } = useTranslation();
     return <div className="space-y-5 w-[200px]">
-
         <div className="flex gap-2 items-center justify-center">
             <Button variant={"outline"} onClick={
                 () => {
@@ -19,17 +18,14 @@ export function SetupEnd(
             }>
                 {t("setup.button.previous")}
             </Button>
-           
        </div>
        <div className="flex gap-2 items-center justify-center">
-           
             <Button size={"lg"} onClick={
                 () => {
                     props.onNext?.();
                 }
             }>
                 {t("setup.button.start")}
-            
             </Button>
        </div>
     </div>

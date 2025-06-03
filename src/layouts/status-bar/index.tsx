@@ -44,10 +44,8 @@ export default function StatusBar() {
       }
     };
     window.api.on("status:tasked", tasked);
-
     //start server
     window.api.send("db:startServer");
-
     return () => {
       window.api.removeAllListeners("status:tasked");
       window.api.removeListener("db:selectDatabased", selectDatabased);
@@ -63,7 +61,6 @@ export default function StatusBar() {
         setShowTask(0);
       }
     }, 3000);
-
     return () => {
       clearInterval(timer);
     };
@@ -73,9 +70,7 @@ export default function StatusBar() {
       <div className="w-8"></div>
       <DatabaseIcon size={12} />
       {database}
-
       <div className="flex-1"></div>
-
       <div>
         {tasks.length > 0 && showTask < tasks.length && (
           <Popover>

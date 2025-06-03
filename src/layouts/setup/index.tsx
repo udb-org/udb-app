@@ -7,13 +7,11 @@ import { SetupAi } from "./ai";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { configTemplate } from "@/services/config-template";
-
 export function Setup() {
     const [steps, setSteps] = useState<number[]>([
         1, 2, 3, 4
     ]);
     const [current, setCurrent] = useState<number>(1);
-
     const [config, setConfig] = useState<any>(
         configTemplate
     );
@@ -49,7 +47,6 @@ export function Setup() {
                         onPrev={() => {
                             setCurrent(1);
                         }}
-
                     />
                 }
                 {
@@ -90,7 +87,6 @@ export function Setup() {
                         }).then(() => {
                             //设置完成,强制属性页面
                             window.location.reload();
-                            
                         }).catch((e) => {
                             setIsLoading(false);
                             toast.error(e);
@@ -101,10 +97,7 @@ export function Setup() {
                         }} />
                 }
             </div>
-
         }
-
-
         <div className="h-[100px] flex justify-center gap-2">
             {
                 steps.map((item, index) => {

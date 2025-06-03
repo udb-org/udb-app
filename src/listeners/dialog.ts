@@ -1,19 +1,14 @@
 import { DialogParams } from "@/types/dialog";
 import { dialog, ipcMain } from "electron";
-
 export function unregisterDialogListeners() {
-
   ipcMain.removeHandler("dialog:openFolder");
   ipcMain.removeAllListeners("dialog:opening");
-
 }
-
 export function registerDialogListeners(mainWindow: Electron.BrowserWindow) {
   ipcMain.on("dialog:open", (event, args:DialogParams) => {
     console.log("dialog:open",args);
     event.reply("dialog:opening", args);
   });
-
   //打开文件夹选择对话框
   ipcMain.handle("dialog:openFolder", async (event, args: any) => {
     console.log("dialog:openFolder", args);

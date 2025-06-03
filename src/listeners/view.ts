@@ -32,9 +32,7 @@ export function registerViewListeners(mainWindow: Electron.BrowserWindow) {
         viewsCounter.set(args.type,count+1);
         event.reply("view:opening", args);
       }
-      
     }
-   
   });
   //sql action
   ipcMain.on("view:sql-action", (event, args:SqlActionParams) => {

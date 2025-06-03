@@ -7,7 +7,6 @@ import React, { useCallback, useEffect, useMemo } from "react";
 export function SqlResults(props: { data: any[] }) {
   const { model } = useAiStore();
   const results = props.data;
-
   // const tab = useTabStore((state: any) => state.tab);
   // const [results, setResults] = React.useState<any[]>([]);
   // useEffect(() => {
@@ -22,7 +21,6 @@ export function SqlResults(props: { data: any[] }) {
   //         }
   //     }
   // },[tab]);
-
   // const results: any = useMemo(() => {
   //     const view =getView(tab.name);
   //     if(view==null){
@@ -86,7 +84,6 @@ export function SqlResults(props: { data: any[] }) {
       };
     }
   }, []);
-
   function fixAction() {
     if (sql.length > 0) {
       console.log("fixAction", sql);
@@ -96,7 +93,6 @@ export function SqlResults(props: { data: any[] }) {
       });
     }
   }
-
   return (
     <div className="flex h-full w-full flex-col">
       <div className="relative flex-1 overflow-hidden" ref={panelRef}>
@@ -116,12 +112,10 @@ export function SqlResults(props: { data: any[] }) {
           )}
         </div>
       </div>
-
       <div className="flex h-[26px] items-center">
         {
           //tabs
         }
-
         {results != null &&
           results.map((result: any, i: number) => (
             <div

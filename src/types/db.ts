@@ -44,7 +44,6 @@ export interface IDataBase {
     //表
     tables?: IDataBaseTable[];
     tablesExpand?: boolean;
-
 }
 export interface IDataBaseTable {
     // 表所属的目录
@@ -164,5 +163,4 @@ export interface IDataBaseTableColumn {
     CHARACTER_SET_NAME?: string;
     // 列的默认值
     COLUMN_DEFAULT?: string | null;
-
 }

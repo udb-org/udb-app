@@ -7,7 +7,6 @@ import { openMenu } from "@/api/menu";
 import { getFileIcon } from "./file-icons";
 import { useProjectStore } from "@/store/project-store";
 import { useTranslation } from "react-i18next";
-
 export function ExplorerFolder(props: {
   isVisible: boolean;
 }) {
@@ -28,7 +27,6 @@ function transformFiles(files: any[]) {
         _files.push({
           name: file.name,
           isFolder: true,
-
         })
       } else if(file.type==="file"){
         // Get the file icon based on the file name
@@ -39,8 +37,6 @@ function transformFiles(files: any[]) {
           icon: icon,
         })
       }
-
-      
     })
     return _files;
   }
@@ -49,14 +45,11 @@ function transformFiles(files: any[]) {
     const openProjecting = (files: any[]) => {
       console.log("openProjecting", files)
      const _files= transformFiles(files);
-    
       setFiles(_files);
     }
     window.api.on("storage:openProjecting", openProjecting);
-  
     return () => {
       window.api.removeListener("storage:openProjecting", openProjecting);
-  
     }
   }, []);
   const {t}=useTranslation();
@@ -77,15 +70,12 @@ function transformFiles(files: any[]) {
       </div>
       {/* <ScrollArea className="flex-1">
       <ScrollBar orientation="vertical" />
-      
-
     </ScrollArea> */}
       {/* <VirtualList items={rows}  estimateHeight={32} renderItem={(item: IExplorerDbRow, i: number) => {
       return <div></div>
     }}></VirtualList> */}
       <VirtualTree
         data={files}
-        
         onLoad={(path: string[]) => {
           console.log("onLoad", path);
           let filePath="";
@@ -103,7 +93,6 @@ function transformFiles(files: any[]) {
             const p=row.path.join("/");
             window.api.send("storage:openFile",project.path,p);
           }
-
         }}
         onRowContextMenu={(row) => {
           openMenu({
@@ -136,13 +125,10 @@ function transformFiles(files: any[]) {
                 name: "Import Database",
                 command: "importDatabase"
               }
-
             ]
           })
-
         }}
       ></VirtualTree>
     </div>
-
   )
 }

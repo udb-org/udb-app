@@ -8,7 +8,6 @@ export function SetupHome(
     }
 ) {
     const { t} = useTranslation();
-    
   return <div>
    <div className="flex flex-col items-center justify-center">
    <div className="bg-card/50 border p-5 rounded-2xl" >
@@ -27,6 +26,5 @@ export function SetupHome(
             Get Started
         </Button>
     </div>
-
   </div>
 }

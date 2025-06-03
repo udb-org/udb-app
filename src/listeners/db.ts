@@ -17,7 +17,6 @@ import { ipcMain, dialog } from "electron";
 import { getCurrentConnection } from "./storage";
 import { addHistory } from "@/services/history";
 import { ITask } from "@/types/task";
-
 export function unregisterDbListeners() {
   // Unregister all 'handle' and 'on' listeners related to the database operations
   ipcMain.removeHandler("db:startServer");
@@ -46,14 +45,10 @@ export function unregisterDbListeners() {
   ipcMain.removeHandler("db:dump_stop");
 }
 let currentDataSource: IDataSource | null = null;
-
 export function getCurrentDataSource() {
   return currentDataSource;
 }
-
 export function registerDbListeners(mainWindow: Electron.BrowserWindow) {
-
-
   ipcMain.once("db:startServer", (event) => {
     console.log("db:startServer");
     const task: ITask = {
@@ -70,9 +65,7 @@ export function registerDbListeners(mainWindow: Electron.BrowserWindow) {
         message: message
       });
     });
-
   });
-
   //查询所有的数据库
   ipcMain.handle("db:getDatabases", async (event) => {
     if (currentDataSource == null) {
@@ -134,7 +127,6 @@ export function registerDbListeners(mainWindow: Electron.BrowserWindow) {
         dialog.showErrorBox("Error", "Please select a database!");
         return;
       }
-
       console.log(currentDataSource);
       _databaseName = currentDataSource.database;
     }
@@ -152,7 +144,6 @@ export function registerDbListeners(mainWindow: Electron.BrowserWindow) {
     if (databaseName.length > 0) {
       currentDataSource = datasource;
     }
-
     const sql =
       "select * from INFORMATION_SCHEMA.TABLES where TABLE_SCHEMA='" +
       _databaseName +
@@ -282,7 +273,6 @@ export function registerDbListeners(mainWindow: Electron.BrowserWindow) {
       mainWindow.webContents.send("db:getTablesing", res);
     });
   }
-
   //invokeSql
   ipcMain.handle("db:invokeSql", async (event, sql: string) => {
     if (currentDataSource == null) {
@@ -313,10 +303,8 @@ export function registerDbListeners(mainWindow: Electron.BrowserWindow) {
           index: i,
           sql: sql,
         });
-
         executeSql(sql, currentDataSource).then((res) => {
           console.log("db:execSql", res);
-          addHistory(currentConnection.name, currentDataSource.database, sql);
           mainWindow.webContents.send("db:execSqlEnd", {
             index: i,
             sql: sql,
@@ -391,13 +379,11 @@ export function registerDbListeners(mainWindow: Electron.BrowserWindow) {
   //drop table
   ipcMain.on("db:dropTable", (event, table: string) => {
     const sql = "drop table " + table;
-
     if (currentDataSource == null) {
       dialog.showErrorBox("Error", "Please select a connection!");
       return;
     }
     console.log("db:dropTable", sql);
-
     executeSql(sql, currentDataSource).then((res) => {
       console.log("db:dropTable", res);
       mainWindow.webContents.send("db:dropTableEnd", {
@@ -406,7 +392,6 @@ export function registerDbListeners(mainWindow: Electron.BrowserWindow) {
       });
     });
   });
-
   ipcMain.handle(
     "db:exec",
     (
@@ -416,11 +401,18 @@ export function registerDbListeners(mainWindow: Electron.BrowserWindow) {
         isTransaction: boolean;
       },
     ) => {
-      const datasource = getCurrentDataSource();
-      if (datasource == null) {
+      const currentDataSource = getCurrentDataSource();
+      if (currentDataSource == null) {
         return null;
       }
-      return db_exec(args.sql, datasource, args.isTransaction);
+      const currentConnection = getCurrentConnection();
+      if (currentConnection == null) {
+        return null;
+      }
+      
+
+      addHistory(currentConnection.name, currentDataSource.database+"", args.sql);
+      return db_exec(args.sql, currentDataSource, args.isTransaction);
     },
   );
   ipcMain.handle("db:result", (event, id) => {
@@ -438,7 +430,6 @@ export function registerDbListeners(mainWindow: Electron.BrowserWindow) {
   ipcMain.handle("db:getTasks", (event) => {
     return db_getTasks();
   });
-
   ipcMain.handle("db:dump", async (event, args) => {
     const conf = getCurrentConnection();
     if (conf == null) {
@@ -470,6 +461,5 @@ export function registerDbListeners(mainWindow: Electron.BrowserWindow) {
   });
   ipcMain.handle("db:dump_stop", (event, id: string) => {
     return db_dump_stop(id);
-
   })
 }

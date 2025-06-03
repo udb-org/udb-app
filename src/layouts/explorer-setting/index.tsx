@@ -32,7 +32,8 @@ import { SetupTheme } from "../setup/theme";
 import { SettingTheme } from "./theme";
 import { SettingTopic } from "./common";
 import { AppConfig } from "@/api/config";
-
+import { AiAgentSetting } from "./ai-agent";
+import { AiMcpSetting } from "./ai-mcp";
 export default function ExplorerSetting(props: { isVisible: boolean }) {
   const [config, setConfig] = React.useState<any>({});
   useEffect(() => {
@@ -58,17 +59,16 @@ export default function ExplorerSetting(props: { isVisible: boolean }) {
         <div className="flex-1"></div>
       </div>
       <ScrollArea className="h-full flex-1 overflow-auto">
-
         <div className="p-2">
           <SettingTopic topic={t("settings.base.title")} />
           <SettingTheme config={config} onConfigChange={handleChange} />
-
           <GeneralSetting config={config} onConfigChange={handleChange} />
           <Separator className="my-5" />
-
           <AccountSetting config={config} onConfigChange={handleChange} />
           <Separator className="my-5" />
           <AiSetting config={config} onConfigChange={handleChange} />
+           <AiAgentSetting config={config} onConfigChange={handleChange} />
+         <AiMcpSetting config={config} onConfigChange={handleChange} />
           <Separator className="my-5" />
           <AboutSetting />
         </div>

@@ -1,5 +1,4 @@
 import { create } from "zustand";
-
 /**
  * 保存视图
  */
@@ -20,7 +19,6 @@ export function saveViewValue(viewKey: string | undefined, key: string, value: a
       if(!view[key]){
         view[key]=[];
       }
-      
       const oldValue=view[key];
       view[key]=oldValue.concat(value);
     }else{
@@ -47,14 +45,13 @@ export function getView(viewKey: string) {
   }
   return null;
 }
-
 /**
  * 值存储可以需要多页面同步的值，不需要同步的数据可以放在localStorage中
  */
 export const useTabStore = create((set) => ({
   tab: {
-    type: "welcome",
-    name: "Welcome",
+    type: "",
+    name: "",
     path: []
   },
   setTab: (

@@ -6,7 +6,7 @@ import ViewSQL from "../view-sql";
 import ViewTable from "../view-table";
 import ViewTables from "../view-tables";
 import ViewText from "../view-text";
-import { ViewWebcome } from "../view-welcome";
+
 /**
  *
  * View 容器
@@ -16,23 +16,18 @@ import { ViewWebcome } from "../view-welcome";
  */
 export function ViewContainer() {
   const { tab } = useTabStore();
-
   return (
     <div className="box-border h-full w-full">
       {tab.name.length > 0 && tab.type === "sql" && (
         <ViewSQL viewKey={tab.name} />
       )}
-
       {tab.name.length > 0 && tab.type === "table" && (
         <ViewTable viewKey={tab.name} />
       )}
       {tab.name.length > 0 && tab.type === "data" && (
         <ViewData viewKey={tab.name} />
       )}
-
-      {tab.name.length > 0 && tab.type === "welcome" && (
-        <ViewWebcome viewKey={tab.name} />
-      )}
+   
       {tab.name.length > 0 && tab.type === "text" && (
         <ViewText viewKey={tab.name} />
       )}

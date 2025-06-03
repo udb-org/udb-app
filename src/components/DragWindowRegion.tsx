@@ -4,11 +4,9 @@ import {
   minimizeWindow,
 } from "@/helpers/window_helpers";
 import React, { type ReactNode } from "react";
-
 interface DragWindowRegionProps {
   title?: ReactNode;
 }
-
 export default function DragWindowRegion({ title }: DragWindowRegionProps) {
   return (
     <div className="flex w-screen items-stretch justify-between">
@@ -23,7 +21,6 @@ export default function DragWindowRegion({ title }: DragWindowRegionProps) {
     </div>
   );
 }
-
 function WindowButtons() {
   return (
     <div className="flex">

@@ -1,8 +1,6 @@
 //数据库操作
-
 import { ConnectionConfig, IDataSource } from "@/types/db";
 import { executeSql } from "./db-client";
-
 /**
  * 测试连接
  */
@@ -19,7 +17,5 @@ export function testConnection(conf: ConnectionConfig) {
         database:conf.database,
         params:conf.params
     };
-        
-    
     return executeSql("select 1",datasource)
 }

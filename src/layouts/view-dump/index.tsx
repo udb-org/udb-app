@@ -1,8 +1,5 @@
 import React, { useEffect, useState } from "react";
-
 import { Button } from "@/components/ui/button";
-
-
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -17,14 +14,11 @@ import { Separator } from "@/components/ui/separator";
 import { getView } from "@/store/tab-store";
 import { IDataBaseTable } from "@/types/db";
 import { toast } from "sonner";
-
-
 export default function ViewDump(
     props: {
         viewKey: string;
     }
 ) {
-
     const [view, setView] = React.useState<any>(null);
     const [database, setDatabase] = React.useState<string>("");
     const [tables, setTables] = useState<IDataBaseTable[]>([]);
@@ -34,13 +28,11 @@ export default function ViewDump(
     const [sessionId, setSessionId] = React.useState<string>(
         view?.sessionId || "",
     );
-
     useEffect(() => {
         //加载执行结果
         let _view = getView(props.viewKey);
         let _database = "";
         if (_view) {
-
             if (_view.params.database) {
                 _database = _view.params.database;
             }
@@ -54,7 +46,6 @@ export default function ViewDump(
             }
         });
     }, [props.viewKey]);
-
     function start() {
         if (selectedTables.length == 0) {
             toast.error("Please select at least one table");
@@ -75,8 +66,6 @@ export default function ViewDump(
                 setSessionId(res.id);
             }
         })
-
-
     }
     const [results, setResults] = useState<any[]>([]);
     const [progress, setProgress] = useState<number>(0);
@@ -93,7 +82,6 @@ export default function ViewDump(
                         setSessionId("");
                     } else {
                         if (res.status === "success") {
-
                             setSessionId("");
                             setProgress(100);
                             toast.success("Export success");
@@ -109,7 +97,6 @@ export default function ViewDump(
                                 }
                             }
                         }
-
                     }
                 });
             }, 60);
@@ -220,7 +207,6 @@ export default function ViewDump(
                             <Progress value={progress} className="w-full" />
                         </div>
                     }
-
                     <div className="flex justify-end pt-5">
                         <Button variant={"outline"} className="bg-card"
                             disabled={sessionId !== ""}
@@ -232,6 +218,5 @@ export default function ViewDump(
                 </div>
             </div>
         </div>
-
     );
 }

@@ -25,5 +25,4 @@ export function getFileIcon(name: string) {
         return <CodeXmlIcon size={14} className="flex-shrink-0" />;
     }
     return <FileIcon size={14} className="flex-shrink-0" />;
-
 }

@@ -2,17 +2,11 @@ import React from "react";
 // import { OpenAI } from "openai";
 import * as marked from "marked";
 import { toast } from "sonner";
-
-
 export function Message(props: {
     message: any
 }) {
     const rootRef = React.useRef<HTMLDivElement>(null);
     React.useEffect(() => {
-
-
-
-
         if (rootRef.current) {
             const content = props.message.content as string;
             if (content) {
@@ -36,7 +30,6 @@ export function Message(props: {
                     </div>
                     `;
                 };
-
                 rootRef.current.innerHTML = marked.parse(content, {
                     async: false,
                     renderer: renderer
@@ -49,7 +42,6 @@ export function Message(props: {
                                 const element = clss[i];
                                 element.addEventListener("click", copy);
                             }
-
                         }
                         const clss2 = rootRef.current.getElementsByClassName("insert-button");
                         if (clss2.length > 0) {
@@ -57,14 +49,12 @@ export function Message(props: {
                                 const element = clss2[i];
                                 element.addEventListener("click", insert);
                             }
-
                         }
                     }
                 });
             }
         }
     }, [props.message]);
-
     /**
      * 复制代码部分
      */
@@ -99,7 +89,5 @@ export function Message(props: {
             toast.error("Insert Fail");
         }
     }
-
-
     return <div className="message-markdown box-border" ref={rootRef}></div>;
 }

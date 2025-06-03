@@ -12,6 +12,8 @@ i18n.use(initReactI18next).init({
           "You can change the theme later in the settings",
         "setup.theme.dark": "Dark",
         "setup.theme.light": "Light",
+        "setup.theme.system": "System",
+
         "setup.theme.language": "Select your language",
         "setup.button.previous": "Previous",
         "setup.button.continue": "Continue",
@@ -66,6 +68,7 @@ i18n.use(initReactI18next).init({
         "setup.theme.subtitle": "您可以稍后在设置中更改主题",
         "setup.theme.dark": "深色",
         "setup.theme.light": "浅色",
+        "setup.theme.system": "系统",
         "setup.theme.language": "选择您的语言",
         "setup.button.previous": "上一步",
         "setup.button.continue": "下一步",

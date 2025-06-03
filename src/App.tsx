@@ -12,7 +12,11 @@ import { setAppLanguage } from "./api/language";
 export default function App() {
   const { i18n } = useTranslation();
   useEffect(() => {
-    AppConfig.getAppTheme().then((theme) => {
+    //clean LocalStorage
+    localStorage.clear();
+  }, []);
+  useEffect(() => {
+    window.api.invoke("app:getTheme").then((theme) => {
       updateDocumentTheme(theme === "dark");
     });
   }, []);
@@ -21,13 +25,14 @@ export default function App() {
       setAppLanguage(language as string, i18n);
     });
   }, []);
+  const isFirstRun = window.api.isFirstRun();
   return (
-    <ThemeProvider storageKey="vite-ui-theme"  >
+    <ThemeProvider storageKey="vite-ui-theme" defaultTheme="system"  >
       {
-        window.api.isFirstRun() && <Setup />
+        isFirstRun && <Setup />
       }
       {
-        !window.api.isFirstRun() && <Workbench />
+        !isFirstRun && <Workbench />
       }
       <Toaster />
     </ThemeProvider>

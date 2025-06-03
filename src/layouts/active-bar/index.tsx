@@ -21,12 +21,8 @@ import {
 } from "lucide-react";
 import React from "react";
 import { useTranslation } from "react-i18next";
-
-
 export default function ActiveBar() {
-
   const {t}=useTranslation();
-
 const explorers = [
   {
     name: t("active.bar.database"),
@@ -91,7 +87,6 @@ const explorers = [
   //   }
   // }
 ];
-
   const { active, setActive } = useActiveStore();
   const { leftVisible, setLeftVisible } = useLayoutStore();
   return (

@@ -6,7 +6,6 @@ export function SettingTopic(
 ) {
     return <div  className="font-bold text-lg py-1">{props.topic}</div>
 }
-
 export function SettingTitle(props:{
     title:string
 }){

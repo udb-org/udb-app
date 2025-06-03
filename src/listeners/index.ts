@@ -1,4 +1,5 @@
 import { registerAiListeners, unregisterAiListeners } from "./ai";
+import { registerAppListeners, unregisterAppListeners } from "./app";
 import { registerDbListeners, unregisterDbListeners } from "./db";
 import { registerDialogListeners, unregisterDialogListeners } from "./dialog";
 import { registerExplorerListeners, unregisterExplorerListeners } from "./explorer";
@@ -7,7 +8,6 @@ import { registerMenuListeners, unregisterMenuListeners } from "./menu";
 import { registerPlatformListeners, unregisterPlatformListeners } from "./platfrom";
 import { registerStorageListeners, unregisterStorageListeners } from "./storage";
 import { registerViewListeners, unregisterViewListeners } from "./view";
-
 export function registerListeners(mainWindow: Electron.BrowserWindow) {
   registerPlatformListeners(mainWindow);
   registerStorageListeners(mainWindow);
@@ -18,6 +18,7 @@ export function registerListeners(mainWindow: Electron.BrowserWindow) {
   registerMenuListeners(mainWindow);
   registerAiListeners(mainWindow);
   registerHistoryListeners(mainWindow);
+  registerAppListeners(mainWindow);
 }
 export function unregisterListeners() {
   unregisterAiListeners();
@@ -29,5 +30,5 @@ export function unregisterListeners() {
   unregisterPlatformListeners();
   unregisterStorageListeners();
   unregisterViewListeners();
+  unregisterAppListeners();
 }
-

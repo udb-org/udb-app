@@ -9,7 +9,6 @@ import {
 import VirtualList from "@/components/virtual-scroll";
 import { IVirtualTreeItem, VirtualTree } from "@/components/virtual-tree";
 import { openMenu } from "@/api/menu";
-
 import { useProjectStore } from "@/store/project-store";
 import {
   IDataBase,
@@ -22,7 +21,8 @@ import { openDialog } from "../dialog";
 import { DialogType } from "@/types/dialog";
 import { ViewType } from "@/types/view";
 import { useTranslation } from "react-i18next";
-
+import { ViewWebcome } from "../view-welcome";
+import { Webcome } from "./welcome";
 export function ExplorerDb(props: { isVisible: boolean }) {
   const [files, setFiles] = React.useState<IVirtualTreeItem[]>([]);
   function transformFiles(files: any[]) {
@@ -103,7 +103,7 @@ export function ExplorerDb(props: { isVisible: boolean }) {
           path: [params.params.database],
         });
       } else if (params.command === "exportDatabase") {
-       openView({
+        openView({
           type: ViewType.Dump,
           params: {
             database: params.params.database,
@@ -113,14 +113,12 @@ export function ExplorerDb(props: { isVisible: boolean }) {
       }
     };
     window.api.on("explorer:db-actioning", explorer_db_actioning);
-
     return () => {
       window.api.removeListener("db:getDatabasesing", getDatabasesing);
       window.api.removeAllListeners("explorer:db-actioning");
     };
   }, []);
   const { t } = useTranslation();
-
   return (
     <div
       className="h-full w-full flex-col"
@@ -141,13 +139,13 @@ export function ExplorerDb(props: { isVisible: boolean }) {
       </div>
       {/* <ScrollArea className="flex-1">
       <ScrollBar orientation="vertical" />
-
-
     </ScrollArea> */}
       {/* <VirtualList items={rows}  estimateHeight={32} renderItem={(item: IExplorerDbRow, i: number) => {
       return <div></div>
     }}></VirtualList> */}
-      <VirtualTree
+
+
+      {files.length > 0 && <VirtualTree
         data={files}
         onLoad={(path: string[]) => {
           console.log("onLoad", path);
@@ -173,7 +171,6 @@ export function ExplorerDb(props: { isVisible: boolean }) {
                 name: "Procedures",
                 isFolder: true,
               });
-
               return resolve(_files);
             });
           } else if (path.length == 2) {
@@ -240,7 +237,6 @@ export function ExplorerDb(props: { isVisible: boolean }) {
                         description: fun.ROUTINE_COMMENT,
                       });
                     });
-
                     return _files;
                   }
                 });
@@ -319,7 +315,7 @@ export function ExplorerDb(props: { isVisible: boolean }) {
             }
           }
         }}
-        onRowClick={(row) => {}}
+        onRowClick={(row) => { }}
         onRowContextMenu={(row) => {
           const path = row.path;
           if (path.length == 1) {
@@ -418,7 +414,14 @@ export function ExplorerDb(props: { isVisible: boolean }) {
             }
           }
         }}
-      ></VirtualTree>
+      ></VirtualTree>}
+
+      {
+        files.length==0&&<Webcome/>
+      }
+
+
+
     </div>
   );
 }

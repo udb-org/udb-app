@@ -11,7 +11,6 @@ export const ViewTablesActions = [
     icon: TrashIcon,
   },
 ];
-
 export default function ViewTables(props: { viewKey: string }) {
   const [view, setView] = React.useState<any>(null);
   const [database, setDatabase] = React.useState<string>("");
@@ -41,9 +40,7 @@ export default function ViewTables(props: { viewKey: string }) {
       });
     }
   }, [database]);
-
   const [selected, setSelected] = React.useState<string[]>([]);
-
   return (
     <div className="h-full w-full">
       <ScrollArea className="h-full w-full">
@@ -74,7 +71,6 @@ export default function ViewTables(props: { viewKey: string }) {
                 onContextMenu={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-
                   openMenu({
                     channel: "",
                     params: {},

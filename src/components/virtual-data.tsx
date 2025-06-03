@@ -11,7 +11,6 @@
  *
  *
  */
-
 import React, { useEffect, useRef } from "react";
 import VirtualList from "./virtual-scroll";
 import { cn } from "@/utils/tailwind";
@@ -68,7 +67,6 @@ export function VirtualData(props: { source: any; height?: number }) {
     setRowTops([]);
     setColumnWidths([]);
     setColumnLefts([]);
-
     setSelectRange(null);
     setFilterColumn(null);
     setFilterValue("");
@@ -88,11 +86,9 @@ export function VirtualData(props: { source: any; height?: number }) {
     if (textareaRef.current) {
       textareaRef.current.style.display = "none";
     }
-
     if (props.source.columns) {
       setColumns(props.source.columns);
     }
-
     if (props.source.data) {
       setData([...props.source.data]);
     }
@@ -110,7 +106,6 @@ export function VirtualData(props: { source: any; height?: number }) {
     if (containerRef.current) {
       observer.observe(containerRef.current);
     }
-
     return () => {
       observer.disconnect();
     };
@@ -126,13 +121,10 @@ export function VirtualData(props: { source: any; height?: number }) {
       _rowNoWidth = 20;
     }
     setRowNoWidth(_rowNoWidth);
-
     const rowHeights = new Array(rowCount).fill(26);
     setRowHeights(rowHeights);
-
     const columnCount = columns.length;
     const columnWidths = new Array(columnCount).fill(100);
-
     if (canvasRef.current) {
       const ctx: any = canvasRef.current.getContext("2d");
       ctx.font = "13px Monaco";
@@ -145,7 +137,6 @@ export function VirtualData(props: { source: any; height?: number }) {
           }
         }
       }
-
       //计算列宽
       for (let i = 0; i < maxText.length; i++) {
         const val = maxText[i];
@@ -170,7 +161,6 @@ export function VirtualData(props: { source: any; height?: number }) {
         }
       }
     }
-
     setColumnWidths(columnWidths);
     //计算行高
     const rowTops = new Array(rowCount).fill(0);
@@ -178,7 +168,6 @@ export function VirtualData(props: { source: any; height?: number }) {
       rowTops[i] = i * 26;
     }
     setRowTops(rowTops);
-
     //计算列宽
     const columnLefts = new Array(columnCount).fill(0);
     let left = 0;
@@ -188,21 +177,16 @@ export function VirtualData(props: { source: any; height?: number }) {
     }
     console.log("columnLefts", columnLefts);
     setColumnLefts(columnLefts);
-
     requestIdleCallback(() => {
       //重新计算可视范围
       setVisibleCounter(visibleCounter + 1);
       handleWheel();
     });
   }, [data, columns]);
-
   const [rowNoWidth, setRowNoWidth] = React.useState<number>(20);
-
   //行数
   const [rowCount, setRowCount] = React.useState(0);
-
   //行高
-
   const [rowHeights, setRowHeights] = React.useState<number[]>([]);
   const [rowTops, setRowTops] = React.useState<number[]>([]);
   //列宽
@@ -250,7 +234,6 @@ export function VirtualData(props: { source: any; height?: number }) {
   const [startColumnIndex, endColumnIndex, colTotalWidth] =
     React.useMemo(() => {
       const colTotalWidth = columnWidths.reduce((a, b) => a + b, 0);
-
       let startColumnIndex = 0;
       const columnCount = columnWidths.length;
       //查找开始的列
@@ -285,14 +268,12 @@ export function VirtualData(props: { source: any; height?: number }) {
       );
       return [startColumnIndex, endColumnIndex + 1, colTotalWidth];
     }, [visibleCounter, scrollLeft, containerWidth.current]);
-
   function handleWheel() {
     if (containerRef.current) {
       setScrollTop(containerRef.current.scrollTop);
       setScrollLeft(containerRef.current.scrollLeft);
     }
   }
-
   //选择
   const [selectRange, setSelectRange] = React.useState<{
     x0: number;
@@ -396,7 +377,6 @@ export function VirtualData(props: { source: any; height?: number }) {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [selectRange]);
-
   const colLineRef = useRef<HTMLDivElement>(null);
   const rowLineRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -414,7 +394,6 @@ export function VirtualData(props: { source: any; height?: number }) {
   >(new Map());
   //选择项
   const [filterSelected, setFilterSelected] = React.useState<string[]>([]);
-
   return (
     <div
       className="flex h-full w-full flex-col text-sm"
@@ -426,11 +405,9 @@ export function VirtualData(props: { source: any; height?: number }) {
         {
           //工具栏
         }
-
         {
           //排序
         }
-
         <Button
           variant={"ghost"}
           size={"sm"}
@@ -453,7 +430,6 @@ export function VirtualData(props: { source: any; height?: number }) {
                   _sortType = "null";
                 }
                 setSortType(_sortType);
-
                 if (_sortType === "null") {
                   //不排序
                   setData([...props.source.data]);
@@ -492,7 +468,6 @@ export function VirtualData(props: { source: any; height?: number }) {
                   console.log("props.source.data", props.source.data); //更新数据
                   setData(sortedData);
                 }
-
                 //重新计算可视范围
                 setVisibleCounter(visibleCounter + 1);
                 handleWheel();
@@ -516,7 +491,6 @@ export function VirtualData(props: { source: any; height?: number }) {
             </Tooltip>
           </TooltipProvider>
         </Button>
-
         {
           //筛选
         }
@@ -539,7 +513,6 @@ export function VirtualData(props: { source: any; height?: number }) {
                     //设置筛选的值
                     setFilterSelected([]);
                     setFilterValue("");
-
                     //统计该列的所有值及其数量,并去重
                     const _values = props.source.data.map(
                       (item) => item[columnName],
@@ -632,7 +605,6 @@ export function VirtualData(props: { source: any; height?: number }) {
               >
                 Invert
               </Button>
-
               <Button
                 variant={"ghost"}
                 size={"sm"}
@@ -733,7 +705,6 @@ export function VirtualData(props: { source: any; height?: number }) {
             </div>
           </PopoverContent>
         </Popover>
-
         {
           //chart
         }
@@ -759,7 +730,6 @@ export function VirtualData(props: { source: any; height?: number }) {
           </PopoverTrigger>
           <PopoverContent>ada</PopoverContent>
         </Popover>
-
         {
           //Ai
         }
@@ -785,7 +755,6 @@ export function VirtualData(props: { source: any; height?: number }) {
           </PopoverTrigger>
           <PopoverContent>ada</PopoverContent>
         </Popover>
-
         <div className="flex-1"></div>
         <Button
           variant={"ghost"}
@@ -807,7 +776,6 @@ export function VirtualData(props: { source: any; height?: number }) {
                     .join(","),
                 )
                 .join("\n");
-
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
@@ -921,9 +889,7 @@ export function VirtualData(props: { source: any; height?: number }) {
                   const x = e.clientX;
                   const y = e.clientY;
                   const dx = x - startX;
-
                   const tx = startScrollLeft + lX + dx;
-
                   const startXIndex = index + startColumnIndex;
                   //计算新的endX和endY
                   let endXIndex = index + startColumnIndex;
@@ -933,7 +899,6 @@ export function VirtualData(props: { source: any; height?: number }) {
                       break;
                     }
                   }
-
                   setSelectRange({
                     x0: startXIndex,
                     y0: 0,
@@ -967,7 +932,6 @@ export function VirtualData(props: { source: any; height?: number }) {
                 <div className="flex-1 overflow-hidden font-bold">
                   {col.columnLable}
                 </div>
-
                 <div
                   className="bg-background relative right-[0px] z-10 h-full w-[1px] flex-shrink-0 cursor-col-resize"
                   onMouseDown={(e) => {
@@ -1065,24 +1029,18 @@ export function VirtualData(props: { source: any; height?: number }) {
                     if (selectSvgRef.current) {
                       selectSvgRef.current.style.display = "block";
                     }
-
                     const startY = e.clientY;
                     //监听是否触发了鼠标拖拽
                     let isMove = false;
-
                     const startScrollTop = scrollTop + 0;
                     const fY: any =
                       containerRef.current?.getBoundingClientRect().y;
                     const lY = startY - fY;
-
                     const move = (e: MouseEvent) => {
                       isMove = true;
                       console.log("move", e);
-
                       const y = e.clientY;
-
                       const dy = y - startY;
-
                       const startYIndex = index + startRowIndex;
                       const ty = startScrollTop + lY + dy;
                       //计算新的endY
@@ -1223,7 +1181,6 @@ export function VirtualData(props: { source: any; height?: number }) {
                             y1: rowIndex + startRowIndex,
                           });
                         }
-
                         if (textareaRef.current) {
                           textareaRef.current.value = row[col.columnName];
                           textareaRef.current.style.display = "block";
@@ -1257,7 +1214,6 @@ export function VirtualData(props: { source: any; height?: number }) {
                         if (selectSvgRef.current) {
                           selectSvgRef.current.style.display = "block";
                         }
-
                         //拖拽选择多个单元格
                         const startX = e.clientX;
                         const startY = e.clientY;
@@ -1271,7 +1227,6 @@ export function VirtualData(props: { source: any; height?: number }) {
                         const fY: any =
                           containerRef.current?.getBoundingClientRect().y;
                         const lY = startY - fY;
-
                         const move = (e: MouseEvent) => {
                           isMove = true;
                           console.log("move", e);
@@ -1279,9 +1234,7 @@ export function VirtualData(props: { source: any; height?: number }) {
                           const y = e.clientY;
                           const dx = x - startX;
                           const dy = y - startY;
-
                           const tx = startScrollLeft + lX + dx;
-
                           const startXIndex = columnIndex + startColumnIndex;
                           //计算新的endX和endY
                           let endXIndex = columnIndex + startColumnIndex;

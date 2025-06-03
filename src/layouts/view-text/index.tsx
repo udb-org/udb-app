@@ -5,25 +5,19 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/componen
 import { SqlActionParams } from "@/api/view";
 import { AlignRight, PlayIcon, SaveIcon, ShareIcon } from "lucide-react";
 import { dbExec, dbResult, execSql } from "@/api/db";
-
 import { format as sqlFormatter } from "sql-formatter";
 import { toast } from "sonner";
-
 export default function ViewText(
     props: {
         viewKey: string;
     }
 ) {
-
-
     const view = useMemo(() => {
         return getView(props.viewKey);
     }, [props.viewKey])
     const [editor, setEditor] = React.useState<any>(null);
     const editorRef = React.useRef<any>(null);
     const [content, setContent] = React.useState<string>(view?.content || "");
-
-
     React.useEffect(() => {
         let language="text";
         if(view.type==="sql"){
@@ -54,10 +48,6 @@ export default function ViewText(
                 ".vue":"vue",
                 ".jsx":"javascriptreact",
                 ".tsx":"typescriptreact",
-     
-
-              
-                
             }
             if(ext[extName]){
                 language=ext[extName];
@@ -95,7 +85,6 @@ export default function ViewText(
             };
         }
     }, [view, editor])
-
     return <div className="w-full h-full " >
         <div ref={editorRef} className="w-full h-full"></div>
     </div>

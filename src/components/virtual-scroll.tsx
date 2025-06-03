@@ -37,7 +37,6 @@ const VirtualList = ({
         }
         return () => observer.disconnect();
     }, []);
-
     // 计算布局
     const getItemPosition = useCallback((index) => {
         let top = 0;
@@ -84,14 +83,10 @@ const VirtualList = ({
     }, [containerHeight, deferredScrollTop, items, estimateHeight, buffer, heightCache]);
     const [startIndex, endIndex] = calculateRange();
     const visibleItems = items.slice(startIndex, endIndex + 1);
-  
     // 总高度计算
     const totalHeight = items.reduce((acc, _, index) => {
         return acc + (heightCache.get(index) || estimateHeight);
     }, 0);
-
-
-
     const [showScrollBar, setShowScrollBar] = useState(false);
     // 滚动处理
     const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -106,9 +101,7 @@ const VirtualList = ({
         timerRef.current = setTimeout(() => {
             setShowScrollBar(false);
         }, 2000);  // 2秒无滚动后隐藏
-
     }, []);  // 空依赖数组保证回调稳定性
-
     // 清理定时器
     useEffect(() => {
         return () => {
@@ -117,8 +110,6 @@ const VirtualList = ({
             }
         }
     }, []);
-
-
     return (
         <div
             className="virtual-scroll relative h-full  w-full overflow-hidden"
@@ -215,7 +206,6 @@ const VirtualList = ({
         </div>
     );
 };
-
 // 优化子组件渲染
 VirtualList.Item = memo(({ children }) => children);
 export default VirtualList;

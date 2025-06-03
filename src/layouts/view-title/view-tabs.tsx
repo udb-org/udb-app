@@ -36,7 +36,6 @@ export function ViewTabs() {
 }
 export function ViewTabsList() {
   const { tab, setTab } = useTabStore();
-
   const [tabs, setTabs] = React.useState<
     {
       name: string;
@@ -44,13 +43,8 @@ export function ViewTabsList() {
       path: string[];
     }[]
   >([
-    {
-      type: "welcome",
-      name: "Welcome",
-      path: [],
-    },
+   
   ]);
-
   useEffect(() => {
     const openViewing = (params: ViewParams) => {
       console.log("openViewing", params);
@@ -120,7 +114,6 @@ export function ViewTabsList() {
               if (tabs.length === 1) {
                 return;
               }
-
               //如果是当前的tab
               if (tab.name === item.name) {
                 console.log("tab.name === item.name", tab.name, item.name);
@@ -158,13 +151,11 @@ export function ViewTabsList() {
                 const newTabs = prev.filter(
                   (tab: any) => tab.name !== item.name,
                 );
-
                 return newTabs;
               });
             }}
           />
         ))}
-
         <div className="w-[100px]"></div>
       </div>
     </div>
@@ -188,7 +179,6 @@ export function ViewTabsItem(props: {
       <div
         className={cn(
           "hover:bg-muted  flex h-[24px] cursor-pointer items-center gap-1 rounded-lg border border-transparent px-[8px] text-sm",
-
           props.isActive && "bg-muted border-foreground/10",
         )}
         onClick={props.onClick}
@@ -296,7 +286,6 @@ export function ViewTabsTool() {
           )}
         </>
       )}
-
       {tab.type === "table" && (
         <>
           {ViewTableActions.slice(0, 2).map((item, index) => (
@@ -336,7 +325,6 @@ export function ViewTabsTool() {
           )}
         </>
       )}
-
       {tab.type === "tables" && (
         <>
           {ViewTablesActions.slice(0, 2).map((item, index) => (

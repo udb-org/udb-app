@@ -17,16 +17,16 @@ export function registerAiListeners(mainWindow: Electron.BrowserWindow) {
       args: {
         input: string;
         model: any;
-        mode: AiMode;
         context: string;
+        agent: string|null;
       },
     ) => {
       console.log("ai:ask", args);
       ask(
         args.input,
         args.model,
-        args.mode,
         args.context,
+        args.agent,
         (content: string, finished: boolean) => {
           mainWindow.webContents.send("ai:asking", {
             content: content,

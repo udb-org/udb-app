@@ -19,7 +19,6 @@ export default function TitleBar() {
   const { leftPanelSize, setLeftPanelSize, rightPanelSize, setRightPanelSize,
     leftVisible, setLeftVisible,
     rightVisible, setRightVisible } = useLayoutStore();
-
   useEffect(() => {
     //Get platform info
     getPlatformInfo().then((info: any) => {

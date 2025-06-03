@@ -30,7 +30,6 @@ export const ViewSQLActions = [
     icon: PlayIcon,
   },
 ];
-
 export default function ViewSQL(props: { viewKey: string }) {
   const [results, setResults] = React.useState<any[]>([]);
   const [view, setView] = React.useState<any>(null);
@@ -52,7 +51,6 @@ export default function ViewSQL(props: { viewKey: string }) {
     setResults(_results);
     setView(_view);
   }, [props.viewKey]);
-
   const [editor, setEditor] = React.useState<any>(null);
   const editorRef = React.useRef<any>(null);
   const [sql, setSql] = React.useState<string>("");
@@ -76,7 +74,6 @@ export default function ViewSQL(props: { viewKey: string }) {
     }
     //删除已注册的命令
     // editor.unr
-
     //增加命令:执行sql
     const run_action = editor.addAction({
       id: "run-sql",
@@ -129,7 +126,6 @@ export default function ViewSQL(props: { viewKey: string }) {
         fixAction();
       },
     });
-
     //AIInline
     const aiInlineCommand = editor.addAction({
       id: "ai-inline",
@@ -150,18 +146,15 @@ export default function ViewSQL(props: { viewKey: string }) {
           });
           // 清理React组件
         };
-
         if (currentViewZoneId) {
           closeViewZone();
           return;
         }
-
         const lineNumber = position.lineNumber;
         const domNode = document.createElement("div");
         domNode.className = "ai-inline";
         const flex = document.createElement("div");
         domNode.appendChild(flex);
-
         const input = document.createElement("div");
         input.className = "ai-inline-input";
         const textArea = document.createElement("textarea");
@@ -171,29 +164,24 @@ export default function ViewSQL(props: { viewKey: string }) {
         flex.appendChild(input);
         input.appendChild(textArea);
         input.appendChild(icon);
-
         // 添加ESC键监听
         const handleEscape = (e: KeyboardEvent) => {
           if (e.key === "Escape") {
             closeViewZone();
           }
         };
-
         textArea.addEventListener("keydown", (e) => {
           console.log("keydown", e);
-
           setTimeout(() => {
             handleEscape(e);
           }, 100);
         });
-
         // 添加View Zone
         editor.changeViewZones((accessor) => {
           // 移除之前的View Zone
           if (currentViewZoneId) {
             accessor.removeZone(currentViewZoneId);
           }
-
           const newViewZone: monaco.editor.IViewZone = {
             afterLineNumber: lineNumber,
             heightInPx: 42, // 根据组件实际高度调整
@@ -204,7 +192,6 @@ export default function ViewSQL(props: { viewKey: string }) {
               domNode.style.top = `${top}px`;
             },
           };
-
           //监听textArea高度变化
           textArea.addEventListener("input", () => {
             newViewZone.heightInPx = textArea.clientHeight;
@@ -229,7 +216,6 @@ export default function ViewSQL(props: { viewKey: string }) {
             e.stopPropagation();
             textArea.focus();
           });
-
           setCurrentViewZoneId(accessor.addZone(newViewZone));
           // 在下一个事件循环确保DOM渲染完成
           setTimeout(() => {
@@ -238,7 +224,6 @@ export default function ViewSQL(props: { viewKey: string }) {
         });
       },
     });
-
     const save_action = editor.addAction({
       id: "save-sql",
       label: "Save SQL",
@@ -255,7 +240,6 @@ export default function ViewSQL(props: { viewKey: string }) {
       keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyO],
       run: () => {},
     });
-
     console.log("execStatus", execStatus);
     let decorations: monaco.editor.IModelDeltaDecoration[] = [];
     for (let i = 0; i < execStatus.length; i++) {
@@ -271,7 +255,6 @@ export default function ViewSQL(props: { viewKey: string }) {
     // 创建装饰器集合
     decorationsCollection.current =
       editor.createDecorationsCollection(decorations);
-
     // 注册代码提示提供者，并保存返回的 disposable 对象
     const completionItemProvider =
       monaco.languages.registerCompletionItemProvider("sql", {
@@ -349,9 +332,7 @@ export default function ViewSQL(props: { viewKey: string }) {
           ) {
             //从lineText 获取表名
             const tableNames = getTableNames(lineText);
-
             console.log("tableName", tableNames);
-
             const res = await window.api.invoke("db:getColumns", tableNames[0]);
             console.log("res", res);
             if (res.status === "success") {
@@ -371,13 +352,11 @@ export default function ViewSQL(props: { viewKey: string }) {
               suggestions: [],
             };
           }
-
           //如何是.结束，说明.前面是表，后面是字段
           if (lineLeftText.trim().toUpperCase().endsWith(".")) {
             //从获取.前面的表名
             const lLT = lineLeftText.trim();
             console.log("endsWith . ", lLT);
-
             const lLTs = lLT.substring(0, lLT.length - 1).split(" ");
             let tableName = lLTs[lLTs.length - 1];
             //判断tableName 是真实表名还是别名，使用正侧表达式匹配[a-zA-Z0-9_]+ tableName 存在
@@ -417,18 +396,15 @@ export default function ViewSQL(props: { viewKey: string }) {
               };
             }
           }
-
           // 如果当前行内容为空，则返回空数组
           if (lineText === "") {
             return { suggestions: [] };
           }
-
           return {
             suggestions: getSqlSuggestionsKeywords(),
           };
         },
       });
-
     return () => {
       decorationsCollection.current?.clear();
       run_action.dispose();
@@ -450,7 +426,6 @@ export default function ViewSQL(props: { viewKey: string }) {
       }
     };
     window.api.on("view:sql-actioning", sqlActioning);
-
     const execSqling = (params: { index: number; sql: string }) => {
       console.log("execSqling", params);
       if (editor == null) {
@@ -483,7 +458,6 @@ export default function ViewSQL(props: { viewKey: string }) {
         }
         r = exeSql.substring(0, len).split("\n").length + 1;
       }
-
       const temp = execStatus.filter((item) => item.row !== r);
       //设置装饰器
       setExecStatus([
@@ -537,7 +511,6 @@ export default function ViewSQL(props: { viewKey: string }) {
         r = exeSql.substring(0, len).split("\n").length + 1;
       }
       console.log("r", r, "index", params.index);
-
       const temp = execStatus.filter((item) => item.row !== r);
       //设置装饰器
       setExecStatus([
@@ -561,7 +534,6 @@ export default function ViewSQL(props: { viewKey: string }) {
       setResults(_results);
     };
     window.api.on("db:execSqlEnd", execSqlingEnd);
-
     const aiInserting = (context: string) => {
       console.log("aiInserting", context);
       if (editor == null) {
@@ -584,7 +556,6 @@ export default function ViewSQL(props: { viewKey: string }) {
       }
     };
     window.api.on("ai:inserting", aiInserting);
-
     return () => {
       window.api.removeAllListeners("view:sql-actioning");
       window.api.removeAllListeners("db:execSqling");
@@ -617,7 +588,6 @@ export default function ViewSQL(props: { viewKey: string }) {
       //清除执行结果
       setResults([]);
       saveViewValue(props.viewKey, "results", []);
-
       //执行sql
       let exeSql = "";
       const selectedText = editor
@@ -691,7 +661,6 @@ export default function ViewSQL(props: { viewKey: string }) {
       }
     }
   }
-
   useEffect(() => {
     if (sessionId && sessionId !== "") {
       const timer = setInterval(() => {
@@ -714,7 +683,6 @@ export default function ViewSQL(props: { viewKey: string }) {
                 setResults([...results, ...resResults]);
               }
             }
-         
           }
         });
       }, 1000);
@@ -723,7 +691,6 @@ export default function ViewSQL(props: { viewKey: string }) {
       };
     }
   }, [sessionId]);
-
   React.useEffect(() => {
     const _editor = monaco.editor.create(editorRef.current, {
       value: sql || "",
@@ -758,9 +725,7 @@ export default function ViewSQL(props: { viewKey: string }) {
       };
     }
   }, [view, editor]);
-
   const [resultHeight, setResultHeight] = React.useState(300);
-
   return (
     <div className="h-full w-full">
       <ResizablePanelGroup direction="vertical">
@@ -772,7 +737,6 @@ export default function ViewSQL(props: { viewKey: string }) {
           className="bg-background/50 rounded-full"
           onMove={(x, y) => {
             const height = resultHeight - y;
-
             if (height < 100) {
               setResultHeight(0);
             } else if (height > 600) {

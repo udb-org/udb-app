@@ -14,12 +14,10 @@ export default function SearchInput({ className, ...props }: React.ComponentProp
             focused && "border-primary"
         )}
     >
-
         <div>
             <SearchIcon size={12} />
         </div>
         <input
-
             data-slot="input"
             className="border-none outline-none flex-1"
             {...props}
@@ -29,9 +27,6 @@ export default function SearchInput({ className, ...props }: React.ComponentProp
             onBlur={() => {
                 setFocused(false);
             }}
-
-
-
         />
     </div>
 }

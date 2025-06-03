@@ -78,8 +78,6 @@ export function db_rollback(id: string) {
 export function db_getTasks() {
   return db_func("getTasks", {});
 }
-
-
 export function db_dump(args: any) {
   return db_func("dump", args);
 }
@@ -103,12 +101,10 @@ function db_func(url: string, args: any) {
     body: JSON.stringify(args),
   }).then((res) => res.json());
 }
-
 /**
  * Method to get database list
  * @returns Promise that resolves to database list
  */
-
 export function execFuntion(url: string, args: any) {
   console.log("execFuntion", url, args);
   return fetch("http://localhost:" + PORT + "/api/base/" + url, {
@@ -119,7 +115,6 @@ export function execFuntion(url: string, args: any) {
     body: JSON.stringify(args),
   }).then((res) => res.json());
 }
-
 /**
 /**
  * 执行 SQL 语句的方法
@@ -146,7 +141,6 @@ export function executeSql(sql: string, datasource: IDataSource) {
     });
 }
 let PORT: number = 10001;
-
 let isServerRunning = false;
 /**
  * 启动服务器
@@ -191,7 +185,6 @@ async function RunJar(callback: (status: string, message: string) => void) {
     await downloadJdk(javaPath);
   }
   let javaBinPath = "";
-
   const platform = os.platform();
   if (platform === "win32") {
     javaBinPath = path.join(javaPath, "jdk-21.0.2.jdk", "bin", "java.exe");
@@ -207,7 +200,6 @@ async function RunJar(callback: (status: string, message: string) => void) {
   } else if (platform === "linux") {
     javaBinPath = path.join(javaPath, "jdk-21.0.2.jdk", "bin", "java");
   }
-
   const jarPath = path.join(serverpath, "jar");
   //如果不存在的话，则创建
   if (!fs.existsSync(jarPath)) {
@@ -255,7 +247,6 @@ function runJar(
     },
   );
 }
-
 function getAvailablePort(
   startPort: number,
   callback: (err: any, port?: number) => void,

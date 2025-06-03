@@ -7,11 +7,9 @@ import reactCompiler from "eslint-plugin-react-compiler";
 import path from "node:path";
 import { includeIgnoreFile } from "@eslint/compat";
 import { fileURLToPath } from "node:url";
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const prettierIgnorePath = path.resolve(__dirname, ".prettierignore");
-
 /** @type {import('eslint').Linter.Config[]} */
 export default [
   includeIgnoreFile(prettierIgnorePath),

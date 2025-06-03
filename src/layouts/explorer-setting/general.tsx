@@ -19,7 +19,6 @@ export function GeneralSetting(
 ) {
     const {t,i18n}=useTranslation();
     return <div>
-     
         <SettingTitle title={t("settings.base.language")} />
         <SettingDescription description={t("setup.theme.language")} />
         <Select
