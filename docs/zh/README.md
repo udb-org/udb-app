@@ -3,7 +3,7 @@ UDB，一个开源的、基于多代理的现代数据库管理工具。
 ## 导言
 UDB是一个基于Electron.js、Shadcn和AI技术的强大数据库管理工具。它支持多种数据库类型，并提供基于大型语言模型的表结构生成和SQL编写等独特功能。
 
-![UDB home page ](/images/Screenshots/Screenshot%202025-05-29%20at%205.02.22 PM.png)
+![UDB home page ](./images/Screenshots/Screenshot%202025-06-03%20at%201.50.49 PM.png)
 
 ## 特点
 - **多数据库支持**：连接和管理各种数据库，包括但不限于MySQL、PostgreSQL、SQLite等。
