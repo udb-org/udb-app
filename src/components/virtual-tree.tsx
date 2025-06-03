@@ -18,10 +18,13 @@ export interface IVirtualTreeItem {
   name: string;
   isFolder: boolean;
   expand?: boolean;
+  expandIcon?: React.ReactNode;
+  collapseIcon?: React.ReactNode;
   children?: IVirtualTreeItem[];
   icon?: React.ReactNode;
   data?: any;
   description?: string;
+
 }
 interface IVirtualTreeRow {
   name: string;
@@ -31,6 +34,8 @@ interface IVirtualTreeRow {
   level: number;
   path: string[];
   description?: string;
+  expandIcon?: React.ReactNode;
+  collapseIcon?: React.ReactNode;
 }
 /**
  * 虚拟树组件
@@ -74,6 +79,8 @@ export function VirtualTree(props: {
         level: _path.length - 1,
         path: _path,
         description: item.description,
+        expandIcon: item.expandIcon,
+        collapseIcon: item.collapseIcon,
       });
       if (item.isFolder && item.expand && item.children) {
         const _sub_rows = transformItems(item.children, _path);
@@ -294,9 +301,18 @@ export function VirtualTree(props: {
                   <ChevronRightIcon size={14} className="flex-shrink-0" />
                 )}
                 {row.expand ? (
-                  <FolderOpenIcon size={14} className="flex-shrink-0" />
+                  row.expandIcon? (
+                    row.expandIcon
+                    // <row.expandIcon size={14} className="flex-shrink-0" />
+                  ):( 
+                    <FolderOpenIcon size={14} className="flex-shrink-0" />
+                  )
                 ) : (
-                  <FolderIcon size={14} className="flex-shrink-0" />
+                  row.collapseIcon? (
+                    row.collapseIcon
+                  ):( 
+                    <FolderIcon size={14} className="flex-shrink-0" />
+                  )
                 )}
               </>
             )}

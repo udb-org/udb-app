@@ -6,14 +6,13 @@
  * @date 2025/04/21
  * @version 1.0.0
  */
-import { app, BrowserWindow, ipcMain, nativeTheme } from "electron";
-import path from "path";
+import { app, BrowserWindow } from "electron";
 import {
   installExtension,
   REACT_DEVELOPER_TOOLS,
 } from "electron-devtools-installer";
+import path from "path";
 import { registerListeners, unregisterListeners } from "./listeners";
-import { getConfigItem } from "./services/storage";
 import { getThemeBg } from "./listeners/app";
 function createWindow() {
   const preload = path.join(__dirname, "preload.js");

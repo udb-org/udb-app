@@ -10,6 +10,8 @@ import {
   BotIcon,
   MessageCirclePlusIcon,
   SendIcon,
+  SmileIcon,
+  SmilePlusIcon,
   UserIcon,
   XIcon
 } from "lucide-react";
@@ -186,9 +188,9 @@ export function AssistantPanel() {
                 )}
               >
                 {item.role === "user" ? (
-                  <UserIcon size={14} />
+                  <SmilePlusIcon size={14} />
                 ) : (
-                  <SiIcon size={14} />
+                  <img src="./icons/logo.png" width={18} height={18} />
                 )}
                 {item.role === "user" ? "Me" : "Udb"}
               </div>

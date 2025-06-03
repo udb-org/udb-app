@@ -6,6 +6,9 @@ import ViewSQL from "../view-sql";
 import ViewTable from "../view-table";
 import ViewTables from "../view-tables";
 import ViewText from "../view-text";
+import ViewUserProtocal from "../view-user-protocal";
+import ViewPrivacyPolicy from "../view-privacy-policy";
+import ViewOpenSource from "../view-open-source";
 
 /**
  *
@@ -36,6 +39,15 @@ export function ViewContainer() {
       )}
        {tab.name.length > 0 && tab.type === "dump" && (
         <ViewDump viewKey={tab.name} />
+      )}
+          {tab.name.length > 0 && tab.type === "user-protocal" && (
+        <ViewUserProtocal viewKey={tab.name} />
+      )}
+          {tab.name.length > 0 && tab.type === "privacy-policy" && (
+        <ViewPrivacyPolicy viewKey={tab.name} />
+      )}
+          {tab.name.length > 0 && tab.type === "open-source" && (
+        <ViewOpenSource viewKey={tab.name} />
       )}
     </div>
   );

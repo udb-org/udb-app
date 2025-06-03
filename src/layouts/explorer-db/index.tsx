@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import {
   CodeIcon,
   ColumnsIcon,
+  DatabaseIcon,
   MoreHorizontalIcon,
   TableIcon,
 } from "lucide-react";
@@ -21,8 +22,13 @@ import { openDialog } from "../dialog";
 import { DialogType } from "@/types/dialog";
 import { ViewType } from "@/types/view";
 import { useTranslation } from "react-i18next";
-import { ViewWebcome } from "../view-welcome";
 import { Webcome } from "./welcome";
+import FolderDatabase from "@/components/icons/folder-database";
+import FolderDatabaseOpen from "@/components/icons/folder-database-open";
+import FolderContentOpen from "@/components/icons/folder-content-open";
+import FolderContent from "@/components/icons/folder-content";
+import FolderContextOpen from "@/components/icons/folder-context-open";
+import FolderContext from "@/components/icons/folder-context";
 export function ExplorerDb(props: { isVisible: boolean }) {
   const [files, setFiles] = React.useState<IVirtualTreeItem[]>([]);
   function transformFiles(files: any[]) {
@@ -31,6 +37,9 @@ export function ExplorerDb(props: { isVisible: boolean }) {
       _files.push({
         name: file.Database,
         isFolder: true,
+        expandIcon: <FolderDatabaseOpen size={14} className="flex-shrink-0" />,
+        collapseIcon: <FolderDatabase size={14} className="flex-shrink-0" />,
+
       });
     });
     return _files;
@@ -158,6 +167,8 @@ export function ExplorerDb(props: { isVisible: boolean }) {
               _files.push({
                 name: "Tables",
                 isFolder: true,
+                expandIcon: <FolderContentOpen size={14} className="flex-shrink-0" />,
+                collapseIcon: <FolderContent size={14} className="flex-shrink-0" />,
               });
               _files.push({
                 name: "Views",
@@ -190,6 +201,8 @@ export function ExplorerDb(props: { isVisible: boolean }) {
                         name: table.TABLE_NAME,
                         isFolder: true,
                         description: table.TABLE_COMMENT,
+                        expandIcon: <FolderContextOpen size={14} className="flex-shrink-0" />,
+                        collapseIcon: <FolderContext size={14} className="flex-shrink-0" />,
                         // icon: <TableIcon size={14} className="flex-shrink-0" />,
                       });
                     });

@@ -141,15 +141,73 @@ export function executeSql(sql: string, datasource: IDataSource) {
     });
 }
 let PORT: number = 10001;
-let isServerRunning = false;
+/**
+ * 检查服务器是否正在运行
+ * 根据java启动的目录
+ */
+function checkServerRunning() {
+  try {
+    const javaPath = path.join(udbFolderPath, "server", "java");
+    let javaBinPath = "";
+    const platform = os.platform();
+    if (platform === "win32") {
+      javaBinPath = path.join(javaPath, "jdk-21.0.2.jdk", "bin", "java.exe");
+    } else if (platform === "darwin") {
+      javaBinPath = path.join(
+        javaPath,
+        "jdk-21.0.2.jdk",
+        "Contents",
+        "Home",
+        "bin",
+        "java",
+      );
+    } else if (platform === "linux") {
+      javaBinPath = path.join(javaPath, "jdk-21.0.2.jdk", "bin", "java");
+    }
+    // 检查 当前正在运行的进程，如果有 java.exe 或者 java 进程，则认为服务器正在运行
+
+    const { execSync } = require('child_process');
+
+    const stdout = execSync(process.platform === 'win32' ? 'tasklist /fi "IMAGENAME eq java.exe"' : 'ps -e | grep "java"', { encoding: 'utf-8' });
+    console.log("stdout", stdout);
+    const lines = stdout.split('\n');
+    let pids = [];
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (line.includes(javaBinPath)) {
+        console.log("进程名称：", line);
+        //获取进程ID
+        const pid = line.split(' ')[1];
+        console.log("进程ID：", pid);
+        //获取端口 .jar [port]
+        const port = line.split(".jar ")[1];
+        console.log("端口：", port);
+        pids.push({
+          pid: pid,
+          port: port,
+        });
+      }
+    }
+    return pids;
+  } catch (e) {
+    console.log("checkServerRunning", e);
+    return [];
+  }
+  
+
+}
+
 /**
  * 启动服务器
  */
 export function runServer(callback: (status: string, message: string) => void) {
-  if (isServerRunning) {
+  const pids = checkServerRunning();
+  if (pids.length > 0) {
+    //如果有进程在运行，则不需要启动新的服务器
+    PORT=pids[0].port;
+    callback("success", "Server is running, port:"+PORT);
     return;
   }
-  isServerRunning = true;
   getAvailablePort(10001, (err, port) => {
     if (err) {
       console.log("获取端口失败", err);

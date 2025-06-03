@@ -191,6 +191,10 @@ export function ViewTabsItem(props: {
           {props.type === "text" && <FileIcon className="w-[12px]" />}
           {props.type === "dump" && <HardDriveDownloadIcon className="w-[12px]" />}
           {props.type === "tables" && <Table2 className="w-[12px]" />}
+          {props.type === "user-protocal" && <FileIcon className="w-[12px]" />}
+          {props.type === "privacy-policy" && <FileIcon className="w-[12px]" />}
+          {props.type === "open-source" && <FileIcon className="w-[12px]" />}
+
         </div>
         <div className="max-w-[200px] overflow-hidden overflow-ellipsis whitespace-nowrap">
           {props.name}

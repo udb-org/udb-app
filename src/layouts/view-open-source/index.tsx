@@ -1,0 +1,135 @@
+import React from "react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+export default function ViewOpenSource(
+    props: {
+        viewKey: string;
+    }
+) {
+
+    return <ScrollArea className="w-full h-full " >
+        <div className="text-lg font-bold pl-1 pr-1 pb-2">
+            Open Source License
+        </div>
+        <div className="pl-1 pr-1 pb-5"
+        >
+            <p>
+                This project is licensed under the MIT Open Source License. You can find the source code of this project on GitHub.
+              
+            </p>
+            <p>
+                This project uses the following open source projects:
+        
+            </p>
+            <ul>
+            
+                {Object.entries({
+                    "@electron-forge/cli": "^7.8.0",
+                    "@electron-forge/maker-deb": "^7.8.0",
+                    "@electron-forge/maker-rpm": "^7.8.0",
+                    "@electron-forge/maker-squirrel": "^7.8.0",
+                    "@electron-forge/maker-zip": "^7.8.0",
+                    "@electron-forge/plugin-auto-unpack-natives": "^7.8.0",
+                    "@electron-forge/plugin-fuses": "^7.8.0",
+                    "@electron-forge/plugin-vite": "^7.8.0",
+                    "@electron-forge/shared-types": "^7.8.0",
+                    "@electron/fuses": "^1.8.0",
+                    "@eslint/compat": "^1.2.8",
+                    "@eslint/js": "^9.25.1",
+                    "@playwright/test": "^1.52.0",
+                    "@testing-library/jest-dom": "^6.6.3",
+                    "@testing-library/react": "^16.3.0",
+                    "@testing-library/user-event": "^14.6.1",
+                    "@types/d3": "^7.4.3",
+                    "@types/electron-squirrel-startup": "^1.0.2",
+                    "@types/eslint-config-prettier": "^6.11.3",
+                    "@types/node": "^22.15.3",
+                    "@types/react": "^19.1.2",
+                    "@types/react-dom": "^19.1.2",
+                    "electron": "^35.2.1",
+                    "electron-devtools-installer": "^4.0.0",
+                    "electron-playwright-helpers": "^1.7.1",
+                    "eslint": "^9.25.1",
+                    "eslint-config-prettier": "^10.1.2",
+                    "eslint-plugin-prettier": "^5.2.6",
+                    "eslint-plugin-react": "^7.37.5",
+                    "eslint-plugin-react-compiler": "^19.1.0-rc.1",
+                    "globals": "^16.0.0",
+                    "jsdom": "^26.0.0",
+                    "prettier": "^3.5.3",
+                    "prettier-plugin-tailwindcss": "^0.6.11",
+                    "tailwindcss": "^4.1.4",
+                    "ts-node": "^10.9.2",
+                    "typescript": "^5.8.3",
+                    "typescript-eslint": "^8.31.0",
+                    "vite": "^6.3.3",
+                    "vitest": "^3.1.2"
+                }).map(([name, version]) => (
+                    <li key={name} className="ml-5">
+                        {name} - {version} (Development Dependency)
+                    </li>
+                ))}
+                {/* Render runtime dependencies */}
+                {Object.entries({
+                    "@hookform/resolvers": "^5.0.1",
+                    "@icons-pack/react-simple-icons": "^12.7.0",
+                    "@radix-ui/react-accordion": "^1.2.7",
+                    "@radix-ui/react-avatar": "^1.1.6",
+                    "@radix-ui/react-checkbox": "^1.3.2",
+                    "@radix-ui/react-dialog": "^1.1.11",
+                    "@radix-ui/react-dropdown-menu": "^2.1.11",
+                    "@radix-ui/react-label": "^2.1.4",
+                    "@radix-ui/react-navigation-menu": "^1.2.10",
+                    "@radix-ui/react-popover": "^1.1.11",
+                    "@radix-ui/react-progress": "^1.1.7",
+                    "@radix-ui/react-scroll-area": "^1.2.6",
+                    "@radix-ui/react-select": "^2.2.2",
+                    "@radix-ui/react-separator": "^1.1.4",
+                    "@radix-ui/react-slot": "^1.2.0",
+                    "@radix-ui/react-toggle": "^1.1.6",
+                    "@radix-ui/react-toggle-group": "^1.1.7",
+                    "@radix-ui/react-tooltip": "^1.2.6",
+                    "@tailwindcss/vite": "^4.1.4",
+                    "@tanstack/react-query": "^5.74.7",
+                    "@tanstack/react-router": "^1.117.1",
+                    "@tanstack/react-table": "^8.21.3",
+                    "@tanstack/react-virtual": "^3.13.6",
+                    "@tanstack/router-devtools": "^1.117.1",
+                    "@vitejs/plugin-react": "^4.4.1",
+                    "axios": "^1.9.0",
+                    "babel-plugin-react-compiler": "^19.0.0-beta-e993439-20250328",
+                    "class-variance-authority": "^0.7.1",
+                    "clsx": "^2.1.1",
+                    "cmdk": "^1.1.1",
+                    "crypto": "^1.0.1",
+                    "d3": "^7.9.0",
+                    "electron-squirrel-startup": "^1.0.1",
+                    "i18next": "^25.0.1",
+                    "isbinaryfile": "^5.0.4",
+                    "lucide-react": "^0.503.0",
+                    "marked": "^15.0.11",
+                    "monaco-editor": "^0.52.2",
+                    "next-themes": "^0.4.6",
+                    "openai": "^4.96.2",
+                    "package": "^1.0.1",
+                    "react": "^19.1.0",
+                    "react-dom": "^19.1.0",
+                    "react-hook-form": "^7.56.1",
+                    "react-i18next": "^15.5.1",
+                    "react-resizable-panels": "^2.1.8",
+                    "sonner": "^2.0.3",
+                    "sql-formatter": "^15.6.1",
+                    "tailwind-merge": "^3.2.0",
+                    "tailwindcss-animate": "^1.0.7",
+                    "zod": "^3.24.3",
+                    "zustand": "^5.0.3"
+                }).map(([name, version]) => (
+                    <li key={name} className="ml-5">
+                        {name} - {version} (Runtime Dependency)
+                    </li>
+                ))}
+
+            </ul>
+        </div>
+
+    </ScrollArea>
+}
