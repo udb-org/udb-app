@@ -87,7 +87,7 @@ export class SqlMcpServer implements IMCPServer {
             default:
                 return new Promise((resolve, reject) => {
                     resolve({
-                        status: "error",
+                        status: 500
                     })
                 })
         }
@@ -98,7 +98,7 @@ export class SqlMcpServer implements IMCPServer {
         if (currentDataSource == null) {
             return new Promise((resolve, reject) => {
                 resolve({
-                    status: "error",
+                    status:831,
                     message: "Please select a database!",
                     data: [],
                 });
@@ -121,7 +121,7 @@ export class SqlMcpServer implements IMCPServer {
         if (currentDataSource == null) {
             return new Promise((resolve, reject) => {
                 resolve({
-                    status: "error",
+                    status: 831,
                     message: "Please select a database!",
                     data: [],
                 });
@@ -143,7 +143,7 @@ export class SqlMcpServer implements IMCPServer {
         if (currentDataSource == null) {
             return new Promise((resolve, reject) => {
                 resolve({
-                    status: "error",
+                    status: 831,
                     message: "Please select a database!",
                     data: [],
                 });

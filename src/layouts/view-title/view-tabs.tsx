@@ -243,7 +243,7 @@ export function ViewTabsTool() {
           openView({
             type: "sql",
             params: {
-              sql: "SELECT * FROM ",
+              sql: "",
             },
             path: [],
           });

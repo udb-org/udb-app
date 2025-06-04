@@ -58,7 +58,7 @@ export function ModelSelect(props: { onSelect: (model: any) => void }) {
         <Button
           variant="outline"
           size="sm"
-          className="text-muted-foreground h-[20px] justify-start bg-transparent pl-1 text-[11px]"
+          className="text-muted-foreground h-[20px] justify-start bg-transparent pl-1 text-xs"
         >
           {selectedStatus ? (
             <>

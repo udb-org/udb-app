@@ -2,8 +2,11 @@ import React from "react";
 // import { OpenAI } from "openai";
 import * as marked from "marked";
 import { toast } from "sonner";
+import { C } from "vitest/dist/chunks/reporters.d.C-cu31ET";
+import { useAiStore } from "@/store/ai-store";
 export function Message(props: {
-    message: any
+    message: any,
+    onInsert?: (text: string) => void,
 }) {
     const rootRef = React.useRef<HTMLDivElement>(null);
     React.useEffect(() => {
@@ -80,8 +83,7 @@ export function Message(props: {
             const but = e.target as HTMLButtonElement;
             const code: any = but.parentElement?.parentElement?.querySelector("pre code");
             if (code) {
-                window.api.send("ai:insert",code.innerText);
-                toast.info("Insert Success");
+             props.onInsert?.(code.innerText);
             } else {
                 toast.error("Insert Fail");
             }

@@ -4,7 +4,9 @@ import { useAiStore } from "@/store/ai-store";
 import { getView, useTabStore } from "@/store/tab-store";
 import { cn } from "@/utils/tailwind";
 import React, { useCallback, useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 export function SqlResults(props: { data: any[] }) {
+  const {t}=useTranslation();
   const { model } = useAiStore();
   const results = props.data;
   // const tab = useTabStore((state: any) => state.tab);
@@ -88,8 +90,9 @@ export function SqlResults(props: { data: any[] }) {
     if (sql.length > 0) {
       console.log("fixAction", sql);
       window.api.send("ai:fixSql", {
+        input:t("ai.prompt.fixsql"),
         model: model,
-        context: sql + "\n报错信息如下：\n" + message,
+        context: sql + "\n" + t("ai.prompt.error.context") + "\n" + message
       });
     }
   }
@@ -101,11 +104,11 @@ export function SqlResults(props: { data: any[] }) {
             <VirtualData height={height} source={data} />
           )}
           {status === "fail" && (
-            <div className="p-2 text-red-500">
-              <div>{message}</div>
+            <div className="p-2">
+              <div className="p-2">{message}</div>
               <div>
-                <Button variant={"outline"} onClick={fixAction}>
-                  Auto Fix
+                <Button variant={"outline"} className="border-primary/50" onClick={fixAction}>
+                  {t("editor.button.fixsql")}
                 </Button>
               </div>
             </div>

@@ -52,7 +52,7 @@ export function AgentSelect(
         <Button
           variant="outline"
           size="sm"
-          className="pl-1  justify-start h-[20px] text-[11px] bg-transparent text-muted-foreground"
+          className="pl-1  justify-start h-[20px] text-xs bg-transparent text-muted-foreground"
         >
           @ Agent
         </Button>

@@ -8,7 +8,7 @@ import {
 } from "@/store/tab-store";
 // import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { showActions, SqlActionParams } from "@/api/view";
-import { AlignRight, PlayIcon, SaveIcon, ShareIcon } from "lucide-react";
+import { AlignRight, LoaderIcon, PlayIcon, SaveIcon, ShareIcon } from "lucide-react";
 import { dbExec, dbResult, execSql, invokeSql } from "@/api/db";
 import { SqlResults } from "./sql-results";
 import { format as sqlFormatter } from "sql-formatter";
@@ -24,9 +24,15 @@ import { getSqlSuggestionsKeywords } from "./sql-suggestions";
 import { getTableNames } from "@/utils/sql";
 import { openMenu } from "@/api/menu";
 import { IAction } from "@/types/view";
+import { IResult } from "@/types/db";
+import { useTranslation } from "react-i18next";
 
 
 export default function ViewSQL(props: { viewKey: string }) {
+
+  const { t } = useTranslation();
+
+
 
   useEffect(() => {
     //初始化工具栏
@@ -451,6 +457,9 @@ export default function ViewSQL(props: { viewKey: string }) {
       aiInlineCommand.dispose();
     };
   }, [execStatus, editor, currentViewZoneId]);
+
+  const [isMark, setIsMark] = React.useState<boolean>(false);
+
   useEffect(() => {
     const sqlActioning = (params: SqlActionParams) => {
       console.log("sqlActioning", params);
@@ -592,11 +601,56 @@ export default function ViewSQL(props: { viewKey: string }) {
       }
     };
     window.api.on("ai:inserting", aiInserting);
+
+    const aiMergeSqling = (params: {
+      content: string,
+      status: number
+
+    }) => {
+      console.log("aiMergeSqling", params);
+
+      if (params.status == 799) {
+        editor.setValue("");
+        //Mark 
+        setIsMark(true);
+
+
+      } else if (params.status == 200) {
+        if (params.content.length > 0) {
+          editor.setValue(editor.getValue() + params.content);
+        }
+        //Mark
+        setIsMark(false);
+
+      } else if (params.status == 800) {
+        editor.setValue(editor.getValue() + params.content);
+        const lineCount = editor.getModel().getLineCount();
+        const lastLine = editor.getModel().getLineContent(lineCount);
+
+        // 移动光标到底部行
+        editor.setPosition({
+          lineNumber: lineCount,
+          column: lastLine.length + 1
+        });
+
+        // 滚动到光标位置
+        editor.revealPositionInCenterIfOutsideViewport(
+          editor.getPosition(),
+          monaco.editor.ScrollType.Smooth
+        );
+      } else {
+        toast.error(t("status." + params.status));
+        setIsMark(false);
+      }
+
+    };
+    window.api.on("ai:mergeSqling", aiMergeSqling);
     return () => {
       window.api.removeAllListeners("view:sql-actioning");
       window.api.removeAllListeners("db:execSqling");
       window.api.removeAllListeners("db:execSqlEnd");
       window.api.removeAllListeners("ai:inserting");
+      window.api.removeAllListeners("ai:mergeSqling");
     };
   }, [execStatus, editor]);
   /**
@@ -639,21 +693,15 @@ export default function ViewSQL(props: { viewKey: string }) {
       console.log("exeSql", exeSql);
       if (exeSql.trim() !== "") {
         console.log("exeSql", exeSql);
-        dbExec(exeSql, false).then((res: any) => {
+        dbExec(exeSql, false).then((res: IResult) => {
           console.log("dbExec", res);
-          if(res==null){
-            showPlayAction();
-            toast.error("执行失败");
-          }
-          else if (res.status === "running") {
-            setSessionId(res.id);
+          if (res.status === 800) {
+            if (res.id) {
+              setSessionId(res.id);
+            }
           } else {
             showPlayAction();
-            if (res.error) {
-              toast.error(res.error);
-            } else if (res.message) {
-              toast.error(res.message);
-            }
+            toast.error(t("status." + res.status));
           }
         });
       }
@@ -707,21 +755,10 @@ export default function ViewSQL(props: { viewKey: string }) {
   useEffect(() => {
     if (sessionId && sessionId !== "") {
       const timer = setInterval(() => {
-        dbResult(sessionId).then((res: any) => {
+        dbResult(sessionId).then((res: IResult) => {
           console.log("dbResult", res);
-          if (res.error) {
-            toast.error(res.error);
-            setSessionId("");
-            showPlayAction();
-          } else if (res.status === "fail") {
-            toast.error(res.message);
-            setSessionId("");
-            showPlayAction();
-          } else {
-            if (res.status === "success") {
-              setSessionId("");
-              showPlayAction();
-            }
+          if (res.status === 800) {
+            //继续执行
             if (res.data.length > 0) {
               const resResults = JSON.parse(res.data);
               if (resResults.length > 0) {
@@ -729,7 +766,25 @@ export default function ViewSQL(props: { viewKey: string }) {
                 setResults([...results, ...resResults]);
               }
             }
+          } else if (res.status === 200) {
+            //执行成功
+            setSessionId("");
+            showPlayAction();
+            if (res.data.length > 0) {
+              const resResults = JSON.parse(res.data);
+              if (resResults.length > 0) {
+                saveViewValue(props.viewKey, "results", resResults, true);
+                setResults([...results, ...resResults]);
+              }
+            }
+          } else {
+            //执行失败
+            setSessionId("");
+            showPlayAction();
+            toast.error(t("status." + res.status));
+
           }
+
         });
       }, 1000);
       return () => {
@@ -775,8 +830,14 @@ export default function ViewSQL(props: { viewKey: string }) {
   return (
     <div className="h-full w-full">
       <ResizablePanelGroup direction="vertical">
-        <ResizablePanel direction="vertical">
+        <ResizablePanel direction="vertical" >
           <div ref={editorRef} className="h-full w-full"></div>
+          {
+            isMark && <div className="left-0 top-0 bottom-0 right-0 absolute z-20 bg-background/20 flex items-center justify-center">
+              <LoaderIcon className=" animate-spin" />
+            </div>
+          }
+
         </ResizablePanel>
         <ResizablePanelHandle
           direction="vertical"

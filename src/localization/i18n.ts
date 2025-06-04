@@ -60,20 +60,30 @@ i18n.use(initReactI18next).init({
         "welcome.title": "Welcome to UDB!",
         "welcome.button.more": "More",
 
+       
         "status.200":"Success",
         "status.500":"Internal Server Error",
+        "status.799":"Starting...",
         "status.800":"Running",
         "status.810":"Too many tasks, please try again later.",
         "status.820":"Task does not exist.",
         "status.830":"Data source does not exist.",
+        "status.831":"Please select a database!",
         "status.840":"Dump is running.",
         "status.850":"Transaction has been rollback or commited.",
         "status.860":"Server not started.",
+        "status.870":"Token length exceeds the limit.",
+
 
 
         "tree.no.children":"No Children",
         
+        "ai.prompt.fixsql":"Fix the SQL statement, make sure it is correct and can be executed. If it is not correct, explain why it is not correct.",
+        "ai.prompt.optimizesql":"Optimize the SQL statement, make sure it is efficient and can be executed. If it is not efficient, explain why it is not efficient.",
+        "ai.prompt.error.context":"The error message is as follows:",
+        "ai.prompt.mergesql":"Update Context2 into Context1, automatically determining based on the content: whether to append a new row or to replace all or part of it. Only output SQL code, do not consider the merging of SQL query results, and do not use code blocks.",
 
+        "editor.button.fixsql":"Fix SQL",
 
       },
     },
@@ -130,6 +140,7 @@ i18n.use(initReactI18next).init({
 
         "status.200":"成功",
         "status.500":"内部服务器错误",
+        "status.799":"启动中...",
         "status.800":"运行中",
         "status.810":"任务数过多，请稍后再试",
         "status.820":"任务不存在",
@@ -137,8 +148,15 @@ i18n.use(initReactI18next).init({
         "status.840":"导出任务正在运行",
         "status.850":"事务已经回滚或者提交",
         "status.860":"服务器未启动",
+        "status.870":"Token长度超过限制",
 
         "tree.no.children":"空空如也",
+
+        "ai.prompt.fixsql":"修复SQL语句，确保它是正确的并且可以执行。如果不正确，请解释为什么不正确。",
+        "ai.prompt.optimizesql":"优化SQL语句，确保它是高效的并且可以执行。如果不是高效的，请解释为什么不是高效的。",
+        "ai.prompt.mergesql":"将Context2更新到Context1中，根据内容自动判断：是新增一行追加；还是是替换全部或其中的一部分。只输出SQL代码，不要考虑SQL查询结果的合并，不要使用代码块。",
+
+        "editor.button.fixsql":"修复SQL",
 
 
       },

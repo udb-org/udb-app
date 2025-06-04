@@ -22,7 +22,10 @@ import { ContextSelect } from "./context-select";
 import { Message } from "./message";
 import { ModelSelect } from "./model-select";
 import { AgentSelect } from "./agent-select";
+import { useTranslation } from "react-i18next";
+import { editor } from "monaco-editor";
 export function AssistantPanel() {
+  const{t}=useTranslation();
   const [focused, setFocused] = React.useState<boolean>(false);
   const [input, setInput] = React.useState<string>("");
   const [messages, setMessages] = React.useState<
@@ -90,10 +93,10 @@ export function AssistantPanel() {
         if (sql.length > 500) {
           return sql.substring(0, 500) + "...";
         }
-        return "编辑SQL:" + sql;
+        return sql;
       } else if (viewType === ViewType.Table) {
         const table = view.params.table;
-        return "编辑表结构:" + table;
+        return table;
       }
     } else if (contextType === "none") {
       return "";
@@ -103,19 +106,33 @@ export function AssistantPanel() {
     return "";
   }
   useEffect(() => {
-    const ai_asking = (params: { content: string; finished: boolean }) => {
-      console.log("ai_asking", params);
+    let context:string|null=null;
+    const ai_asking = (params: { content: string; finished: boolean,status?:number }) => {
+      if (params.status && params.status !== 200){
+        // toast.error(params.content);
+        params.content=t("status."+params.status)+"\n";
+      }
+   
       if (params.finished) {
-        tempMessage && setMessages([...messages, tempMessage]);
-        setTempMessage(null);
+    
         setThinking(false);
+        setMessages([...messages, {
+          role: "assistant",
+          content: context,
+        }]);
+        setTempMessage(null);
+        context=null;
       } else {
-        if (tempMessage) {
+      
+        if (context) {
+             console.log("ai_asking", params);
+             context=context + params.content;
           setTempMessage({
             role: "assistant",
-            content: tempMessage.content + params.content,
+            content: context,
           });
         } else {
+          context=params.content;
           setTempMessage({
             role: "assistant",
             content: params.content,
@@ -134,7 +151,7 @@ export function AssistantPanel() {
     return () => {
       window.api.removeAllListeners("ai:asking");
     };
-  }, [messages, tempMessage]);
+  }, [messages]);//messages, tempMessage
   const historyRef = React.useRef<HTMLDivElement>(null);
   //思考中
   const [thinking, setThinking] = React.useState<boolean>(false);
@@ -153,7 +170,7 @@ export function AssistantPanel() {
   );
   const { model, setModel } = useAiStore();
   return (
-    <div className="flex h-full w-full flex-col">
+    <div className="flex h-full w-full flex-col text-sm">
       <div className="flex flex-shrink-0 items-center px-2 pt-2 text-sm font-bold">
         <div className="text-sm font-bold">UDB</div>
         <div className="flex-1"></div>
@@ -203,11 +220,18 @@ export function AssistantPanel() {
                 ></div>
                 <div
                   className={cn(
-                    "box-content flex-1 overflow-auto rounded p-2",
+                    "box-content flex-1 overflow-visible rounded p-2",
                     item.role === "user" ? "bg-background" : "",
                   )}
                 >
-                  <Message message={item}></Message>
+                  <Message message={item} onInsert={(text)=>{
+                    window.api.send("ai:mergeSql",{
+                      input:text,
+                      model:model,
+                      context:getContext(),
+                      prompt:t("ai.prompt.mergesql"),
+                    });
+                  }}></Message>
                 </div>
               </div>
             </div>
@@ -220,7 +244,7 @@ export function AssistantPanel() {
                   "justify-start",
                 )}
               >
-                <SiIcon size={14} />
+               <img src="./icons/logo.png" width={18} height={18} />
                 Udb
               </div>
               <div className="flex">
@@ -292,19 +316,19 @@ export function AssistantPanel() {
             }
           }}
         />
-        <div className="flex h-[32px] items-center  gap-2">
+        <div className="flex h-[32px] items-center  gap-1">
           <AgentSelect
             value={agent}
             onChange={(value) => {
               setAgent(value);
             }}
           />
-          <ContextSelect
+          {/* <ContextSelect
             value={contextType}
             onChange={(value) => {
               setContextType(value);
             }}
-          />
+          /> */}
           <div className="flex-1"></div>
           <ModelSelect
             onSelect={(model) => {
@@ -314,12 +338,12 @@ export function AssistantPanel() {
           <Button
             variant={"ghost"}
             size={"icon"}
-            className="m-[0px] h-[28px] w-[28px]"
+            className="m-[0px] h-[20px] w-[20px] shrink-0 items-center justify-center"
             onClick={() => {
               handleSend();
             }}
           >
-            <SendIcon size={14}></SendIcon>
+            <SendIcon size={12}></SendIcon>
           </Button>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { ask, clearHistory, fixSql, optimizeSql } from "@/services/ai";
+import { ask, clearHistory, fixSql, mergeSql, optimizeSql } from "@/services/ai";
 import { ipcMain } from "electron";
 import { AiMode } from "@/types/ai";
 export  function unregisterAiListeners() {
@@ -27,10 +27,11 @@ export function registerAiListeners(mainWindow: Electron.BrowserWindow) {
         args.model,
         args.context,
         args.agent,
-        (content: string, finished: boolean) => {
+        (content: string,finished: boolean,status?:number) => {
           mainWindow.webContents.send("ai:asking", {
             content: content,
             finished: finished,
+            status:status,
           });
         },
       );
@@ -53,16 +54,17 @@ export function registerAiListeners(mainWindow: Electron.BrowserWindow) {
     async (
       event,
       args: {
+        input: string;
         model: any;
         context: string;
       },
     ) => {
       console.log("ai:optimizeSql", args);
       ask(
-        "优化sql",
+        args.input,
         args.model,
-        AiMode.sql,
         args.context,
+        "Sql Agent",
         (content: string, finished: boolean) => {
           mainWindow.webContents.send("ai:asking", {
             content: content,
@@ -78,16 +80,17 @@ export function registerAiListeners(mainWindow: Electron.BrowserWindow) {
     async (
       event,
       args: {
+        input: string;
         model: any;
         context: string;
       },
     ) => {
       console.log("ai:fixSql", args);
       ask(
-        "修复sql",
+        args.input,
         args.model,
-        AiMode.sql,
         args.context,
+        "Sql Agent",
         (content: string, finished: boolean) => {
           mainWindow.webContents.send("ai:asking", {
             content: content,
@@ -97,4 +100,70 @@ export function registerAiListeners(mainWindow: Electron.BrowserWindow) {
       );
     },
   );
+
+    //Merge sql
+    ipcMain.on(
+      "ai:mergeSql",
+      async (
+        event,
+        args: {
+          input: string;
+          model: any;
+          context: string;
+          prompt:string;
+        },
+      ) => {
+        console.log("ai:mergeSql", args);
+        if(args.input.trim().length==0){
+          mainWindow.webContents.send("ai:mergeSqling", {
+            content:"",
+            status: 870,
+          });
+          return; //return fals
+        }
+        if(args.input.length>120*1000){
+          mainWindow.webContents.send("ai:mergeSqling", {
+            content:"",
+            status: 870,
+          });
+          return;
+          
+        }
+        if(args.context.length>120*1000){
+          mainWindow.webContents.send("ai:mergeSqling", {
+            content:"",
+            status: 870,
+          });
+          return;
+        }
+
+
+
+        mainWindow.webContents.send("ai:mergeSqling", {
+          content: "",
+          status: 799,
+        });
+        if(args.context.trim().length==0){
+          mainWindow.webContents.send("ai:mergeSqling", {
+            content:args.input,
+            status: 200,
+          });
+        }else{
+          mergeSql(
+            args.input,
+            args.model,
+            args.context,
+            args.prompt,
+            (content: string, status: number) => {
+              mainWindow.webContents.send("ai:mergeSqling", {
+                content: content,
+                status: status,
+              });
+            },
+          );
+        }
+
+     
+      },
+    );
 }
