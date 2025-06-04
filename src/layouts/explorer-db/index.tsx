@@ -15,7 +15,7 @@ import {
   IDataBase,
   IDataBaseTable,
   IDataBaseTableColumn,
-  ISqlResult,
+  IResult,
 } from "@/types/db";
 import { openView } from "@/api/view";
 import { openDialog } from "../dialog";
@@ -29,6 +29,7 @@ import FolderContentOpen from "@/components/icons/folder-content-open";
 import FolderContent from "@/components/icons/folder-content";
 import FolderContextOpen from "@/components/icons/folder-context-open";
 import FolderContext from "@/components/icons/folder-context";
+import { toast } from "sonner";
 export function ExplorerDb(props: { isVisible: boolean }) {
   const [files, setFiles] = React.useState<IVirtualTreeItem[]>([]);
   function transformFiles(files: any[]) {
@@ -46,12 +47,14 @@ export function ExplorerDb(props: { isVisible: boolean }) {
   }
   useEffect(() => {
     //打开项目
-    const getDatabasesing = (res: ISqlResult) => {
+    const getDatabasesing = (res: IResult) => {
       console.log("getDatabasesing", res);
-      if (res.status == "success") {
+      if (res.status == 200) {
         const _files = transformFiles(res.data.data as IDataBase[]);
         setFiles(_files);
         // setDatabases((pre)=>res.data.data as IDataBase[]);
+      }else{
+        toast.error(t("status." + res.status));
       }
     };
     window.api.on("db:getDatabasesing", getDatabasesing);
@@ -123,7 +126,7 @@ export function ExplorerDb(props: { isVisible: boolean }) {
     };
     window.api.on("explorer:db-actioning", explorer_db_actioning);
     return () => {
-      window.api.removeListener("db:getDatabasesing", getDatabasesing);
+      window.api.removeAllListeners("db:getDatabasesing");
       window.api.removeAllListeners("explorer:db-actioning");
     };
   }, []);
@@ -158,9 +161,11 @@ export function ExplorerDb(props: { isVisible: boolean }) {
         data={files}
         onLoad={(path: string[]) => {
           console.log("onLoad", path);
+          //等待10秒
           if (path.length == 1) {
             //选择数据库
             window.api.send("db:selectDatabase", path[0]);
+         
             //数据库,返回Tables,Views,Functions,Procedures
             return new Promise((resolve) => {
               const _files: IVirtualTreeItem[] = [];
@@ -191,11 +196,11 @@ export function ExplorerDb(props: { isVisible: boolean }) {
               //需要返回所有的表
               return window.api
                 .invoke("db:getTables", databaseName)
-                .then((res: ISqlResult) => {
-                  console.log("getTables", res);
-                  if (res.status === "success") {
+                .then((getTablesResult: IResult) => {
+                  console.log("getTables", getTablesResult);
+                  if (getTablesResult.status==200) {
                     const _files: IVirtualTreeItem[] = [];
-                    const tables = res.data.data as IDataBaseTable[];
+                    const tables = getTablesResult.data.data as IDataBaseTable[];
                     tables.forEach((table) => {
                       _files.push({
                         name: table.TABLE_NAME,
@@ -207,7 +212,21 @@ export function ExplorerDb(props: { isVisible: boolean }) {
                       });
                     });
                     console.log("_files", _files);
+                    if (_files.length==0){
+                      _files.push({
+                        name: "No Tables",
+                        isFolder: false,
+                        noChildren: true,
+                      });
+                    }
                     return _files;
+                  }else{
+                    toast.error(t("status." + getTablesResult.status));
+                    return [{
+                      name: "error",
+                      isFolder: false,
+                      isError: true,
+                    }];
                   }
                 });
             }
@@ -215,9 +234,9 @@ export function ExplorerDb(props: { isVisible: boolean }) {
               //需要返回所有树图』
               return window.api
                 .invoke("db:getViews", databaseName)
-                .then((res: ISqlResult) => {
+                .then((res: IResult) => {
                   console.log("getViews", res);
-                  if (res.status === "success") {
+                  if (res.status === 200) {
                     const _files: IVirtualTreeItem[] = [];
                     const views = res.data.data;
                     views.forEach((view) => {
@@ -229,7 +248,21 @@ export function ExplorerDb(props: { isVisible: boolean }) {
                       });
                     });
                     console.log("_files", _files);
+                    if (_files.length==0){
+                      _files.push({
+                        name: "No Views",
+                        isFolder: false,
+                        noChildren: true,
+                      });
+                    }
                     return _files;
+                  }else{
+                    toast.error(t("status." + res.status));
+                    return [{
+                      name: "error",
+                      isFolder: false,
+                      isError: true,
+                    }];
                   }
                 });
             }
@@ -237,9 +270,9 @@ export function ExplorerDb(props: { isVisible: boolean }) {
               //需要返回所有方法
               return window.api
                 .invoke("db:getFunctions", databaseName)
-                .then((res: ISqlResult) => {
+                .then((res: IResult) => {
                   console.log("getFunctions", res);
-                  if (res.status === "success") {
+                  if (res.status === 200) {
                     let _files: IVirtualTreeItem[] = [];
                     const functions = res.data.data;
                     functions.forEach((fun) => {
@@ -250,7 +283,22 @@ export function ExplorerDb(props: { isVisible: boolean }) {
                         description: fun.ROUTINE_COMMENT,
                       });
                     });
+                    console.log("_files", _files);
+                    if (_files.length==0){
+                      _files.push({
+                        name: "No Functions",
+                        isFolder: false,
+                        noChildren: true,
+                      });
+                    }
                     return _files;
+                  }else{
+                    toast.error(t("status." + res.status));
+                    return [{
+                      name: "error",
+                      isFolder: false,
+                      isError: true,
+                    }]; 
                   }
                 });
             }
@@ -258,9 +306,9 @@ export function ExplorerDb(props: { isVisible: boolean }) {
               //需要返回所有方法
               return window.api
                 .invoke("db:getProcedures", databaseName)
-                .then((res: ISqlResult) => {
+                .then((res: IResult) => {
                   console.log("getProcedures", res);
-                  if (res.status === "success") {
+                  if (res.status === 200) {
                     let _files: IVirtualTreeItem[] = [];
                     const procedures = res.data.data;
                     procedures.forEach((fun) => {
@@ -272,7 +320,21 @@ export function ExplorerDb(props: { isVisible: boolean }) {
                       });
                     });
                     console.log("_files", _files);
+                    if (_files.length==0){
+                      _files.push({
+                        name: "No Procedures",
+                        isFolder: false,
+                        noChildren: true,
+                      });
+                    }
                     return _files;
+                  }else{
+                    toast.error(t("status." + res.status));
+                    return [{
+                      name: "error",
+                      isFolder: false,
+                      isError: true,
+                    }];
                   }
                 });
             }
@@ -306,9 +368,9 @@ export function ExplorerDb(props: { isVisible: boolean }) {
             if (path[1] === "Tables" && path[3] === "Columns") {
               return window.api
                 .invoke("db:getColumns", path[2])
-                .then((res: ISqlResult) => {
+                .then((res: IResult) => {
                   console.log("getColumns", res);
-                  if (res.status === "success") {
+                  if (res.status === 200) {
                     const _files: IVirtualTreeItem[] = [];
                     const columns = res.data.data as IDataBaseTableColumn[];
                     columns.forEach((column) => {
@@ -322,7 +384,21 @@ export function ExplorerDb(props: { isVisible: boolean }) {
                       });
                     });
                     console.log("_files", _files);
+                    if (_files.length==0){
+                      _files.push({
+                        name: "No Columns",
+                        isFolder: false,
+                        noChildren: true,
+                      });
+                    }
                     return _files;
+                  }else{
+                    toast.error(t("status." + res.status));
+                    return [{
+                      name: "error",
+                      isFolder: false,
+                      isError: true,
+                    }];
                   }
                 });
             }

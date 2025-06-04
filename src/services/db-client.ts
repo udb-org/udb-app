@@ -136,8 +136,12 @@ export function executeSql(sql: string, datasource: IDataSource) {
   })
     .then((res) => res.json())
     .catch((err) => {
-      console.log("executeSql", err.message);
-      dialog.showErrorBox("Failed to execute SQL", err.message);
+      console.log("executeSql", err);
+      // dialog.showErrorBox("Failed to execute SQL", err.message);
+      return {
+        status: 860,
+        message: err.message,
+      };
     });
 }
 let PORT: number = 10001;
@@ -201,6 +205,7 @@ function checkServerRunning() {
  * 启动服务器
  */
 export function runServer(callback: (status: string, message: string) => void) {
+  return ;
   const pids = checkServerRunning();
   if (pids.length > 0) {
     //如果有进程在运行，则不需要启动新的服务器

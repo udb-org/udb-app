@@ -37,7 +37,7 @@ export function Webcome() {
         <Button
           size={"sm"}
           variant={"outline"}
-          className="w-full border border-primary"
+          className="w-full border border-primary/50"
           onClick={() => {
             openDialog({
               type: DialogType.AddConnection,

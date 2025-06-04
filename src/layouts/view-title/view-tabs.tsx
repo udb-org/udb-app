@@ -1,5 +1,6 @@
 import { openMenu } from "@/api/menu";
-import { openView, sqlAction, tableAction } from "@/api/view";
+import { openView, sqlAction } from "@/api/view";
+import { Icons } from "@/components/icons/icons";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -8,7 +9,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { saveView, useTabStore } from "@/store/tab-store";
-import { ViewParams } from "@/types/view";
+import { IAction, ViewParams } from "@/types/view";
 import { cn } from "@/utils/tailwind";
 import {
   CodeIcon,
@@ -23,9 +24,6 @@ import {
   XIcon
 } from "lucide-react";
 import React, { useEffect } from "react";
-import { ViewSQLActions } from "../view-sql";
-import { ViewTableActions } from "../view-table";
-import { ViewTablesActions } from "../view-tables";
 export function ViewTabs() {
   return (
     <div className="flex h-[32px] w-full items-center">
@@ -43,7 +41,7 @@ export function ViewTabsList() {
       path: string[];
     }[]
   >([
-   
+
   ]);
   useEffect(() => {
     const openViewing = (params: ViewParams) => {
@@ -194,7 +192,6 @@ export function ViewTabsItem(props: {
           {props.type === "user-protocal" && <FileIcon className="w-[12px]" />}
           {props.type === "privacy-policy" && <FileIcon className="w-[12px]" />}
           {props.type === "open-source" && <FileIcon className="w-[12px]" />}
-
         </div>
         <div className="max-w-[200px] overflow-hidden overflow-ellipsis whitespace-nowrap">
           {props.name}
@@ -213,8 +210,29 @@ export function ViewTabsItem(props: {
     </div>
   );
 }
+
+
 export function ViewTabsTool() {
+  const [actions, setActions] = React.useState<IAction[]>([]);
   const tab = useTabStore((state: any) => state.tab);
+
+  useEffect(() => {
+    const showActions = (params: IAction[]) => {
+      console.log("showActions", params);
+      setActions(params);
+    };
+    window.api.on("view:showed-actions", showActions);
+    return () => {
+      window.api.removeAllListeners("view:show-actions");
+    };
+  }, []);
+
+  function getIcon(name:string):React.ReactNode{
+    if (name in Icons){
+      return Icons[name];
+    }
+    return <></>
+  }
   return (
     <div className="text-muted-foreground flex h-[28px] items-center">
       <Button
@@ -242,132 +260,52 @@ export function ViewTabsTool() {
           </Tooltip>
         </TooltipProvider>
       </Button>
-      {tab.type === "sql" && (
-        <>
-          {ViewSQLActions.slice(0, 2).map((item, index) => (
-            <Button
-              key={item.name}
-              variant={"ghost"}
-              size={"sm"}
-              className="ml-1 h-6 w-6 p-[4px]"
-              onClick={() => {
-                sqlAction({
+      {actions.slice(0, 2).map((item, index) => (
+        <Button
+          key={item.name}
+          variant={"ghost"}
+          size={"sm"}
+          className="ml-1 h-6 w-6 p-[4px]"
+          onClick={() => {
+            sqlAction({
+              command: item.command,
+            });
+          }}
+        >
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                {getIcon(item.icon)}
+            
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{item.name}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </Button>
+      ))}
+      {actions.length > 2 && (
+        <Button
+          variant={"ghost"}
+          size={"sm"}
+          className="ml-1 h-6 w-6 p-[4px]"
+          onClick={() => {
+            openMenu({
+              channel: "view:sql-actioning",
+              items: actions.slice(2).map((item) => {
+                return {
+                  name: item.name,
                   command: item.command,
-                });
-              }}
-            >
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <item.icon />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{item.name}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </Button>
-          ))}
-          {ViewSQLActions.length > 2 && (
-            <Button
-              variant={"ghost"}
-              size={"sm"}
-              className="ml-1 h-6 w-6 p-[4px]"
-              onClick={() => {
-                openMenu({
-                  channel: "view:sql-actioning",
-                  items: ViewSQLActions.slice(2).map((item) => {
-                    return {
-                      name: item.name,
-                      command: item.command,
-                    };
-                  }),
-                });
-              }}
-            >
-              <MoreHorizontalIcon />
-            </Button>
-          )}
-        </>
+                };
+              }),
+            });
+          }}
+        >
+          <MoreHorizontalIcon />
+        </Button>
       )}
-      {tab.type === "table" && (
-        <>
-          {ViewTableActions.slice(0, 2).map((item, index) => (
-            <Button
-              key={item.name}
-              variant={"ghost"}
-              size={"sm"}
-              className="ml-1 h-6 w-6 p-[4px]"
-              onClick={() => {
-                tableAction({
-                  command: item.command,
-                });
-              }}
-            >
-              <item.icon />
-            </Button>
-          ))}
-          {ViewTableActions.length > 2 && (
-            <Button
-              variant={"ghost"}
-              size={"sm"}
-              className="ml-1 h-6 w-6 p-[4px]"
-              onClick={() => {
-                openMenu({
-                  channel: "view:table-actioning",
-                  items: ViewSQLActions.slice(2).map((item) => {
-                    return {
-                      name: item.name,
-                      command: item.command,
-                    };
-                  }),
-                });
-              }}
-            >
-              <MoreHorizontalIcon />
-            </Button>
-          )}
-        </>
-      )}
-      {tab.type === "tables" && (
-        <>
-          {ViewTablesActions.slice(0, 2).map((item, index) => (
-            <Button
-              key={item.name}
-              variant={"ghost"}
-              size={"sm"}
-              className="ml-1 h-6 w-6 p-[4px]"
-              onClick={() => {
-                tableAction({
-                  command: item.command,
-                });
-              }}
-            >
-              <item.icon />
-            </Button>
-          ))}
-          {ViewTablesActions.length > 2 && (
-            <Button
-              variant={"ghost"}
-              size={"sm"}
-              className="ml-1 h-6 w-6 p-[4px]"
-              onClick={() => {
-                openMenu({
-                  channel: "view:table-actioning",
-                  items: ViewTablesActions.slice(2).map((item) => {
-                    return {
-                      name: item.name,
-                      command: item.command,
-                    };
-                  }),
-                });
-              }}
-            >
-              <MoreHorizontalIcon />
-            </Button>
-          )}
-        </>
-      )}
+
     </div>
   );
 }

@@ -7,7 +7,7 @@ import {
   useTabStore,
 } from "@/store/tab-store";
 // import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
-import { SqlActionParams } from "@/api/view";
+import { showActions, SqlActionParams } from "@/api/view";
 import { AlignRight, PlayIcon, SaveIcon, ShareIcon } from "lucide-react";
 import { dbExec, dbResult, execSql, invokeSql } from "@/api/db";
 import { SqlResults } from "./sql-results";
@@ -23,14 +23,47 @@ import { useAiStore } from "@/store/ai-store";
 import { getSqlSuggestionsKeywords } from "./sql-suggestions";
 import { getTableNames } from "@/utils/sql";
 import { openMenu } from "@/api/menu";
-export const ViewSQLActions = [
-  {
-    name: "Run",
-    command: "run",
-    icon: PlayIcon,
-  },
-];
+import { IAction } from "@/types/view";
+
+
 export default function ViewSQL(props: { viewKey: string }) {
+
+  useEffect(() => {
+    //初始化工具栏
+    showPlayAction();
+  }, [])
+  /**
+   * 显示工具栏
+   * Play:执行sql
+
+   */
+  function showPlayAction() {
+    const actions: IAction[] = [
+      {
+        name: "Run",
+        command: "run",
+        icon: "play",
+      }
+    ];
+    showActions(actions);
+  }
+  /**
+   * 显示工具栏
+   * Stop:停止执行sql
+
+   */
+  function showStopAction() {
+
+    const actions: IAction[] = [
+      {
+        name: "Stop",
+        command: "stop",
+        icon: "stop",
+      }
+    ];
+    showActions(actions);
+  }
+
   const [results, setResults] = React.useState<any[]>([]);
   const [view, setView] = React.useState<any>(null);
   const { model } = useAiStore();
@@ -50,6 +83,9 @@ export default function ViewSQL(props: { viewKey: string }) {
     setSql(_sql);
     setResults(_results);
     setView(_view);
+
+
+
   }, [props.viewKey]);
   const [editor, setEditor] = React.useState<any>(null);
   const editorRef = React.useRef<any>(null);
@@ -230,7 +266,7 @@ export default function ViewSQL(props: { viewKey: string }) {
       contextMenuGroupId: "storage",
       contextMenuOrder: 3,
       keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS],
-      run: () => {},
+      run: () => { },
     });
     const open_action = editor.addAction({
       id: "open-sql",
@@ -238,7 +274,7 @@ export default function ViewSQL(props: { viewKey: string }) {
       contextMenuGroupId: "storage",
       contextMenuOrder: 3,
       keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyO],
-      run: () => {},
+      run: () => { },
     });
     console.log("execStatus", execStatus);
     let decorations: monaco.editor.IModelDeltaDecoration[] = [];
@@ -582,6 +618,8 @@ export default function ViewSQL(props: { viewKey: string }) {
    */
   function runAction() {
     if (editor) {
+      //设置停止按钮
+      showStopAction();
       //每次运行时清除之前的装饰器
       setExecStatus([]);
       decorationsCollection.current?.clear();
@@ -603,9 +641,14 @@ export default function ViewSQL(props: { viewKey: string }) {
         console.log("exeSql", exeSql);
         dbExec(exeSql, false).then((res: any) => {
           console.log("dbExec", res);
-          if (res.status === "running") {
+          if(res==null){
+            showPlayAction();
+            toast.error("执行失败");
+          }
+          else if (res.status === "running") {
             setSessionId(res.id);
           } else {
+            showPlayAction();
             if (res.error) {
               toast.error(res.error);
             } else if (res.message) {
@@ -669,12 +712,15 @@ export default function ViewSQL(props: { viewKey: string }) {
           if (res.error) {
             toast.error(res.error);
             setSessionId("");
+            showPlayAction();
           } else if (res.status === "fail") {
             toast.error(res.message);
             setSessionId("");
+            showPlayAction();
           } else {
             if (res.status === "success") {
               setSessionId("");
+              showPlayAction();
             }
             if (res.data.length > 0) {
               const resResults = JSON.parse(res.data);

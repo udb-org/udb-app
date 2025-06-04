@@ -1,4 +1,5 @@
 import { IExplorerParam } from "@/layouts/explorer";
+import { IAction } from "@/layouts/view-title/view-tabs";
 import { ViewParams } from "@/types/view";
 /**
  * 打开新页面
@@ -20,4 +21,13 @@ export function sqlAction(params:SqlActionParams){
 }
 export function tableAction(params:SqlActionParams){
   window.api.send("view:table-action",params);
+}
+/**
+ * 
+ * show actions
+ * 
+ * @param params 
+ */
+export function showActions(params:IAction[]){
+  window.api.send("view:show-actions",params);
 }

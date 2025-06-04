@@ -91,7 +91,7 @@ export function registerDbListeners(mainWindow: Electron.BrowserWindow) {
     executeSql(sql, datasource).then((res) => {
       console.log("db:getDatabases", res);
       mainWindow.webContents.send("db:getDatabasesing", res);
-    });
+    })
   });
   //selectDatabase
   ipcMain.on("db:selectDatabase", async (event, dbName: string) => {
@@ -403,11 +403,17 @@ export function registerDbListeners(mainWindow: Electron.BrowserWindow) {
     ) => {
       const currentDataSource = getCurrentDataSource();
       if (currentDataSource == null) {
-        return null;
+        return {
+          status: "error",
+          message: "Please select a database!",
+        }
       }
       const currentConnection = getCurrentConnection();
       if (currentConnection == null) {
-        return null;
+        return {
+          status: "error",
+          message: "Please select a connection!",
+        }
       }
       
 

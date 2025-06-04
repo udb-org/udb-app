@@ -3,17 +3,20 @@ import VirtualList from "./virtual-scroll";
 import {
   ChevronDownIcon,
   ChevronRightIcon,
+  CircleXIcon,
   DotIcon,
   FileIcon,
   FolderClosedIcon,
   FolderIcon,
   FolderOpenIcon,
+  LoaderIcon,
 } from "lucide-react";
 import { cn } from "@/utils/tailwind";
 import { Popover, PopoverContent } from "./ui/popover";
 import { Dialog, DialogContent, DialogOverlay } from "./ui/dialog";
 import { Separator } from "./ui/separator";
 import { Input } from "./ui/input";
+import { useTranslation } from "react-i18next";
 export interface IVirtualTreeItem {
   name: string;
   isFolder: boolean;
@@ -24,6 +27,10 @@ export interface IVirtualTreeItem {
   icon?: React.ReactNode;
   data?: any;
   description?: string;
+  isLoading?: boolean;
+  isError?: boolean;
+  isSeparator?: boolean;
+  noChildren?: boolean;
 
 }
 interface IVirtualTreeRow {
@@ -36,6 +43,11 @@ interface IVirtualTreeRow {
   description?: string;
   expandIcon?: React.ReactNode;
   collapseIcon?: React.ReactNode;
+  isLoading?: boolean;
+  isError?: boolean;
+  isSeparator?: boolean;
+  noChildren?: boolean;
+
 }
 /**
  * 虚拟树组件
@@ -50,7 +62,9 @@ export function VirtualTree(props: {
   onRowContextMenu?: (row: IVirtualTreeRow) => void;
   onRowRename?: (row: IVirtualTreeRow, newName: string) => boolean;
   onRowPreview?: (row: IVirtualTreeRow) => void;
+
 }) {
+  const { t } = useTranslation();
   const [items, setItems] = React.useState<IVirtualTreeItem[]>([]);
   useEffect(() => {
     if (props.data) {
@@ -81,6 +95,11 @@ export function VirtualTree(props: {
         description: item.description,
         expandIcon: item.expandIcon,
         collapseIcon: item.collapseIcon,
+        isLoading: item.isLoading,
+        isError: item.isError,
+        isSeparator: item.isSeparator,
+        noChildren: item.noChildren,
+
       });
       if (item.isFolder && item.expand && item.children) {
         const _sub_rows = transformItems(item.children, _path);
@@ -193,7 +212,15 @@ export function VirtualTree(props: {
       }
       if (row.expand) {
         if (props.onLoad) {
+          const out = setTimeout(() => {
+            updateItems(row.path, [{
+              name: "loading...",
+              isFolder: false,
+              isLoading: true,
+            }], true);
+          }, 50);
           props.onLoad(row.path).then((_items: IVirtualTreeItem[]) => {
+            clearTimeout(out);
             updateItems(row.path, _items, true);
           });
         }
@@ -243,13 +270,17 @@ export function VirtualTree(props: {
         renderItem={(row: IVirtualTreeRow, i: number) => (
           <div
             className={cn(
-              "hover:bg-accent flex h-[24px] items-center gap-[5px] rounded-lg text-sm whitespace-nowrap select-none",
+              "flex h-[24px] items-center gap-[5px] rounded-lg text-sm whitespace-nowrap select-none",
               selectedRow &&
-                selectedRow.path.join("/") == row.path.join("/") &&
-                "bg-accent",
+              selectedRow.path.join("/") == row.path.join("/") &&
+              "bg-accent",
+              (row.isLoading || row.isError || row.isSeparator || row.noChildren) ? "" : "hover:bg-accent"
             )}
             tabIndex={i}
             onKeyDown={(e) => {
+              if (row.isLoading || row.isError || row.isSeparator || row.noChildren) {
+                return;
+              }
               if (e.code === "Enter" && props.onRowRename) {
                 //如果是enter键，启动重命名
                 console.log("启动重命名", row.path);
@@ -270,6 +301,9 @@ export function VirtualTree(props: {
               }
             }}
             onClick={() => {
+              if (row.isLoading || row.isError || row.isSeparator || row.noChildren) {
+                return;
+              }
               if (showRename && selectedRow) {
                 handleRenamed(selectedRow);
               }
@@ -277,6 +311,9 @@ export function VirtualTree(props: {
               onClickRow(row);
             }}
             onContextMenu={() => {
+              if (row.isLoading || row.isError || row.isSeparator || row.noChildren) {
+                return;
+              }
               setSelectedRow(row);
               if (props.onRowContextMenu) {
                 props.onRowContextMenu(row);
@@ -290,67 +327,85 @@ export function VirtualTree(props: {
               style={{ width: row.level * 14 }}
               className="flex-shrink-0"
             ></div>
-            {
-              //icon
-            }
-            {row.isFolder && (
+            {row.isLoading && (
+              <LoaderIcon className="w-[14px] h-[14px] animate-spin ml-2" />
+            )}
+            {row.isError && (
+              <CircleXIcon className="w-[14px] h-[14px] ml-2 text-destructive" />
+            )}
+            {row.isSeparator && (
+              <Separator className="w-full" />
+            )}
+            {row.noChildren && (
+              <div className="text-xs ml-2">{t("tree.no.children")}</div>
+            )}
+            {!row.noChildren && !row.isLoading && !row.isError && !row.isSeparator && (
               <>
-                {row.expand ? (
-                  <ChevronDownIcon size={14} className="flex-shrink-0" />
-                ) : (
-                  <ChevronRightIcon size={14} className="flex-shrink-0" />
+                {
+                  //icon
+                }
+                {row.isFolder && (
+                  <>
+                    {row.expand ? (
+                      <ChevronDownIcon size={14} className="flex-shrink-0" />
+                    ) : (
+                      <ChevronRightIcon size={14} className="flex-shrink-0" />
+                    )}
+                    {row.expand ? (
+                      row.expandIcon ? (
+                        row.expandIcon
+                        // <row.expandIcon size={14} className="flex-shrink-0" />
+                      ) : (
+                        <FolderOpenIcon size={14} className="flex-shrink-0" />
+                      )
+                    ) : (
+                      row.collapseIcon ? (
+                        row.collapseIcon
+                      ) : (
+                        <FolderIcon size={14} className="flex-shrink-0" />
+                      )
+                    )}
+                  </>
                 )}
-                {row.expand ? (
-                  row.expandIcon? (
-                    row.expandIcon
-                    // <row.expandIcon size={14} className="flex-shrink-0" />
-                  ):( 
-                    <FolderOpenIcon size={14} className="flex-shrink-0" />
-                  )
-                ) : (
-                  row.collapseIcon? (
-                    row.collapseIcon
-                  ):( 
-                    <FolderIcon size={14} className="flex-shrink-0" />
-                  )
+                {!row.isFolder && (
+                  <>
+                    <div className="bg-accent-foreground/5 mr-1 ml-1 h-2 w-2 flex-shrink-0 rounded-full"></div>
+                    {row.icon && row.icon}
+                    {!row.icon && <FileIcon size={14} className="flex-shrink-0" />}
+                  </>
                 )}
+                {props.onRowRename &&
+                  showRename &&
+                  selectedRow?.path.join("/") == row.path.join("/") && (
+                    <>
+                      <Input
+                        className="px-0 shadow-none"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                        }}
+                        autoFocus
+                        value={renameValue}
+                        onChange={(e) => {
+                          setRenameValue(e.target.value);
+                        }}
+                      />
+                    </>
+                  )}
+                {(!props.onRowRename ||
+                  !showRename ||
+                  selectedRow?.path.join("/") != row.path.join("/")) && (
+                    <>
+                      <div>{row.name}</div>
+                      <div className="text-muted-foreground text-xs">
+                        {row.description}
+                      </div>
+                    </>
+                  )}
               </>
             )}
-            {!row.isFolder && (
-              <>
-                <div className="bg-accent-foreground/5 mr-1 ml-1 h-2 w-2 flex-shrink-0 rounded-full"></div>
-                {row.icon && row.icon}
-                {!row.icon && <FileIcon size={14} className="flex-shrink-0" />}
-              </>
-            )}
-            {props.onRowRename &&
-              showRename &&
-              selectedRow?.path.join("/") == row.path.join("/") && (
-                <>
-                  <Input
-                    className="px-0 shadow-none"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                    }}
-                    autoFocus
-                    value={renameValue}
-                    onChange={(e) => {
-                      setRenameValue(e.target.value);
-                    }}
-                  />
-                </>
-              )}
-            {(!props.onRowRename ||
-              !showRename ||
-              selectedRow?.path.join("/") != row.path.join("/")) && (
-              <>
-                <div>{row.name}</div>
-                <div className="text-muted-foreground text-xs">
-                  {row.description}
-                </div>
-              </>
-            )}
+
+
           </div>
         )}
       ></VirtualList>

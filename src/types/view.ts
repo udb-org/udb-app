@@ -17,3 +17,9 @@ export interface ViewParams {
   path: string[];
   params?: any;
 }
+
+export interface IAction {
+  name: string;
+  command: string;
+  icon:"play"|"stop"|"";
+}

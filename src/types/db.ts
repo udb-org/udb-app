@@ -9,10 +9,13 @@ export interface ConnectionConfig {
     database?: string;
     params?: any;
 }
-export interface ISqlResult {
-    status:"success"|"error";
-    message:string;
-    data:any;
+export interface IResult {
+    status:number;
+    message?:string;
+    data?:any;
+    id?:string;
+    startTime?:string;
+    endTime?:string;
 }
 /**
  * 支持的数据库类型

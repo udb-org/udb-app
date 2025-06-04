@@ -1,4 +1,5 @@
 import { SqlActionParams } from "@/api/view";
+import { IAction } from "@/layouts/view-title/view-tabs";
 import { DialogParams } from "@/types/dialog";
 import { ViewParams } from "@/types/view";
 import { ipcMain } from "electron";
@@ -44,4 +45,10 @@ export function registerViewListeners(mainWindow: Electron.BrowserWindow) {
       console.log("view:table-action", args);
       event.reply("view:table-actioning", args);
     });
+    //action
+    ipcMain.on("view:show-actions", (event, args:IAction[]) => {
+
+      event.reply("view:showed-actions", args);
+      
+    })
 }

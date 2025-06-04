@@ -59,6 +59,22 @@ i18n.use(initReactI18next).init({
 
         "welcome.title": "Welcome to UDB!",
         "welcome.button.more": "More",
+
+        "status.200":"Success",
+        "status.500":"Internal Server Error",
+        "status.800":"Running",
+        "status.810":"Too many tasks, please try again later.",
+        "status.820":"Task does not exist.",
+        "status.830":"Data source does not exist.",
+        "status.840":"Dump is running.",
+        "status.850":"Transaction has been rollback or commited.",
+        "status.860":"Server not started.",
+
+
+        "tree.no.children":"No Children",
+        
+
+
       },
     },
     zh: {
@@ -111,6 +127,20 @@ i18n.use(initReactI18next).init({
 
         "welcome.title": "欢迎使用 UDB!",
         "welcome.button.more": "更多",
+
+        "status.200":"成功",
+        "status.500":"内部服务器错误",
+        "status.800":"运行中",
+        "status.810":"任务数过多，请稍后再试",
+        "status.820":"任务不存在",
+        "status.830":"数据源不存在",
+        "status.840":"导出任务正在运行",
+        "status.850":"事务已经回滚或者提交",
+        "status.860":"服务器未启动",
+
+        "tree.no.children":"空空如也",
+
+
       },
     },
   },

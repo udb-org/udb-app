@@ -239,7 +239,7 @@ export function AssistantPanel() {
       </div>
       <div
         className={cn(
-          "mx-2 rounded-lg border-1 border-violet-500 p-[4px] pb-2 mb-2",
+          "mx-2 rounded-lg border-1 border-primary/50 p-[4px] pb-2 mb-2",
           {
             "shadow-lg": focused,
           },
