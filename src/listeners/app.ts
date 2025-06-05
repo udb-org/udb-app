@@ -32,6 +32,7 @@ function getThemeBgByName(appTheme: string) {
   }
 }
 export function registerAppListeners(mainWindow: Electron.BrowserWindow) {
+
   //get Theme
   ipcMain.handle("app:getTheme", async () => {
     if (nativeTheme.shouldUseDarkColors) {

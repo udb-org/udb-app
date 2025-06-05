@@ -205,7 +205,7 @@ function checkServerRunning() {
  * 启动服务器
  */
 export function runServer(callback: (status: string, message: string) => void) {
-  return ;
+  // return ;
   const pids = checkServerRunning();
   if (pids.length > 0) {
     //如果有进程在运行，则不需要启动新的服务器

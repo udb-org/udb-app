@@ -579,28 +579,28 @@ export default function ViewSQL(props: { viewKey: string }) {
       setResults(_results);
     };
     window.api.on("db:execSqlEnd", execSqlingEnd);
-    const aiInserting = (context: string) => {
-      console.log("aiInserting", context);
-      if (editor == null) {
-        return;
-      }
-      //在光标处插入内容
-      const position = editor.getPosition();
-      if (position) {
-        editor.executeEdits("aiInsert", [
-          {
-            range: new monaco.Range(
-              position.lineNumber,
-              position.column,
-              position.lineNumber,
-              position.column,
-            ),
-            text: context,
-          },
-        ]);
-      }
-    };
-    window.api.on("ai:inserting", aiInserting);
+    // const aiInserting = (context: string) => {
+    //   console.log("aiInserting", context);
+    //   if (editor == null) {
+    //     return;
+    //   }
+    //   //在光标处插入内容
+    //   const position = editor.getPosition();
+    //   if (position) {
+    //     editor.executeEdits("aiInsert", [
+    //       {
+    //         range: new monaco.Range(
+    //           position.lineNumber,
+    //           position.column,
+    //           position.lineNumber,
+    //           position.column,
+    //         ),
+    //         text: context,
+    //       },
+    //     ]);
+    //   }
+    // };
+    // window.api.on("ai:inserting", aiInserting);
 
     const aiMergeSqling = (params: {
       content: string,
@@ -649,7 +649,7 @@ export default function ViewSQL(props: { viewKey: string }) {
       window.api.removeAllListeners("view:sql-actioning");
       window.api.removeAllListeners("db:execSqling");
       window.api.removeAllListeners("db:execSqlEnd");
-      window.api.removeAllListeners("ai:inserting");
+      // window.api.removeAllListeners("ai:inserting");
       window.api.removeAllListeners("ai:mergeSqling");
     };
   }, [execStatus, editor]);

@@ -81,8 +81,10 @@ i18n.use(initReactI18next).init({
         "ai.prompt.fixsql":"Fix the SQL statement, make sure it is correct and can be executed. If it is not correct, explain why it is not correct.",
         "ai.prompt.optimizesql":"Optimize the SQL statement, make sure it is efficient and can be executed. If it is not efficient, explain why it is not efficient.",
         "ai.prompt.error.context":"The error message is as follows:",
-        "ai.prompt.mergesql":"Update Context2 into Context1, automatically determining based on the content: whether to append a new row or to replace all or part of it. Only output SQL code, do not consider the merging of SQL query results, and do not use code blocks.",
-
+       
+        "ai.prompt.mergesql":"As a SQL expert, you need to merge two SQL scripts into one complete and executable script. Strictly follow these rules for the merge:\n\n#### Input Explanation  \n1. **Existing SQL**: User-provided script containing business logic, custom rules, and critical content.  \n2. **Newly Generated SQL**: AI-auto-generated update script potentially including table structure changes, data migrations, etc.  \n\n#### Merge Rules  \n**Priority Principle**  \n- In conflicts, **content from Existing SQL always takes precedence over Newly Generated SQL**.  \n- Exception: If new SQL contains explicit `DROP/CREATE` statements for objects absent in existing SQL, execute the new SQL.  \n\n**Structure Preservation**  \n- 100% preserve comments (`--` or `/* */`) from Existing SQL.  \n- Do not overwrite complete code blocks (stored procedures/functions/triggers) in Existing SQL.  \n- If `ALTER TABLE` statements for a table exist alongside its `CREATE TABLE` in Existing SQL, integrate them into the table creation statement.  \n\n**Intelligent Deduplication**  \n- Remove duplicate `CREATE TABLE` or `ALTER TABLE` statements, retaining definitions from Existing SQL.  \n- Merge identical `INSERT` statements (determined by primary/unique keys).  \n\n**Dependency Ordering**  \nReorganize code in this sequence:  \n1. Table/view/type creation  \n2. Structural changes (`ALTER TABLE`)  \n3. Index/constraint creation  \n4. Stored procedures/functions  \n5. Data operations (`INSERT/UPDATE`)  \n6. Triggers  \n\n**Conflict Handling**  \n- For conflicting column definitions (e.g., `VARCHAR(50)` vs. `VARCHAR(100)`), **use Existing SQL’s definition**.  \n- When adding new tables/columns, auto-sort based on foreign key dependencies.  \n- Mark locations needing manual review with `/* MERGE CONFLICT */` comments.  \n\n#### Output Requirements  \nOutput only the complete SQL script. Do not use code blocks.",
+        "ai.prompt.mergesql.original":"Existing SQL",
+        "ai.prompt.mergesql.newly":"Newly Generated SQL",
         "editor.button.fixsql":"Fix SQL",
 
       },
@@ -154,8 +156,9 @@ i18n.use(initReactI18next).init({
 
         "ai.prompt.fixsql":"修复SQL语句，确保它是正确的并且可以执行。如果不正确，请解释为什么不正确。",
         "ai.prompt.optimizesql":"优化SQL语句，确保它是高效的并且可以执行。如果不是高效的，请解释为什么不是高效的。",
-        "ai.prompt.mergesql":"将Context2更新到Context1中，根据内容自动判断：是新增一行追加；还是是替换全部或其中的一部分。只输出SQL代码，不要考虑SQL查询结果的合并，不要使用代码块。",
-
+        "ai.prompt.mergesql":"你是一个SQL专家，需要将两个SQL脚本合并为一个完整且可执行的脚本。请严格遵循以下规则执行合并：\n#### 输入说明\n1. **原有SQL**：用户提供的已存在脚本（包含业务逻辑、自定义规则等关键内容）\n2. **新生成SQL**：AI自动生成的更新脚本（可能包含表结构变更、数据迁移等操作）\n#### 合并规则\n **优先级原则**  \n- 当两者有冲突时，**原有SQL的内容优先级永远高于新生成SQL**\n- 例外：如果新SQL包含显式的 `DROP/CREATE` 语句且原有SQL无对应对象，则按新SQL执行\n**结构保留**  \n- 原有SQL的注释（`--` 或 `/* */`）必须100%保留\n- 原有SQL的存储过程/函数/触发器等完整代码块不允许被覆盖\n- 如果已有新建表语句，识别到相同表的ALTER TABLE语句的话，合并当建表语句中\n**智能去重**  \n- 识别重复的 `CREATE TABLE` 或 `ALTER TABLE` 语句，保留原有SQL的定义\n- 相同的 `INSERT` 语句合并为一条（通过主键或唯一索引判断）\n **依赖排序**  \n按以下顺序重组代码：\n1. 表/视图/类型创建\n2. 结构变更（`ALTER TABLE`）\n3. 索引/约束创建\n4. 存储过程/函数\n5. 数据操作（`INSERT/UPDATE`）\n6. 触发器\n **冲突处理**\n- 如果新旧SQL对同一列定义冲突（如 `VARCHAR(50)` vs `VARCHAR(100)`），**采用原有SQL定义**\n- 新增表或字段时，必须检查外键依赖关系并自动排序\n- 用 `/* MERGE CONFLICT */` 注释标记需要人工复核的位置\n#### 输出要求\n只输出完整SQL脚本，不要使用代码块。",     
+        "ai.prompt.mergesql.original":"原有SQL",
+        "ai.prompt.mergesql.newly":"新生成SQL",
         "editor.button.fixsql":"修复SQL",
 
 

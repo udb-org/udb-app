@@ -64,7 +64,7 @@ export function AssistantPanel() {
       const context = getContext();
       window.api.send("ai:ask", {
         input: _input,
-        context: context,
+        context: context?context.context:"",
         model: model,
         agent: agent==undefined?null:agent.name,
       });
@@ -77,13 +77,16 @@ export function AssistantPanel() {
     }
   }
   const tab = useTabStore((state: any) => state.tab);
-  function getContext() {
+  function getContext() :{
+    type: string;
+    context: string;
+  }|null{
     if (tab === null) {
-      return "";
+      return null;
     }
     const view = getView(tab.name);
     if (view == null) {
-      return "";
+      return null;
     }
     if (contextType === "default") {
       //获取当前展示的tab,从store中获取
@@ -91,19 +94,28 @@ export function AssistantPanel() {
       if (viewType === ViewType.Sql) {
         const sql = view.params.sql;
         if (sql.length > 500) {
-          return sql.substring(0, 500) + "...";
+          return {
+            type:viewType,
+            context: sql.substring(0, 500) + "...",
+          };
         }
-        return sql;
+        return {
+          type:viewType,
+          context: sql,
+        }
       } else if (viewType === ViewType.Table) {
         const table = view.params.table;
-        return table;
+        return {
+          type:viewType,
+          context: table,
+        };
       }
     } else if (contextType === "none") {
-      return "";
+      return null;
     } else if (contextType === "all") {
-      return "";
+      return null;
     }
-    return "";
+    return null;
   }
   useEffect(() => {
     let context:string|null=null;
@@ -225,12 +237,24 @@ export function AssistantPanel() {
                   )}
                 >
                   <Message message={item} onInsert={(text)=>{
-                    window.api.send("ai:mergeSql",{
-                      input:text,
-                      model:model,
-                      context:getContext(),
-                      prompt:t("ai.prompt.mergesql"),
-                    });
+                    const context = getContext();
+                    if(context){
+                      if(context.type === ViewType.Sql){
+                        window.api.send("ai:mergeSql",{
+                          input:text,
+                          model:model,
+                          context:getContext(),
+                          prompt:t("ai.prompt.mergesql"),
+                          original:t("ai.prompt.mergesql.original"),
+                          newly:t("ai.prompt.mergesql.newly"),
+                        });
+                      }else if(context.type === ViewType.Table){
+                        window.api.send("ai:mergeTable",text);
+
+                      }
+
+                    }
+                 
                   }}></Message>
                 </div>
               </div>

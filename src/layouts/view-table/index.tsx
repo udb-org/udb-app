@@ -53,15 +53,15 @@ export default function ViewTable(props: { viewKey: string }) {
   const [view, setView] = React.useState<any>(null);
   const [results, setResults] = React.useState<any[]>([]);
   const [columns, setColumns] = React.useState<IDataBaseTableColumn[]>([
-    {
-      COLUMN_NAME: "id",
-      COLUMN_TYPE: "INT",
-      COLUMN_COMMENT: "",
-      PRIVILEGES: "pk",
-      IS_NULLABLE: "YES",
-      COLUMN_DEFAULT: null,
-      EXTRA: "",
-    },
+    // {
+    //   COLUMN_NAME: "id",
+    //   COLUMN_TYPE: "INT",
+    //   COLUMN_COMMENT: "",
+    //   PRIVILEGES: "pk",
+    //   IS_NULLABLE: "YES",
+    //   COLUMN_DEFAULT: null,
+    //   EXTRA: "",
+    // },
   ]);
   useEffect(() => {
     //加载执行结果
@@ -109,8 +109,8 @@ export default function ViewTable(props: { viewKey: string }) {
     }
   }, [view]);
   useEffect(() => {
-    const aiInserting = (context: string) => {
-      console.log("aiInserting", context);
+    const mergeTableing = (context: string) => {
+      console.log("mergeTableing", context);
       //使用空格替代换行
       context = context.replaceAll("\n", " ");
       const sqls = context.split(";");
@@ -248,10 +248,10 @@ export default function ViewTable(props: { viewKey: string }) {
         }
       });
     };
-    window.api.on("ai:inserting", aiInserting);
+    window.api.on("ai:mergeTableing", mergeTableing);
 
     return () => {
-      window.api.removeListener("ai:inserting", aiInserting);
+      window.api.removeListener("ai:mergeTableing", mergeTableing);
     };
   }, [columns]);
   useEffect(() => {
@@ -276,16 +276,16 @@ export default function ViewTable(props: { viewKey: string }) {
     };
   }, []);
 
-  const [ddl, setDdl] = React.useState<string>(
-    "CREATE TABLE `ele_month` (" +
-      "  `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'ID'," +
-      "  `month` varchar(7) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '月份，yyyy-MM'," +
-      "  `company` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '供电单位'," +
-      "  `ele_catalog` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '用电类别'," +
-      "  `ele_value` double DEFAULT NULL COMMENT '用电量'," +
-      "  `org` varchar(20) COLLATE utf8mb4_general_ci NOT NULL COMMENT '所属地市'," +
-      "  PRIMARY KEY (`id`)" +
-      ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+  const [ddl, setDdl] = React.useState<string>(""
+    // "CREATE TABLE `ele_month` (" +
+    //   "  `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'ID'," +
+    //   "  `month` varchar(7) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '月份，yyyy-MM'," +
+    //   "  `company` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '供电单位'," +
+    //   "  `ele_catalog` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '用电类别'," +
+    //   "  `ele_value` double DEFAULT NULL COMMENT '用电量'," +
+    //   "  `org` varchar(20) COLLATE utf8mb4_general_ci NOT NULL COMMENT '所属地市'," +
+    //   "  PRIMARY KEY (`id`)" +
+    //   ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
   );
 
   useEffect(() => {

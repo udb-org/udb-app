@@ -38,10 +38,10 @@ export function registerAiListeners(mainWindow: Electron.BrowserWindow) {
     },
   );
   //监听Insert
-  ipcMain.on("ai:insert", async (event, args: string) => {
-    console.log("ai:insert", args);
+  ipcMain.on("ai:mergeTable", async (event, args: string) => {
+    console.log("ai:mergeTable", args);
     //向正在打开的窗口发送消息，插入内容，可能是sql编辑器，也可能是table设计器等等
-    mainWindow.webContents.send("ai:inserting", args);
+    mainWindow.webContents.send("ai:mergeTableing", args);
   });
   //清除历史记录
   ipcMain.on("ai:clearHistory", async (event, args: string) => {
@@ -111,6 +111,8 @@ export function registerAiListeners(mainWindow: Electron.BrowserWindow) {
           model: any;
           context: string;
           prompt:string;
+          original:string;
+          newly:string;
         },
       ) => {
         console.log("ai:mergeSql", args);
@@ -142,6 +144,7 @@ export function registerAiListeners(mainWindow: Electron.BrowserWindow) {
         mainWindow.webContents.send("ai:mergeSqling", {
           content: "",
           status: 799,
+          
         });
         if(args.context.trim().length==0){
           mainWindow.webContents.send("ai:mergeSqling", {
@@ -154,6 +157,8 @@ export function registerAiListeners(mainWindow: Electron.BrowserWindow) {
             args.model,
             args.context,
             args.prompt,
+            args.original,
+            args.newly,
             (content: string, status: number) => {
               mainWindow.webContents.send("ai:mergeSqling", {
                 content: content,

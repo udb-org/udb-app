@@ -117,7 +117,7 @@ export async function askInner(
   }
 
   //如果有上下文，添加到消息中
-  if (context.length > 0) {
+  if (context&&context.length > 0) {
     _messages.push({
       role: "system",
       content: context.length > 0 ? "当前软件展示内容如下：\n" + context : "",
@@ -246,6 +246,7 @@ export async function askInner(
                     sender(res.message+"", true,res.status);
                   }
                 };
+                console.log("aiToolCallArguments", aiToolCallArguments);
                 //调用工具函数
                 if (aiToolCallArguments && aiToolCallArguments.length > 0) {
                   server.executeTool(callFuncName, aiToolCallArguments).then(callback);
@@ -265,15 +266,19 @@ export async function askInner(
   }
 }
 
-export async function mergeSql(input: string, model: any, context: string, prompt:string,sender: (content: string,  status: number) => void) {
+export async function mergeSql(input: string, model: any, context: string, prompt:string, original:string,
+  newly:string,sender: (content: string,  status: number) => void) {
   const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
     {
       role: "user",
-      content:"Context1:\n"+ context,
+      content:
+      original+":\n"+
+      context,
     },
     {
       role: "user",
-      content: "Context2:\n"+ input,
+      content: newly+":\n"+
+      input,
     },
     {
       role: "user",
