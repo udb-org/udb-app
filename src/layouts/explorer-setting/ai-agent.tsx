@@ -46,7 +46,7 @@ export function AiAgentSetting(props: {
                     <TableRow key={i}>
                         <TableCell className="font-medium">{agent.name}</TableCell>
                         <TableCell className="font-medium  whitespace-break-spaces" title={agent.prompt}>{agent.prompt}</TableCell>
-                        <TableCell className="font-medium  whitespace-break-spaces">{agent.servers.map(s=><div className="whitespace-nowrap">
+                        <TableCell className="font-medium  whitespace-break-spaces">{agent.servers.map(s=><div className="whitespace-nowrap" key={s}>
                             {s.name}
                         </div>)}</TableCell>
                         <TableCell className="font-medium">

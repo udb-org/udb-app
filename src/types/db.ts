@@ -1,6 +1,81 @@
+export interface IDataBaseEX {
+    /**
+     * get database name
+     */
+    getName(): string;
+    /**
+     * get database version
+     */
+    getVersion(): string;
+    /**
+     * get database field types
+     * @returns string[]
+     */
+    getSupportFieldTypes(): FieldType[];
+    /**
+     * get show databases sql
+     * @returns string
+     */
+    getDatabasesSql(): string;
+    /**
+     * This method is used to get the database list after executing the show databases sql
+     * 
+     * @param res 
+     */
+    getDatabasesByResult(rows: any): IDataBase[];
+    /**
+     * get show tables sql
+     * @param databaseName
+     * @returns string
+     * 
+     */
+    getTablesSql(databaseName: string): string;
+    /**
+     * This method is used to get the table list after executing the show tables sql
+     * 
+     * @param res
+     */
+    getTablesByResult(rows: any): IDataBaseTable[];
+    getTableInfoSql(databaseName: string, tableName: string): string;
+    getTableInfoByResult(rows: any): IDataBaseTable;
+    /**
+     * get show columns sql
+     * @param databaseName
+     * @param tableName
+     * @returns string
+     * 
+     */
+    getColumnsSql(database: string, tableName: string): string;
+    /**
+     * This method is used to get the column list after executing the show columns sql
+     * 
+     * @param res
+     */
+    getColumnsByResult(rows: any): IDataBaseTableColumn[];
+    /**
+     * 
+     * This method is used to generate a table object from the DDL
+     * 
+     * @param sql 
+     */
+    ddlToObj(sql: string): IDataBaseTable;
+    /**
+     * 
+     * This method is used to generate a DDL from the table object
+     * 
+     * @param table 
+     */
+    objToDdl(table: IDataBaseTable): string;
+    getConstraintSql(databaseName: string, tableName: string): string;
+    getConstraintByResult(rows: any): IDataBaseTableConstraint[];
+    getIndexSql(databaseName: string, tableName: string): string;
+    getIndexByResult(rows: any): IDataBaseTableIndex[];
+
+    getChatsets(): string[];
+}
 export interface ConnectionConfig {
     name: string;
-    type: DatabaseType|string;
+    type: DatabaseType | string;
     host: string;
     port: number;
     username: string;
@@ -10,12 +85,12 @@ export interface ConnectionConfig {
     params?: any;
 }
 export interface IResult {
-    status:number;
-    message?:string;
-    data?:any;
-    id?:string;
-    startTime?:string;
-    endTime?:string;
+    status: number;
+    message?: string;
+    data?: any;
+    id?: string;
+    startTime?: string;
+    endTime?: string;
 }
 /**
  * 支持的数据库类型
@@ -30,7 +105,7 @@ export enum DatabaseType {
  */
 export interface IDataSource {
     name: string;
-    type: DatabaseType|string;
+    type: DatabaseType | string;
     host: string;
     port: number;
     username: string;
@@ -41,7 +116,7 @@ export interface IDataSource {
 }
 export interface IDataBase {
     //数据库名称
-    Database: string;
+    name: string;
     //展开
     expand?: boolean;
     //表
@@ -49,121 +124,77 @@ export interface IDataBase {
     tablesExpand?: boolean;
 }
 export interface IDataBaseTable {
-    // 表所属的目录
-    TABLE_CATALOG: string;
-    // 表注释
-    TABLE_COMMENT: string;
-    // 表名
-    TABLE_NAME: string;
-    // 表的校验和
-    CHECKSUM: null | string;
-    // 表所属的schema
-    TABLE_SCHEMA: string;
-    // 表最后检查时间
-    CHECK_TIME: null | string;
-    // 表使用的存储引擎
-    ENGINE: string;
-    // 表类型（BASE TABLE/VIEW）
-    TABLE_TYPE: string;
-    // 表的行数
-    TABLE_ROWS: number;
-    // 表的平均行长度
-    AVG_ROW_LENGTH: number;
-    // 表最后更新时间
-    UPDATE_TIME: null | string;
-    // 表数据长度（字节）
-    DATA_LENGTH: number;
-    // 表未使用的空间（字节）
-    DATA_FREE: number;
-    // 表索引长度（字节）
-    INDEX_LENGTH: number;
-    // 表的行格式
-    ROW_FORMAT: string;
-    // 表的自增值
-    AUTO_INCREMENT: null | number;
-    // 表的版本号
-    VERSION: number;
-    // 创建表时的选项
-    CREATE_OPTIONS: string;
-    // 表创建时间
-    CREATE_TIME: string;
-    // 表最大数据长度
-    MAX_DATA_LENGTH: number;
-    // 表的字符集和排序规则
-    TABLE_COLLATION: string;
+    name: string;
+    comment?: string;
+    columns?: IDataBaseTableColumn[];
+    constraints?: IDataBaseTableConstraint[];
+    indexes?: IDataBaseTableIndex[];
     //展开
     expand?: boolean;
     //列展开
     columnsExpand?: boolean;
-    columns?: IDataBaseTableColumn[];
+}
+export enum DataBaseTableConstraintEnum {
+    PRIMARY = 'primary key',     // 主键
+    UNIQUE = 'unique key',       // 唯一键
+    FOREIGN = 'foreign key'     // 外键
+}
+export interface IDataBaseTableConstraint {
+    column: string;
+    type: DataBaseTableConstraintEnum | string;
+    name?: string;
+    refTable?: string;
+    refColumn?: string;
+}
+export interface IDataBaseTableIndex {
+    name: string;
+    column: string;
+}
+export enum KeyType {
+    NONE = 'NONE',          // 无特殊键
+    PRIMARY = 'PRIMARY',     // 主键
+    UNIQUE = 'UNIQUE',       // 唯一键
+    FOREIGN = 'FOREIGN'     // 外键
 }
 export interface IDataBaseTableColumn {
-    /**
-     *   TABLE_CATALOG: 'def',
-      IS_NULLABLE: 'YES',
-      TABLE_NAME: 'cust_info',
-      TABLE_SCHEMA: 'dragon',
-      EXTRA: '',
-      COLUMN_NAME: 'cust_no',
-      COLUMN_KEY: '',
-      CHARACTER_OCTET_LENGTH: 80,
-      SRS_ID: null,
-      NUMERIC_PRECISION: null,
-      PRIVILEGES: 'select,insert,update,references',
-      COLUMN_COMMENT: '',
-      DATETIME_PRECISION: null,
-      COLLATION_NAME: 'utf8mb4_general_ci',
-      NUMERIC_SCALE: null,
-      COLUMN_TYPE: 'varchar(20)',
-      GENERATION_EXPRESSION: '',
-      ORDINAL_POSITION: 1,
-      CHARACTER_MAXIMUM_LENGTH: 20,
-      DATA_TYPE: 'varchar',
-      CHARACTER_SET_NAME: 'utf8mb4',
-      COLUMN_DEFAULT: null
-     */
-    // 表所属的目录
-    TABLE_CATALOG?: string;
-    // 列是否可为空
-    IS_NULLABLE?: string;
-    // 列所属的表名
-    TABLE_NAME?: string;
-    // 列所属的schema
-    TABLE_SCHEMA?: string;
-    // 列的额外信息（如自增等）
-    EXTRA?: string;
-    // 列名
-    COLUMN_NAME?: string;
-    // 列的键信息（如主键、外键等）
-    COLUMN_KEY?: string;
-    // 字符的最大字节长度
-    CHARACTER_OCTET_LENGTH?: number | null;
-    // 空间参考系统ID
-    SRS_ID?: number | null;
-    // 数字类型的精度
-    NUMERIC_PRECISION?: number | null;
-    // 用户对该列的权限
-    PRIVILEGES?: string;
-    // 列注释
-    COLUMN_COMMENT?: string;
-    // 日期时间类型的精度
-    DATETIME_PRECISION?: number | null;
-    // 列的排序规则
-    COLLATION_NAME?: string;
-    // 数字类型的小数位数
-    NUMERIC_SCALE?: number | null;
-    // 列的数据类型及定义
-    COLUMN_TYPE?: string;
-    // 生成列的表达式
-    GENERATION_EXPRESSION?: string;
-    // 列的序号
-    ORDINAL_POSITION?: number;
-    // 字符的最大长度
-    CHARACTER_MAXIMUM_LENGTH?: number | null;
-    // 列的数据类型
-    DATA_TYPE?: string;
-    // 列的字符集
-    CHARACTER_SET_NAME?: string;
-    // 列的默认值
-    COLUMN_DEFAULT?: string | null;
+    name: string;
+    type: string;
+    displayType?: string;
+    comment?: string;
+    isNullable?: boolean;
+    defaultValue?: string | number | boolean | null;
+    autoIncrement?: boolean;
+    length?: number;
+    scale?: number;
+    position?: number;
+}
+export interface FieldType {
+    name: string;
+    catalog: FieldTypeCategory;
+}
+export enum FieldTypeCategory {
+    /** 整数类型 (TINYINT, SMALLINT, MEDIUMINT, INT, BIGINT) */
+    INTEGER = 'Integer',
+    /** 精确小数类型 (DECIMAL) */
+    FIXED_POINT = 'Fixed-Point',
+    /** 浮点数类型 (FLOAT, DOUBLE) */
+    FLOATING_POINT = 'Floating-Point',
+    /** 字符串类型 (CHAR, VARCHAR) */
+    STRING = 'String',
+    /** 二进制数据类型 (BINARY, VARBINARY) */
+    BINARY = 'Binary',
+    /** 日期时间类型 (DATE, TIME, DATETIME, TIMESTAMP, YEAR) */
+    DATE_AND_TIME = 'Date & Time',
+    /** 位类型 (BIT) */
+    BIT_VALUE = 'Bit-Value',
+    /** 枚举类型 (ENUM) */
+    ENUMERATION = 'Enumeration',
+    /** 集合类型 (SET) */
+    SET = 'Set',
+    /** JSON 文档类型 (JSON) */
+    JSON = 'JSON',
+    /** 长文本类型 (TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT) */
+    TEXT = 'Text',
+    /** 二进制大对象类型 (TINYBLOB, BLOB, MEDIUMBLOB, LONGBLOB) */
+    BLOB = 'BLOB'
 }

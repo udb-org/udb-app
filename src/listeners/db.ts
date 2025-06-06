@@ -11,12 +11,13 @@ import {
   executeSql,
   runServer,
 } from "@/services/db-client";
-import { IDataSource } from "@/types/db";
+import { IDataSource, IResult } from "@/types/db";
 import { ipcMain, dialog } from "electron";
 // import { dialog } from "electron/main";
 import { getCurrentConnection } from "./storage";
 import { addHistory } from "@/services/history";
 import { ITask } from "@/types/task";
+import { getDataBaseEX } from "@/extension/db";
 export function unregisterDbListeners() {
   // Unregister all 'handle' and 'on' listeners related to the database operations
   ipcMain.removeHandler("db:startServer");
@@ -87,9 +88,19 @@ export function registerDbListeners(mainWindow: Electron.BrowserWindow) {
       password: conf.password,
       database: conf.database,
     };
-    const sql = "show databases;";
-    executeSql(sql, datasource).then((res) => {
+    const dbEx=getDataBaseEX(conf.type);
+    if(dbEx==null){
+      dialog.showErrorBox("Error", "Unsupported database type!");
+      return;
+    }
+    const sql = dbEx.getDatabasesSql();
+    executeSql(sql, datasource).then((res:IResult) => {
       console.log("db:getDatabases", res);
+      if(res.data&&res.data.rows){
+        const databases = dbEx.getDatabasesByResult(res.data.rows);
+        console.log("db:getDatabases", databases);
+        res.data.rows=databases;
+      }
       mainWindow.webContents.send("db:getDatabasesing", res);
     })
   });
@@ -115,7 +126,7 @@ export function registerDbListeners(mainWindow: Electron.BrowserWindow) {
   });
   //getTables
   ipcMain.handle("db:getTables", async (event, databaseName: string) => {
-    console.log("db:getTables", databaseName);
+
     const conf = getCurrentConnection();
     if (conf == null) {
       dialog.showErrorBox("Error", "Please select a database!");
@@ -131,6 +142,7 @@ export function registerDbListeners(mainWindow: Electron.BrowserWindow) {
       _databaseName = currentDataSource.database;
     }
     console.log("_databaseName", _databaseName);
+
     const datasource: IDataSource = {
       name: conf.name + "_" + _databaseName,
       type: conf.type,
@@ -144,12 +156,53 @@ export function registerDbListeners(mainWindow: Electron.BrowserWindow) {
     if (databaseName.length > 0) {
       currentDataSource = datasource;
     }
-    const sql =
-      "select * from INFORMATION_SCHEMA.TABLES where TABLE_SCHEMA='" +
-      _databaseName +
-      "'";
-    return await executeSql(sql, datasource);
+    const dbEx=getDataBaseEX(conf.type);
+    if(dbEx==null){
+      dialog.showErrorBox("Error", "Unsupported database type!");
+      return;
+    }
+    const sql =dbEx.getTablesSql(_databaseName);
+
+      // "select * from INFORMATION_SCHEMA.TABLES where TABLE_SCHEMA='" +
+      // _databaseName +
+      // "'";
+     const result=await executeSql(sql, datasource);
+     if(result.data&&result.data.rows){
+       const tables = dbEx.getTablesByResult(result.data.rows);
+       result.data.rows=tables;
+     }
+
+    return result;
   });
+    //getTables
+    ipcMain.handle("db:getTableInfo", async (event, tableName: string) => {
+      console.log("db:getTableInfo", tableName);
+      const conf = getCurrentConnection();
+      if (conf == null) {
+        dialog.showErrorBox("Error", "Please select a database!");
+        return;
+      }
+     const currentDataSource = getCurrentDataSource();
+      if (currentDataSource == null) {
+        dialog.showErrorBox("Error", "Please select a database!");
+        return;
+      }
+   
+      const dbEx=getDataBaseEX(conf.type);
+      if(dbEx==null){
+        dialog.showErrorBox("Error", "Unsupported database type!");
+        return;
+      }
+      const sql =dbEx.getTableInfoSql(currentDataSource.database+"", tableName);
+  
+       const result=await executeSql(sql, currentDataSource);
+       if(result.data&&result.data.rows){
+         const tableInfo = dbEx.getTableInfoByResult(result.data.rows);
+         result.data=tableInfo;
+       }
+  
+      return result;
+    });
   //getViews
   ipcMain.handle("db:getViews", async (event, databaseName: string) => {
     const conf = getCurrentConnection();
@@ -228,15 +281,42 @@ export function registerDbListeners(mainWindow: Electron.BrowserWindow) {
       dialog.showErrorBox("Error", "Please select a database!");
       return;
     }
-    const sql =
-      "select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME='" +
-      tableName +
-      "' and TABLE_SCHEMA='" +
-      currentDataSource.database +
-      "'";
+    const dbEx=getDataBaseEX(currentDataSource.type);
+    if(dbEx==null){
+      dialog.showErrorBox("Error", "Unsupported database type!");
+      return;
+    }
+    const sql =dbEx.getColumnsSql(currentDataSource.database+"",tableName);
+  
     console.log("db:getColumns", sql);
-    return await executeSql(sql, currentDataSource);
+    const result=await executeSql(sql, currentDataSource);
+    if(result.data&&result.data.rows){
+      const columns = dbEx.getColumnsByResult(result.data.rows);
+      result.data.rows=columns;
+    }
+    return result;
   });
+    //getConstraints
+    ipcMain.handle("db:getConstraints", async (event, tableName: string) => {
+      if (currentDataSource == null) {
+        dialog.showErrorBox("Error", "Please select a database!");
+        return;
+      }
+      const dbEx=getDataBaseEX(currentDataSource.type);
+      if(dbEx==null){
+        dialog.showErrorBox("Error", "Unsupported database type!");
+        return;
+      }
+      const sql =dbEx.getConstraintSql(currentDataSource.database+"",tableName);
+    
+      console.log("db:getConstraints", sql);
+      const result=await executeSql(sql, currentDataSource);
+      if(result.data&&result.data.rows){
+        const columns = dbEx.getConstraintByResult(result.data.rows);
+        result.data.rows=columns;
+      }
+      return result;
+    });
   //getIndexes
   ipcMain.handle("db:getIndexes", async (event, tableName: string) => {
     if (currentDataSource == null) {
@@ -263,16 +343,7 @@ export function registerDbListeners(mainWindow: Electron.BrowserWindow) {
     console.log("db:getTriggers", sql);
     return await executeSql(sql, currentDataSource);
   });
-  function getTables(dataSource: IDataSource) {
-    const sql =
-      "select * from INFORMATION_SCHEMA.TABLES where TABLE_SCHEMA='" +
-      dataSource.database +
-      "'";
-    executeSql(sql, dataSource).then((res) => {
-      console.log("db:getTables", res);
-      mainWindow.webContents.send("db:getTablesing", res);
-    });
-  }
+
   //invokeSql
   ipcMain.handle("db:invokeSql", async (event, sql: string) => {
     if (currentDataSource == null) {

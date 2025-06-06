@@ -1,5 +1,4 @@
-import { execSql, invokeSql } from "@/api/db";
-import { openView } from "@/api/view";
+import { openView, showActions } from "@/api/view";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -10,46 +9,28 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { getView, useTabStore } from "@/store/tab-store";
-import { IDataBaseTableColumn } from "@/types/db";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { getDataBaseEX } from "@/extension/db";
+import { useDbStore } from "@/store/db-store";
+import { getView, saveViewValue } from "@/store/tab-store";
+import { ConnectionConfig, DataBaseTableConstraintEnum, IDataBaseEX, IDataBaseTable, IDataBaseTableColumn, IDataBaseTableConstraint, IDataBaseTableIndex, IResult } from "@/types/db";
+import { ActionParam } from "@/types/view";
 import {
   ChevronDownIcon,
-  CodeIcon,
-  MoveVertical,
-  MoveVerticalIcon,
+  LoaderIcon,
   PlusIcon,
-  SaveIcon,
-  SquareCheck,
-  SquareCheckIcon,
-  SquareIcon,
-  XCircleIcon,
+  XCircleIcon
 } from "lucide-react";
-import React, { useEffect, useMemo } from "react";
-
-export const ViewTableActions = [
-  {
-    name: "Save",
-    command: "save",
-    icon: SaveIcon,
-  },
-  {
-    name: "DDL",
-    command: "ddl",
-    icon: CodeIcon,
-  },
-];
-
+import React, { useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
+import { format as sqlFormatter } from "sql-formatter";
 export default function ViewTable(props: { viewKey: string }) {
+  const [databaseEx, setDatabaseEx] = React.useState<IDataBaseEX | null>(null);
+  const connection: ConnectionConfig = useDbStore((state: any) => state.connection);
+  const { t } = useTranslation();
   const [view, setView] = React.useState<any>(null);
   const [results, setResults] = React.useState<any[]>([]);
   const [columns, setColumns] = React.useState<IDataBaseTableColumn[]>([
@@ -67,198 +48,116 @@ export default function ViewTable(props: { viewKey: string }) {
     //加载执行结果
     let _view = getView(props.viewKey);
     let _results = [];
-    let _sql = "";
+    
+    let _ddl = "";
     if (_view) {
       if (_view.results) {
         _results = _view.results;
       }
-      if (_view.params.sql) {
-        _sql = _view.params.sql;
+   
+      if (_view.ddl) {
+        _ddl = _view.ddl;
       }
     }
-
     setResults(_results);
     setView(_view);
+    setDdl(_ddl);
   }, [props.viewKey]);
-
   const [tableName, setTableName] = React.useState<string>("");
   const [tableComment, setTableComment] = React.useState<string>("");
-
+  const [constraints, setConstraints] = React.useState<IDataBaseTableConstraint[]>([]);
+  const [indexs, setIndexs] = React.useState<IDataBaseTableIndex[]>([]);
+  const [chatset, setChatset] = React.useState<string>("");
   useEffect(() => {
-    if (view) {
+    if (view&&(view.ddl==undefined||view.ddl=="")) {
       setTableName(view.params.table);
-      //查询表信息
-      invokeSql(
-        `select * from INFORMATION_SCHEMA.TABLES where  TABLE_NAME='${view.params.table}'`,
-      ).then((res: any) => {
+      window.api.invoke("db:getTableInfo", view.params.table).then((res: IResult) => {
         console.log("查询表信息", res);
-        if (res.status === "success") {
-          setTableComment(res.data.data[0].TABLE_COMMENT);
+        if (res.status === 200) {
+          const tb: IDataBaseTable = res.data;
+          setTableComment(tb.comment + "");
+          //查询列信息
+          window.api.invoke("db:getColumns", view.params.table).then((resCol: IResult) => {
+            console.log("查询列信息", resCol);
+            if (resCol.status === 200) {
+              setColumns(resCol.data.rows);
+              window.api.invoke("db:getConstraints", view.params.table).then((resC: IResult) => {
+                console.log("查询约束信息", resC);
+                if (resC.status === 200) {
+                  const constraints: IDataBaseTableConstraint[] = resC.data.rows;
+                  setConstraints(constraints)
+                  willToDDl({
+                    name: view.params.table,
+                    columns: resCol.data.rows,
+                    constraints: resC.data.rows,  
+                    indexes: [],
+                    comment: tb.comment,
+                  });
+                }
+              });
+            }
+          });
         }
       });
-
-      //查询列信息
-      invokeSql(
-        `select * from INFORMATION_SCHEMA.COLUMNS where  TABLE_NAME='${view.params.table}'`,
-      ).then((res: any) => {
-        console.log("查询列信息", res);
-        if (res.status === "success") {
-          setColumns(res.data.data);
-        }
-      });
+ 
+      // invokeSql(
+      //   `select * from INFORMATION_SCHEMA.COLUMNS where  TABLE_NAME='${view.params.table}'`,
+      // ).then((res: any) => {
+      //   console.log("查询列信息", res);
+      //   if (res.status === "success") {
+      //     setColumns(res.data.data);
+      //   }
+      // });
+    }else if(view&&view.ddl&&view.ddl.length>0){
+      parseDDLToColumns(view.ddl);
     }
   }, [view]);
+  const [isMark, setIsMark] = React.useState<boolean>(false);
   useEffect(() => {
-    const mergeTableing = (context: string) => {
-      console.log("mergeTableing", context);
-      //使用空格替代换行
-      context = context.replaceAll("\n", " ");
-      const sqls = context.split(";");
-      sqls.forEach((sql) => {
-        //判断sql是建表语句，还是修改表名或列或设置主键等
-        if (sql.trim().toUpperCase().startsWith("CREATE TABLE")) {
-          //提取表名
-          const tableName = sql.split("CREATE TABLE")[1].split("(")[0].trim();
-          setTableName(tableName);
-          //提取列
-          const _cols = parseDDLToColumns(sql);
-          setColumns(_cols);
-          //提取表注释
-          const _comment = sql.split("COMMENT")[1].split("'")[1].trim();
-          setTableComment(_comment);
-        } else if (sql.trim().toUpperCase().startsWith("ALTER TABLE")) {
-          if (sql.toUpperCase().includes("RENAME TO")) {
-            //重命名表
-            const tableName = sql.split("RENAME TO")[1].trim();
-            setTableName(tableName);
-          } else if (
-            sql.toUpperCase().includes("ADD COLUMN") ||
-            sql.toUpperCase().includes("MODIFY COLUMN") ||
-            sql.toUpperCase().includes("DROP COLUMN")
-          ) {
-            //添加列或修改列
-            // Parse the SQL for adding a column and generate a column object
-            const addColumnMatch = sql.match(
-              /ADD COLUMN\s+`?(\w+)`?\s+([a-z]+)(?:\((\d+)(?:,\s*(\d+))?\))?(?:\s+(unsigned))?(?:\s+(NOT NULL|NULL))?(?:\s+DEFAULT\s+(?:((?:'((?:\\'|[^'])*)')|[\dA-Za-z_]+)|(NULL)))?(?:\s+COMMENT\s+'((?:\\'|[^'])*)')?/i,
-            );
-            if (addColumnMatch) {
-              const [
-                _,
-                name,
-                type,
-                length,
-                scale,
-                unsigned,
-                nullable,
-                defaultVal,
-                defaultStr,
-                defaultNull,
-                comment,
-              ] = addColumnMatch;
-              const newColumn: IDataBaseTableColumn = {
-                COLUMN_NAME: name,
-                COLUMN_TYPE: type.toUpperCase() + (unsigned ? " UNSIGNED" : ""),
-                CHARACTER_MAXIMUM_LENGTH: length ? parseInt(length) : null,
-                NUMERIC_SCALE: scale ? parseInt(scale) : null,
-                IS_NULLABLE:
-                  (nullable ? nullable.toUpperCase() === "NULL" : !nullable) +
-                  "",
-                COLUMN_DEFAULT: defaultNull ? null : defaultStr || defaultVal,
-                COLUMN_COMMENT: (comment || "").replace(/\\'/g, "'"),
-                PRIVILEGES: "",
-                EXTRA: "",
-              };
-              setColumns([...columns, newColumn]);
-            }
+    let mergeContext: string | null = null;
+    const mergeTabling = (params: {
+      content: string,
+      status: number
 
-            // Parse the SQL for modifying a column
-            const modifyColumnMatch = sql.match(
-              /MODIFY COLUMN\s+`?(\w+)`?\s+([a-z]+)(?:\((\d+)(?:,\s*(\d+))?\))?(?:\s+(unsigned))?(?:\s+(NOT NULL|NULL))?(?:\s+DEFAULT\s+(?:((?:'((?:\\'|[^'])*)')|[\dA-Za-z_]+)|(NULL)))?(?:\s+COMMENT\s+'((?:\\'|[^'])*)')?/i,
-            );
-            if (modifyColumnMatch) {
-              const [
-                _,
-                name,
-                type,
-                length,
-                scale,
-                unsigned,
-                nullable,
-                defaultVal,
-                defaultStr,
-                defaultNull,
-                comment,
-              ] = modifyColumnMatch;
-              const newColumns = columns.map((col) => {
-                if (col.COLUMN_NAME === name) {
-                  return {
-                    ...col,
-                    COLUMN_TYPE:
-                      type.toUpperCase() + (unsigned ? " UNSIGNED" : ""),
-                    CHARACTER_MAXIMUM_LENGTH: length ? parseInt(length) : null,
-                    NUMERIC_SCALE: scale ? parseInt(scale) : null,
-                    IS_NULLABLE:
-                      (nullable
-                        ? nullable.toUpperCase() === "NULL"
-                        : !nullable) + "",
-                    COLUMN_DEFAULT: defaultNull
-                      ? null
-                      : defaultStr || defaultVal,
-                    COLUMN_COMMENT: (comment || "").replace(/\\'/g, "'"),
-                  };
-                }
-                return col;
-              });
-              setColumns(newColumns);
-            }
+    }) => {
+      console.log("aiMergeSqling", params);
 
-            // Parse the SQL for dropping a column
-            const dropColumnMatch = sql.match(/DROP COLUMN\s+`?(\w+)`?/i);
-            if (dropColumnMatch) {
-              const [_, name] = dropColumnMatch;
-              const newColumns = columns.filter(
-                (col) => col.COLUMN_NAME !== name,
-              );
-              setColumns(newColumns);
-            }
-          } else if (
-            sql.toUpperCase().includes("ADD PRIMARY KEY") ||
-            sql.toUpperCase().includes("DROP PRIMARY KEY")
-          ) {
-            //添加主键或删除主键
-          }
-          //ALTER TABLE ele_month_bus COMMENT '新的备注信息';
-          else if (
-            sql.trim().toUpperCase().startsWith("ALTER TABLE") &&
-            sql.toUpperCase().includes("COMMENT")
-          ) {
-            // Update table comment
-            const commentMatch = sql.match(
-              /ALTER TABLE\s+`?(\w+)`?\s+COMMENT\s+'((?:\\'|[^'])*)'/i,
-            );
-            if (commentMatch) {
-              const [_, tableNameMatch, newComment] = commentMatch;
-              setTableComment(newComment.replace(/\\'/g, "'"));
-            }
-          }
-        } else if (sql.trim().toUpperCase().startsWith("RENAME TABLE")) {
-          //重命名表
-          const tableName = sql.split("RENAME TABLE")[1].split("TO")[1].trim();
-          setTableName(tableName);
+      if (params.status == 799) {
+       mergeContext="";
+        //Mark 
+        setIsMark(true);
+
+
+      } else if (params.status == 200) {
+        if (params.content.length > 0) {
+         
+          mergeContext+=params.content;
         }
-      });
-    };
-    window.api.on("ai:mergeTableing", mergeTableing);
+        setDdl(sqlFormatter(mergeContext+""));
+        parseDDLToColumns(mergeContext+"");
+        mergeContext=null;
+        //Mark
+        setIsMark(false);
 
-    return () => {
-      window.api.removeListener("ai:mergeTableing", mergeTableing);
+      } else if (params.status == 800) {
+        mergeContext+=params.content;
+        
+      } else {
+        toast.error(t("status." + params.status));
+        setIsMark(false);
+      }
+
     };
-  }, [columns]);
+    window.api.on("ai:mergeTabling", mergeTabling);
+    return () => {
+      window.api.removeAllListeners("ai:mergeTabling");
+    };
+  }, [props.viewKey, databaseEx]);
   useEffect(() => {
-    const view_table_actioning = (params: any) => {
+    const view_table_actioning = (params: ActionParam) => {
       console.log("view_table_actioning", params);
       if (params.command === "ddl") {
-        setDdl(parseColumnsToDDL(columns));
+        setDdl(parseColumnsToDDL()+"");
         openView({
           name: "ddl",
           type: "sql",
@@ -271,370 +170,423 @@ export default function ViewTable(props: { viewKey: string }) {
     };
     window.api.on("view:table-actioning", view_table_actioning);
 
+    showActions(
+      "view:table-actioning",
+      [
+      {
+        name: t("view.action.save"),
+        command: "save",
+        icon: "save",
+      }
+    ]);
+
     return () => {
       window.api.removeListener("view:table-actioning", view_table_actioning);
     };
   }, []);
-
-  const [ddl, setDdl] = React.useState<string>(""
-    // "CREATE TABLE `ele_month` (" +
-    //   "  `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'ID'," +
-    //   "  `month` varchar(7) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '月份，yyyy-MM'," +
-    //   "  `company` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '供电单位'," +
-    //   "  `ele_catalog` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '用电类别'," +
-    //   "  `ele_value` double DEFAULT NULL COMMENT '用电量'," +
-    //   "  `org` varchar(20) COLLATE utf8mb4_general_ci NOT NULL COMMENT '所属地市'," +
-    //   "  PRIMARY KEY (`id`)" +
-    //   ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
-  );
-
+  const [ddl, setDdl] = React.useState<string>("");
   useEffect(() => {
-    const columns = parseDDLToColumns(ddl);
-    setColumns(columns);
+    // const columns = parseDDLToColumns(ddl);
+    // setColumns(columns);
   }, []);
   //解析DDL转换为列表结构
   function parseDDLToColumns(ddl: string) {
-    // 提取CREATE TABLE括号内的内容
-    const columnsMatch = ddl.match(/CREATE TABLE\s+`?\w+`?\s*\((.*)\)/s);
-    if (!columnsMatch) return [];
+    console.log("parseDDLToColumns",ddl);
+    if (databaseEx) {
+     try{
+      const tb=databaseEx.ddlToObj(ddl);
+      console.log("parseDDLToColumns",tb);
+      if(tb){
+        setColumns(tb.columns||[]);
+        setIndexs(tb.indexes||[]);
+        setConstraints(tb.constraints||[]);
+        setTableComment(tb.comment||"");
+        setTableName(tb.name||"");
 
-    const columnsPart = columnsMatch[1];
-
-    // 分割每个列定义，处理可能的逗号在括号内的情况（如外键）
-    const columnDefs = columnsPart.split(/,\s*(?![^(]*\))/g);
-
-    const columns: IDataBaseTableColumn[] = [];
-    for (const def of columnDefs) {
-      // 跳过约束定义（如PRIMARY KEY）
-      if (/^(PRIMARY|KEY|CONSTRAINT|FOREIGN)/i.test(def.trim())) continue;
-
-      // 匹配列定义
-      const colMatch = def
-        .trim()
-        .match(
-          /^`?(\w+)`?\s+([a-z]+)(?:$(\d+)(?:,\s*(\d+))?$)?(?:\s+(unsigned))?(?:\s+(NOT NULL|NULL))?(?:\s+DEFAULT\s+(?:((?:'((?:\\'|[^'])*)')|[\dA-Za-z_]+)|(NULL)))?(?:\s+COMMENT\s+'((?:\\'|[^'])*)')?/i,
-        );
-      if (!colMatch) continue;
-
-      const [
-        _,
-        name,
-        type,
-        length,
-        scale,
-        unsigned,
-        nullable,
-        defaultVal,
-        defaultStr,
-        defaultNull,
-        comment,
-      ] = colMatch;
-
-      columns.push({
-        COLUMN_NAME: name,
-        COLUMN_TYPE: type.toUpperCase() + (unsigned ? " UNSIGNED" : ""),
-        CHARACTER_MAXIMUM_LENGTH: length ? parseInt(length) : null,
-        NUMERIC_SCALE: scale ? parseInt(scale) : null,
-        IS_NULLABLE:
-          (nullable ? nullable.toUpperCase() === "NULL" : !nullable) + "", // 如果明确NOT NULL则为false，否则可能为true
-        COLUMN_DEFAULT: defaultNull ? null : defaultStr || defaultVal,
-        COLUMN_COMMENT: (comment || "").replace(/\\'/g, "'"),
-      });
+      }else{
+        setColumns([]);
+        setIndexs([]);
+        setConstraints([]);
+        setTableComment("");
+        setTableName("");
+      }
+     }catch(e){
+      toast.error(t("status."+500));
+     }
+    }else{
+      console.log("parseDDLToColumns","databaseEx is null");
     }
-    console.log(columns);
-    return columns;
+  }
+  function parseColumnsToDDL(tb?:IDataBaseTable) {
+    if (databaseEx) {
+      const table=tb?tb:{
+        name: tableName,
+        columns: columns,
+        constraints: constraints,
+        comment: tableComment,
+        indexes: indexs,
+      }
+      return databaseEx.objToDdl(table);
+    }
+  }
+  
+  useEffect(() => {
+    if (connection) {
+      const dbEx = getDataBaseEX(connection.type);
+      if (dbEx) {
+        setDatabaseEx(dbEx);
+      }
+    }
+  }, []);
+
+  function willToDDl(td?:IDataBaseTable) {
+    setTimeout(() => {
+      const ddl = parseColumnsToDDL(td);
+      if (ddl != undefined) {
+        setDdl(ddl);
+        saveViewValue(props.viewKey,"ddl", ddl);
+      } else {
+        setDdl("");
+        saveViewValue(props.viewKey,"ddl", "");
+      }
+    }, 500);
   }
 
-  function parseColumnsToDDL(columns: IDataBaseTableColumn[]) {
-    let ddl = "CREATE TABLE `table_name` (";
-    const primaryKeys: string[] = [];
-
-    for (let i = 0; i < columns.length; i++) {
-      const column = columns[i];
-      ddl += `\n  \`${column.COLUMN_NAME}\` ${column.COLUMN_TYPE}`;
-
-      if (column.CHARACTER_MAXIMUM_LENGTH !== null) {
-        ddl += `(${column.CHARACTER_MAXIMUM_LENGTH}`;
-        if (column.NUMERIC_SCALE !== null) {
-          ddl += `, ${column.NUMERIC_SCALE}`;
-        }
-        ddl += `)`;
-      }
-
-      if (column.IS_NULLABLE === "NO") {
-        ddl += ` NOT NULL`;
-      }
-
-      if (column.COLUMN_DEFAULT !== null) {
-        if (typeof column.COLUMN_DEFAULT === "string") {
-          ddl += ` DEFAULT '${column.COLUMN_DEFAULT.replace(/'/g, "\\'")}'`;
-        } else {
-          ddl += ` DEFAULT ${column.COLUMN_DEFAULT}`;
-        }
-      }
-
-      if (column.COLUMN_COMMENT) {
-        ddl += ` COMMENT '${column.COLUMN_COMMENT.replace(/'/g, "\\'")}'`;
-      }
-
-      if (i < columns.length - 1) {
-        ddl += ",";
-      }
-
-      if (column.PRIVILEGES === "pk") {
-        primaryKeys.push(column.COLUMN_NAME);
-      }
-    }
-
-    if (primaryKeys.length > 0) {
-      ddl += `,\n  PRIMARY KEY (\`${primaryKeys.join("`, `")}\`)`;
-    }
-
-    ddl +=
-      "\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;";
-
-    return ddl;
-  }
-
-  const mysqlDataTypes = [
-    "BOOLEAN",
-    "VARCHAR()",
-    "INT",
-    "BIGINT",
-    "FLOAT",
-    "DOUBLE",
-    "DECIMAL",
-    "DATE",
-    "TIME",
-    "DATETIME",
-    "TIMESTAMP",
-    "TEXT",
-    "BLOB",
-    "ENUM",
-    "SET",
-  ];
   return (
-    <div className="flex h-full w-full flex-col">
+    <div className="flex h-full w-full flex-col relative">
       <div className="p-2">
-        <div className="text-sm font-bold">Base Infomation</div>
+        <div className="text-sm font-bold">{t("view.table.base.title")}</div>
         <Separator></Separator>
-        <div className="space-y-2 p-2">
-          <div className="flex items-center gap-2">
-            <div className="w-[100px]">TableName:</div>
-            <Input className="" value={tableName} />
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-[100px]">Comment:</div>
+        <table className="text-sm">
+          <tbody>
+          <tr>
+            <td className="h-2"></td>
+          </tr>
+          <tr >
+            <td>
+              <div className="pr-1">{t("view.table.base.tableName")}:</div>
+            </td>
+            <td>
+              <Input className="" value={tableName} />
+            </td>
+            <td className="w-5"></td>
+            <td>
+              <div className="pr-1">Charset:</div>
+            </td>
+            <td>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
 
-            <Input className="" value={tableComment} />
-          </div>
-        </div>
-      </div>
-      <div className="p-2">
-        <div className="text-sm font-bold">Columns</div>
-        <Separator></Separator>
-        <div className="space-y-2 p-2 text-center">
-          <div className="flex items-center gap-1">
-            <Button
-              variant={"ghost"}
-              size={"icon"}
-              className="h-[24px]"
-            ></Button>
-            <div className="flex-1">Name</div>
-            <div className="w-[140px]">Type</div>
-            <div className="w-[40px] text-center">Nullable</div>
-            <div className="flex-1">Default</div>
-            <div className="flex-1">Comment</div>
-            <div className="">Primary Key</div>
-            <Button variant={"ghost"} size={"icon"}></Button>
-          </div>
-          <div>
-            {columns.map((item, index) => (
-              <div
-                key={index}
-                className="bg-background mb-1 flex items-center gap-1 rounded text-sm"
-              >
-                <Button
-                  variant={"ghost"}
-                  size={"icon"}
-                  className="hover:bg-primary h-[26px] w-[26px] cursor-row-resize"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    //拖拽调整顺序
-                    const startIndex = index;
-                    let draggedElement: HTMLElement | null = null;
-                    // Store the dragged element
-                    draggedElement = e.currentTarget
-                      .parentElement as HTMLElement;
-                    // Add a class to the dragged element for visual feedback
-                    draggedElement.classList.add("dragging");
-                    const onMouseMove = (moveEvent: MouseEvent) => {
-                      if (!draggedElement) return;
+                  >
+                    {chatset}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56">
+                  <DropdownMenuGroup>
+                    {/* List of MySQL data types */}
+                    {databaseEx && databaseEx.getChatsets().map((cs) => (
+                      <DropdownMenuItem
+                        key={cs}
+                        onClick={() => {
+                          setChatset(cs);
 
-                      const { clientY } = moveEvent;
-                      const allItems = Array.from(
-                        draggedElement.parentElement?.children || [],
-                      );
-                      const targetItem = allItems.find((item) => {
-                        const rect = item.getBoundingClientRect();
-                        return clientY > rect.top && clientY < rect.bottom;
-                      });
-
-                      if (targetItem && targetItem !== draggedElement) {
-                        const targetIndex = allItems.indexOf(targetItem);
-                        const newColumns = [...columns];
-                        const [removed] = newColumns.splice(startIndex, 1);
-                        newColumns.splice(targetIndex, 0, removed);
-                        setColumns(newColumns);
-                      }
-                    };
-                    const onMouseUp = () => {
-                      if (draggedElement) {
-                        draggedElement.classList.remove("dragging");
-                      }
-                      document.removeEventListener("mousemove", onMouseMove);
-                      document.removeEventListener("mouseup", onMouseUp);
-                    };
-                    document.addEventListener("mousemove", onMouseMove);
-                    document.addEventListener("mouseup", onMouseUp);
-                  }}
-                >
-                  <MoveVerticalIcon size={12} />
-                </Button>
-                <div className="flex-1">
-                  <Input
-                    value={item.COLUMN_NAME}
-                    onChange={(e) => {
-                      const newColumns = [...columns];
-                      newColumns[index].COLUMN_NAME = e.target.value;
-                      setColumns(newColumns);
-                    }}
-                    className="h-[24px] w-full border-0 shadow-none outline-0 md:text-sm"
-                  />
-                </div>
-                <div className="flex w-[140px] items-center gap-1">
-                  <Input
-                    value={item.COLUMN_TYPE}
-                    onChange={(e) => {
-                      const newColumns = [...columns];
-                      newColumns[index].COLUMN_TYPE = e.target.value;
-                      setColumns(newColumns);
-                    }}
-                    className="h-[24px] w-full border-0 shadow-none outline-0 md:text-sm"
-                  />
-
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="h-[20px] w-[20px] p-1"
+                        }}
                       >
-                        <ChevronDownIcon />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56">
-                      <DropdownMenuGroup>
-                        {/* List of MySQL data types */}
-                        {mysqlDataTypes.map((type) => (
-                          <DropdownMenuItem
-                            key={type}
-                            onClick={() => {
-                              const newColumns = [...columns];
-                              newColumns[index].COLUMN_TYPE = type;
-                              setColumns(newColumns);
-                            }}
-                          >
-                            {type}
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuGroup>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
+                        {cs}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </td>
+          </tr>
+          <tr>
+            <td className="h-2"></td>
+          </tr>
+          <tr>
+            <td>
+              <div className="pr-1">{t("view.table.base.tableComment")}:</div>
+            </td>
+            <td colSpan={4}>
+              <Input className="" value={tableComment} />
+            </td>
+          </tr>
+          </tbody>
+        </table>
 
-                <div className="flex w-[40px] items-center justify-center text-center">
-                  <Checkbox
-                    checked={item.IS_NULLABLE === "YES"}
-                    onCheckedChange={(status) => {
-                      const newColumns = [...columns];
-                      newColumns[index].IS_NULLABLE = status ? "YES" : "NO";
-                      setColumns(newColumns);
-                    }}
-                  />
-                </div>
-                <div className="flex-1">
-                  <Input
-                    value={item.COLUMN_DEFAULT + ""}
-                    onChange={(e) => {
-                      const newColumns = [...columns];
-                      newColumns[index].COLUMN_DEFAULT = e.target.value;
-                      setColumns(newColumns);
-                    }}
-                    className="h-[24px] w-full border-0 shadow-none outline-0 md:text-sm"
-                  />
-                </div>
-                <div className="flex-1">
-                  <Input
-                    className="h-[24px] w-full border-0 shadow-none outline-0 md:text-sm"
-                    value={item.COLUMN_COMMENT}
-                    onChange={(e) => {
-                      const newColumns = [...columns];
-                      newColumns[index].COLUMN_COMMENT = e.target.value;
-                      setColumns(newColumns);
-                    }}
-                  />
-                </div>
-                <div className="flex w-[40px] items-center justify-center text-center">
-                  <Checkbox
-                    checked={item.PRIVILEGES === "pk"}
-                    onCheckedChange={(status) => {
-                      const newColumns = [...columns];
-                      newColumns[index].PRIVILEGES = status ? "pk" : "";
-                      setColumns(newColumns);
-                    }}
-                  />
-                </div>
-                <Button
-                  variant={"ghost"}
-                  size={"icon"}
-                  className="hover:bg-destructive h-[24px] w-[24px]"
-                  onClick={() => {
-                    const newColumns = [...columns];
-                    newColumns.splice(index, 1);
-                    setColumns(newColumns);
-                  }}
-                >
-                  <XCircleIcon size={14} />
-                </Button>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-1 rounded">
-            <Button
-              variant={"ghost"}
-              className="text-muted-foreground h-[24px] w-full text-sm"
-              onClick={() => {
-                const newColumns = [...columns];
-                newColumns.push({
-                  COLUMN_NAME: "",
-                  COLUMN_TYPE: "INT",
-                  COLUMN_COMMENT: "",
-                  PRIVILEGES: "pk",
-                  IS_NULLABLE: "YES",
-                  COLUMN_DEFAULT: null,
-                  EXTRA: "",
-                });
-                setColumns(newColumns);
-              }}
-            >
-              <PlusIcon size={14} />
-              Add Column
-            </Button>
-          </div>
-        </div>
       </div>
+      <Separator className="mb-2" />
+      <Tabs defaultValue="columns">
+        <TabsList className="bg-card border p-0">
+          <TabsTrigger value="columns">{t("view.table.column.title")}</TabsTrigger>
+          <TabsTrigger value="constraints">{t("view.table.constraint.title")}</TabsTrigger>
+          <TabsTrigger value="index">{t("view.table.index.title")}</TabsTrigger>
+          <TabsTrigger value="ddl"
+          >{t("view.table.ddl.title")}</TabsTrigger>
+        </TabsList>
+        <TabsContent value="columns">
+          <div className="space-y-2 p-2 text-center text-sm whitespace-nowrap">
+            <div className="flex  items-center gap-1">
+              <Button
+                variant={"ghost"}
+                size={"icon"}
+                className="h-[24px]"
+              ></Button>
+              <div className="flex-1">{t("view.table.column.columnName")}</div>
+              <div className="w-[140px]">{t("view.table.column.columnType")}</div>
+              <div className="w-[70px] text-center">{t("view.table.column.isNullable")}</div>
+              <div className="flex-1">{t("view.table.column.defaultValue")}</div>
+              <div className="flex-1">{t("view.table.column.columnComment")}</div>
+              <div className="">{t("view.table.column.primaryKey")}</div>
+              <Button variant={"ghost"} size={"icon"}></Button>
+            </div>
+            <div>
+              {columns.map((item, index) => (
+                <div
+                  key={index}
+                  className="bg-background mb-1 flex items-center gap-1 rounded text-sm select-none"
+                >
+                  <Button
+                    variant={"ghost"}
+                    size={"icon"}
+                    className="hover:bg-primary h-[26px] w-[26px] cursor-row-resize text-xs"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      //拖拽调整顺序
+                      const startIndex = index;
+                      let draggedElement: HTMLElement | null = null;
+                      // Store the dragged element
+                      draggedElement = e.currentTarget
+                        .parentElement as HTMLElement;
+                      // Add a class to the dragged element for visual feedback
+                      draggedElement.classList.add("dragging");
+                      const onMouseMove = (moveEvent: MouseEvent) => {
+                        if (!draggedElement) return;
+                        const { clientY } = moveEvent;
+                        const allItems = Array.from(
+                          draggedElement.parentElement?.children || [],
+                        );
+                        const targetItem = allItems.find((item) => {
+                          const rect = item.getBoundingClientRect();
+                          return clientY > rect.top && clientY < rect.bottom;
+                        });
+                        if (targetItem && targetItem !== draggedElement) {
+                          const targetIndex = allItems.indexOf(targetItem);
+                          const newColumns = [...columns];
+                          const [removed] = newColumns.splice(startIndex, 1);
+                          newColumns.splice(targetIndex, 0, removed);
+                          setColumns(newColumns);
+                        }
+                      };
+                      const onMouseUp = () => {
+                        if (draggedElement) {
+                          draggedElement.classList.remove("dragging");
+                        }
+                        document.removeEventListener("mousemove", onMouseMove);
+                        document.removeEventListener("mouseup", onMouseUp);
+                        willToDDl();
+                      };
+                      document.addEventListener("mousemove", onMouseMove);
+                      document.addEventListener("mouseup", onMouseUp);
+                    }}
+                  >
+                    {index + 1}
+                  </Button>
+                  <div className="flex-1">
+                    <Input
+                      value={item.name}
+                      onChange={(e) => {
+                        const newColumns = [...columns];
+                        newColumns[index].name = e.target.value;
+                        setColumns(newColumns);
+                        willToDDl();
+                      }}
+                      className="h-[24px] w-full border-0 shadow-none outline-0 md:text-sm"
+                    />
+                  </div>
+                  <div className="flex w-[140px] items-center gap-1">
+                    <Input
+                      value={item.displayType ? item.displayType : item.type}
+                      onChange={(e) => {
+                        const newColumns = [...columns];
+                        const val = e.target.value;
+                        if (val.indexOf("(") > 0) {
+                          newColumns[index].displayType = val;
+                          const temp = val.split("(")[1].split(")")[0];
+                          if (temp.indexOf(",") > 0) {
+                            const len = parseInt(temp.split(",")[0]);
+                            const scale = parseInt(temp.split(",")[1]);
+                            newColumns[index].length = len;
+                            newColumns[index].scale = scale;
+                          } else {
+                            const len = parseInt(temp);
+                            newColumns[index].length = len;
+                          }
+                          newColumns[index].type = val.split("(")[0];
+                        } else {
+                          newColumns[index].displayType = undefined;
+                          newColumns[index].type = val;
+                        }
+                        setColumns(newColumns);
+                        willToDDl();
+                      }}
+                      className="h-[24px] w-full border-0 shadow-none outline-0 md:text-sm"
+                    />
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="h-[20px] w-[20px] p-1"
+                        >
+                          <ChevronDownIcon />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-56">
+                        <DropdownMenuGroup>
+                          {/* List of MySQL data types */}
+                          {databaseEx && databaseEx.getSupportFieldTypes().map((ft) => (
+                            <DropdownMenuItem
+                              key={ft.name}
+                              onClick={() => {
+                                const newColumns = [...columns];
+                                if (ft.name.indexOf("(") > 0) {
+                                  newColumns[index].displayType = ft.name;
+                                  const temp = ft.name.split("(")[1].split(")")[0];
+                                  if (temp.indexOf(",") > 0) {
+                                    const len = parseInt(temp.split(",")[0]);
+                                    const scale = parseInt(temp.split(",")[1]);
+                                    newColumns[index].length = len;
+                                    newColumns[index].scale = scale;
+                                  } else {
+                                    const len = parseInt(temp);
+                                    newColumns[index].length = len;
+                                  }
+                                  newColumns[index].type = ft.name.split("(")[0];
+                                } else {
+                                  newColumns[index].displayType = undefined;
+                                  newColumns[index].type = ft.name;
+                                }
+                                setColumns(newColumns);
+                                willToDDl();
+                              }}
+                            >
+                              {ft.name}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuGroup>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                  <div className="flex w-[70px] items-center justify-center text-center">
+                    <Checkbox
+                      checked={item.isNullable}
+                      onCheckedChange={(status) => {
+                        const newColumns = [...columns];
+                        newColumns[index].isNullable = status ? true : false;
+                        setColumns(newColumns);
+                        willToDDl();
+                      }}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <Input
+                      value={item.defaultValue ? item.defaultValue.toString() : ""}
+                      onChange={(e) => {
+                        const newColumns = [...columns];
+                        newColumns[index].comment = e.target.value;
+                        setColumns(newColumns);
+                        willToDDl();
+                      }}
+                      className="h-[24px] w-full border-0 shadow-none outline-0 md:text-sm"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <Input
+                      className="h-[24px] w-full border-0 shadow-none outline-0 md:text-sm"
+                      value={item.comment ? item.comment : ""}
+                      onChange={(e) => {
+                        const newColumns = [...columns];
+                        newColumns[index].comment = e.target.value;
+                        setColumns(newColumns);
+                        willToDDl();
+                      }}
+                    />
+                  </div>
+                  <div className="flex w-[40px] items-center justify-center text-center">
+                    <Checkbox
+                      checked={constraints.find((con) => con.column === item.name)?.type === DataBaseTableConstraintEnum.PRIMARY}
+                      onCheckedChange={(status) => {
+                        // const newColumns = [...columns];
+                        // newColumns[index].keyType = status ? KeyType.PRIMARY : KeyType.NONE;
+                        // setColumns(newColumns);
+                        if (status) {
+                          setConstraints([...constraints, {
+                            column: item.name,
+                            type: DataBaseTableConstraintEnum.PRIMARY
+                          }]);
+                        } else {
+                          const constraint = constraints.find((con) => con.column === item.name);
+                          if (constraint) {
+                            const newConstraints = [...constraints];
+                            newConstraints.splice(constraints.indexOf(constraint), 1);
+                            setConstraints(newConstraints);
+                          }
+                        }
+                        willToDDl();
+                      }}
+                    />
+                  </div>
+                  <Button
+                    variant={"ghost"}
+                    size={"icon"}
+                    className="hover:bg-destructive h-[24px] w-[24px]"
+                    onClick={() => {
+                      const newColumns = [...columns];
+                      newColumns.splice(index, 1);
+                      setColumns(newColumns);
+                      willToDDl();
+                    }}
+                  >
+                    <XCircleIcon size={14} />
+                  </Button>
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center gap-1 rounded">
+              <Button
+                variant={"ghost"}
+                className="text-muted-foreground h-[24px] w-full text-sm"
+                onClick={() => {
+                  const newColumns = [...columns];
+                  newColumns.push({
+                    name: "",
+                    type: "",
+                    isNullable: true,
+                  });
+                  setColumns(newColumns);
+                }}
+              >
+                <PlusIcon size={14} />
+                {t("view.table.button.addColumn")}
+              </Button>
+            </div>
+          </div>
+        </TabsContent>
+        <TabsContent value="ddl">
+          <Textarea value={ddl} onChange={(e) => {
+            setDdl(e.target.value);
+          }} />
+        </TabsContent>
+      </Tabs>
+
+      {
+            isMark && <div className="left-0 top-0 bottom-0 right-0 absolute z-20 bg-background/20 flex items-center justify-center">
+              <LoaderIcon className=" animate-spin" />
+            </div>
+          }
     </div>
   );
 }

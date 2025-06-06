@@ -4,6 +4,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useDbStore } from "@/store/db-store";
 import { ITask } from "@/types/task";
 import {
   CheckCircleIcon,
@@ -14,19 +15,11 @@ import {
 } from "lucide-react";
 import React, { useEffect } from "react";
 export default function StatusBar() {
-  const [database, setDatabase] = React.useState<string>("");
+  const database = useDbStore((state: any) => state.database);
   const [tasks, setTasks] = React.useState<ITask[]>([]);
   const [showTask, setShowTask] = React.useState<number>(0);
   React.useEffect(() => {
-    //监听数据库变化
-    const selectDatabased = (res) => {
-      if (res) {
-        setDatabase(res);
-      } else {
-        setDatabase("");
-      }
-    };
-    window.api.on("db:selectDatabased", selectDatabased);
+   
     //listen status:tasked
     const tasked = (task: any) => {
       console.log("tasked", task);
@@ -48,7 +41,7 @@ export default function StatusBar() {
     window.api.send("db:startServer");
     return () => {
       window.api.removeAllListeners("status:tasked");
-      window.api.removeListener("db:selectDatabased", selectDatabased);
+    
     };
   }, []);
   useEffect(() => {
@@ -110,13 +103,14 @@ export default function StatusBar() {
       <Button
         size={"icon"}
         variant={"ghost"}
+        className="h-6 w-6 p-[4px] mr-2"
         onClick={() => {
           window.api.send("platfrom:open", {
             path: "https://github.com/udb-org/udb-app",
           });
         }}
       >
-        <GithubIcon size={14} />
+        <GithubIcon size={12} />
       </Button>
     </div>
   );

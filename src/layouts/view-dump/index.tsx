@@ -40,7 +40,7 @@ export default function ViewDump(
         setDatabase(_database);
         setView(_view);
         window.api.invoke("db:getTables", _database).then((res) => {
-            console.log("getTables", res);
+          
             if (res.status === "success") {
                 setTables(res.data.data as IDataBaseTable[]);
             }

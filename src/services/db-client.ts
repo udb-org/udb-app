@@ -116,11 +116,14 @@ export function execFuntion(url: string, args: any) {
   }).then((res) => res.json());
 }
 /**
-/**
- * 执行 SQL 语句的方法
- * @param sql - 要执行的 SQL 语句
- * @param datasource - 数据源对象，包含数据源的相关信息
- * @returns 返回一个 Promise，该 Promise 解析为执行 SQL 语句后的响应结果
+ * This method is used to execute sql
+ * 
+ * @param sql 
+ * @param datasource 
+ * @returns  Promise<IResult> {status:number,message:string,data:{
+ *  columns:[],
+ *  rows:[]
+ * }}
  */
 export function executeSql(sql: string, datasource: IDataSource) {
   console.log("executeSql", sql, datasource);
@@ -205,7 +208,7 @@ function checkServerRunning() {
  * 启动服务器
  */
 export function runServer(callback: (status: string, message: string) => void) {
-  // return ;
+  return ;
   const pids = checkServerRunning();
   if (pids.length > 0) {
     //如果有进程在运行，则不需要启动新的服务器

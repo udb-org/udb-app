@@ -1,7 +1,7 @@
 import { SqlActionParams } from "@/api/view";
 import { IAction } from "@/layouts/view-title/view-tabs";
 import { DialogParams } from "@/types/dialog";
-import { ViewParams } from "@/types/view";
+import { ActionParam, ViewParams } from "@/types/view";
 import { ipcMain } from "electron";
 import { argv } from "process";
 export function unregisterViewListeners() {
@@ -35,20 +35,18 @@ export function registerViewListeners(mainWindow: Electron.BrowserWindow) {
       }
     }
   });
-  //sql action
-  ipcMain.on("view:sql-action", (event, args:SqlActionParams) => {
-    console.log("view:sql-action", args);
-    event.reply("view:sql-actioning", args);
-  });
-    //table action
-    ipcMain.on("view:table-action", (event, args:SqlActionParams) => {
-      console.log("view:table-action", args);
-      event.reply("view:table-actioning", args);
-    });
+    
     //action
-    ipcMain.on("view:show-actions", (event, args:IAction[]) => {
+    ipcMain.on("view:show-actions", (event, args:{
+      channel:string,
+      actions:IAction[]
+    }) => {
 
       event.reply("view:showed-actions", args);
       
     })
+    ipcMain.on("view:call-action", (event, args:ActionParam) => {
+      console.log("view:call-action", args);
+      event.reply(args.channel, args);
+    });
 }

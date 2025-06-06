@@ -30,6 +30,7 @@ import FolderContent from "@/components/icons/folder-content";
 import FolderContextOpen from "@/components/icons/folder-context-open";
 import FolderContext from "@/components/icons/folder-context";
 import { toast } from "sonner";
+import { useDbStore } from "@/store/db-store";
 export function ExplorerDb(props: { isVisible: boolean }) {
   const [files, setFiles] = React.useState<IVirtualTreeItem[]>([]);
   function transformFiles(files: any[]) {
@@ -48,9 +49,9 @@ export function ExplorerDb(props: { isVisible: boolean }) {
   useEffect(() => {
     //打开项目
     const getDatabasesing = (res: IResult) => {
-      console.log("getDatabasesing", res);
+     
       if (res.status == 200) {
-        const _files = transformFiles(res.data.data as IDataBase[]);
+        const _files = transformFiles(res.data.rows as IDataBase[]);
         setFiles(_files);
         // setDatabases((pre)=>res.data.data as IDataBase[]);
       }else{
@@ -131,6 +132,8 @@ export function ExplorerDb(props: { isVisible: boolean }) {
     };
   }, []);
   const { t } = useTranslation();
+  // const database = useDbStore((state: any) => state.database);
+  const setDatabase = useDbStore((state: any) => state.setDatabase);
   return (
     <div
       className="h-full w-full flex-col"
@@ -165,6 +168,7 @@ export function ExplorerDb(props: { isVisible: boolean }) {
           if (path.length == 1) {
             //选择数据库
             window.api.send("db:selectDatabase", path[0]);
+            setDatabase(path[0]);
          
             //数据库,返回Tables,Views,Functions,Procedures
             return new Promise((resolve) => {
@@ -197,15 +201,15 @@ export function ExplorerDb(props: { isVisible: boolean }) {
               return window.api
                 .invoke("db:getTables", databaseName)
                 .then((getTablesResult: IResult) => {
-                  console.log("getTables", getTablesResult);
+                
                   if (getTablesResult.status==200) {
                     const _files: IVirtualTreeItem[] = [];
-                    const tables = getTablesResult.data.data as IDataBaseTable[];
+                    const tables = getTablesResult.data.rows as IDataBaseTable[];
                     tables.forEach((table) => {
                       _files.push({
-                        name: table.TABLE_NAME,
+                        name: table.name,
                         isFolder: true,
-                        description: table.TABLE_COMMENT,
+                        description: table.comment,
                         expandIcon: <FolderContextOpen size={14} className="flex-shrink-0" />,
                         collapseIcon: <FolderContext size={14} className="flex-shrink-0" />,
                         // icon: <TableIcon size={14} className="flex-shrink-0" />,
@@ -372,15 +376,15 @@ export function ExplorerDb(props: { isVisible: boolean }) {
                   console.log("getColumns", res);
                   if (res.status === 200) {
                     const _files: IVirtualTreeItem[] = [];
-                    const columns = res.data.data as IDataBaseTableColumn[];
+                    const columns = res.data.rows as IDataBaseTableColumn[];
                     columns.forEach((column) => {
                       _files.push({
-                        name: column.COLUMN_NAME + "",
+                        name: column.name + "",
                         isFolder: false,
                         icon: (
                           <ColumnsIcon size={14} className="flex-shrink-0" />
                         ),
-                        description: column.COLUMN_COMMENT,
+                        description: column.comment,
                       });
                     });
                     console.log("_files", _files);

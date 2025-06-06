@@ -14,7 +14,10 @@ type ElectronAPI = {
 const electronAPI: ElectronAPI = {
   invoke: async (channel, ...args) => {
     try {
-      return await ipcRenderer.invoke(channel, ...args);
+      console.log(`>> [${channel}]`, args);
+      const res=await ipcRenderer.invoke(channel, ...args);
+      console.log(`<< [${channel}]`, res);
+      return res;
     } catch (error) {
       //do not throw error, just log it
       console.error(`Invoke error [${channel}]:`, error);
@@ -27,11 +30,15 @@ const electronAPI: ElectronAPI = {
     }
   },
   send: (channel, ...args) => {
+    console.log(`>> [${channel}]`, args);
     ipcRenderer.send(channel, ...args);
   },
   on: (channel, listener) => {
-    const subscription = (_event: IpcRendererEvent, ...args: any[]) =>
+    const subscription = (_event: IpcRendererEvent, ...args: any[]) =>{
+      console.log(`<< [${channel}]`, args);
       listener(...args);
+    }
+      // listener(...args);
     ipcRenderer.on(channel, subscription);
   },
   once: (channel, listener) => {

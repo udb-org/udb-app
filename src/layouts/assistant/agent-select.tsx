@@ -36,11 +36,11 @@ export function AgentSelect(
   const [servers, setServers] = React.useState<AiAgentServer[]>([]);
   React.useEffect(() => {
     AppConfig.getAiAgents().then((res: any) => {
-      console.log("getAiAgents", res);
+   
       setAgents(res);
     })
     AppConfig.getAiMcpServers().then((res: any) => {
-      console.log("getAiAgentServers", res);
+
       setServers(res);
     })
   }, [open]);
@@ -87,7 +87,7 @@ export function AgentSelect(
                     //Delete the agent
                     //Read the existing agents from the configuration file, and then add the new agent to the list, and then save the configuration file.
                     AppConfig.getAiAgents().then((res: any) => {
-                      console.log("getAiAgents", res);
+                   
                       const newAgents = res.filter((item: AiAgent) => item.name !== agent.name);
                       //Save the configuration file
                       AppConfig.saveConfig({

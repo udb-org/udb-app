@@ -31,7 +31,7 @@ export default function ViewTables(props: { viewKey: string }) {
   useEffect(() => {
     if (database.length > 0) {
       window.api.invoke("db:getTables", database).then((res: any) => {
-        console.log("getTables", res);
+   
         if (res.status === "success") {
           const _tables = res.data.data as any[];
           console.log("_tables", _tables);

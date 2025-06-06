@@ -104,10 +104,10 @@ export function AssistantPanel() {
           context: sql,
         }
       } else if (viewType === ViewType.Table) {
-        const table = view.params.table;
+        const ddl = view.ddl;
         return {
           type:viewType,
-          context: table,
+          context: ddl,
         };
       }
     } else if (contextType === "none") {
@@ -124,9 +124,7 @@ export function AssistantPanel() {
         // toast.error(params.content);
         params.content=t("status."+params.status)+"\n";
       }
-   
       if (params.finished) {
-    
         setThinking(false);
         setMessages([...messages, {
           role: "assistant",
@@ -135,9 +133,7 @@ export function AssistantPanel() {
         setTempMessage(null);
         context=null;
       } else {
-      
         if (context) {
-             console.log("ai_asking", params);
              context=context + params.content;
           setTempMessage({
             role: "assistant",
@@ -198,8 +194,6 @@ export function AssistantPanel() {
           <MessageCirclePlusIcon size={14}></MessageCirclePlusIcon>
         </Button>
       </div>
-
-
       <div
         ref={historyRef}
         className="w-full flex-1 overflow-auto select-text"
@@ -243,18 +237,22 @@ export function AssistantPanel() {
                         window.api.send("ai:mergeSql",{
                           input:text,
                           model:model,
-                          context:getContext(),
+                          context:context.context,
                           prompt:t("ai.prompt.mergesql"),
                           original:t("ai.prompt.mergesql.original"),
                           newly:t("ai.prompt.mergesql.newly"),
                         });
                       }else if(context.type === ViewType.Table){
-                        window.api.send("ai:mergeTable",text);
-
+                        window.api.send("ai:mergeTable",{
+                          input:text,
+                          model:model,
+                          context:context.context,
+                          prompt:t("ai.prompt.merge.table"),
+                          original:"INPUT_1",
+                          newly:"INPUT_2",
+                        });
                       }
-
                     }
-                 
                   }}></Message>
                 </div>
               </div>
@@ -371,9 +369,6 @@ export function AssistantPanel() {
           </Button>
         </div>
       </div>
-
-
-
     </div>
   );
 }

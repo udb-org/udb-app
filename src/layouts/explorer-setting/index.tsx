@@ -38,7 +38,7 @@ export default function ExplorerSetting(props: { isVisible: boolean }) {
   const [config, setConfig] = React.useState<any>({});
   useEffect(() => {
     window.api.invoke("storage:getConfig").then((res: any) => {
-      console.log("getConfig", res);
+      
       setConfig(res);
     });
   }, []);

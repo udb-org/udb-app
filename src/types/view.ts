@@ -21,5 +21,10 @@ export interface ViewParams {
 export interface IAction {
   name: string;
   command: string;
-  icon:"play"|"stop"|"";
+  icon:"play"|"stop"|"save"|string;
+}
+
+export interface ActionParam{
+  channel:string;
+  command:string;
 }

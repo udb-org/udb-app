@@ -7,7 +7,7 @@ import {
   useTabStore,
 } from "@/store/tab-store";
 // import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
-import { showActions, SqlActionParams } from "@/api/view";
+import { showActions } from "@/api/view";
 import { AlignRight, LoaderIcon, PlayIcon, SaveIcon, ShareIcon } from "lucide-react";
 import { dbExec, dbResult, execSql, invokeSql } from "@/api/db";
 import { SqlResults } from "./sql-results";
@@ -23,7 +23,7 @@ import { useAiStore } from "@/store/ai-store";
 import { getSqlSuggestionsKeywords } from "./sql-suggestions";
 import { getTableNames } from "@/utils/sql";
 import { openMenu } from "@/api/menu";
-import { IAction } from "@/types/view";
+import { ActionParam, IAction } from "@/types/view";
 import { IResult } from "@/types/db";
 import { useTranslation } from "react-i18next";
 
@@ -46,12 +46,12 @@ export default function ViewSQL(props: { viewKey: string }) {
   function showPlayAction() {
     const actions: IAction[] = [
       {
-        name: "Run",
+        name: t("view.action.run"),
         command: "run",
         icon: "play",
       }
     ];
-    showActions(actions);
+    showActions("view:sql-actioning", actions);
   }
   /**
    * 显示工具栏
@@ -62,12 +62,12 @@ export default function ViewSQL(props: { viewKey: string }) {
 
     const actions: IAction[] = [
       {
-        name: "Stop",
+        name: t("view.action.stop"),
         command: "stop",
         icon: "stop",
       }
     ];
-    showActions(actions);
+    showActions("view:sql-actioning", actions);
   }
 
   const [results, setResults] = React.useState<any[]>([]);
@@ -77,6 +77,7 @@ export default function ViewSQL(props: { viewKey: string }) {
     //加载执行结果
     let _view = getView(props.viewKey);
     let _results = [];
+    let _resultHeight = 300;
     let _sql = "";
     if (_view) {
       if (_view.results) {
@@ -85,12 +86,14 @@ export default function ViewSQL(props: { viewKey: string }) {
       if (_view.params.sql) {
         _sql = _view.params.sql;
       }
+      if (_view.resultHeight) {
+        _resultHeight = _view.resultHeight;
+      }
     }
     setSql(_sql);
     setResults(_results);
     setView(_view);
-
-
+    setResultHeight(_resultHeight);
 
   }, [props.viewKey]);
   const [editor, setEditor] = React.useState<any>(null);
@@ -461,7 +464,7 @@ export default function ViewSQL(props: { viewKey: string }) {
   const [isMark, setIsMark] = React.useState<boolean>(false);
 
   useEffect(() => {
-    const sqlActioning = (params: SqlActionParams) => {
+    const sqlActioning = (params: ActionParam) => {
       console.log("sqlActioning", params);
       if (params.command === "run") {
         runAction();
@@ -579,29 +582,7 @@ export default function ViewSQL(props: { viewKey: string }) {
       setResults(_results);
     };
     window.api.on("db:execSqlEnd", execSqlingEnd);
-    // const aiInserting = (context: string) => {
-    //   console.log("aiInserting", context);
-    //   if (editor == null) {
-    //     return;
-    //   }
-    //   //在光标处插入内容
-    //   const position = editor.getPosition();
-    //   if (position) {
-    //     editor.executeEdits("aiInsert", [
-    //       {
-    //         range: new monaco.Range(
-    //           position.lineNumber,
-    //           position.column,
-    //           position.lineNumber,
-    //           position.column,
-    //         ),
-    //         text: context,
-    //       },
-    //     ]);
-    //   }
-    // };
-    // window.api.on("ai:inserting", aiInserting);
-
+ 
     const aiMergeSqling = (params: {
       content: string,
       status: number
@@ -846,10 +827,13 @@ export default function ViewSQL(props: { viewKey: string }) {
             const height = resultHeight - y;
             if (height < 100) {
               setResultHeight(0);
+              saveViewValue(props.viewKey, "resultHeight", 0);
             } else if (height > 600) {
               setResultHeight(600);
+              saveViewValue(props.viewKey, "resultHeight", 600);
             } else {
               setResultHeight(height);
+              saveViewValue(props.viewKey, "resultHeight", height);
             }
           }}
         ></ResizablePanelHandle>

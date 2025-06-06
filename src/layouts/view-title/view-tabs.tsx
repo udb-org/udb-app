@@ -1,5 +1,5 @@
 import { openMenu } from "@/api/menu";
-import { openView, sqlAction } from "@/api/view";
+import { callAction, openView, sqlAction } from "@/api/view";
 import { Icons } from "@/components/icons/icons";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,6 +24,7 @@ import {
   XIcon
 } from "lucide-react";
 import React, { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 export function ViewTabs() {
   return (
     <div className="flex h-[32px] w-full items-center">
@@ -214,12 +215,16 @@ export function ViewTabsItem(props: {
 
 export function ViewTabsTool() {
   const [actions, setActions] = React.useState<IAction[]>([]);
+  const [channel, setChannel] = React.useState<string>("");
   const tab = useTabStore((state: any) => state.tab);
+  const {t}=useTranslation();
 
   useEffect(() => {
-    const showActions = (params: IAction[]) => {
-      console.log("showActions", params);
-      setActions(params);
+    const showActions = (arg:{
+      actions: IAction[],channel:string
+    }) => {
+      setChannel(arg.channel);
+      setActions(arg.actions);
     };
     window.api.on("view:showed-actions", showActions);
     return () => {
@@ -255,7 +260,7 @@ export function ViewTabsTool() {
               <PlusIcon />
             </TooltipTrigger>
             <TooltipContent>
-              <p>New Tab</p>
+              <p>{t("view.action.newtab")}</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -267,8 +272,10 @@ export function ViewTabsTool() {
           size={"sm"}
           className="ml-1 h-6 w-6 p-[4px]"
           onClick={() => {
-            sqlAction({
-              command: item.command,
+            
+            callAction({
+              channel:channel,
+              command:item.command,
             });
           }}
         >
@@ -292,11 +299,12 @@ export function ViewTabsTool() {
           className="ml-1 h-6 w-6 p-[4px]"
           onClick={() => {
             openMenu({
-              channel: "view:sql-actioning",
+              channel: channel,
               items: actions.slice(2).map((item) => {
                 return {
                   name: item.name,
                   command: item.command,
+                
                 };
               }),
             });

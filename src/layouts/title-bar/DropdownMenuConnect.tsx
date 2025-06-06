@@ -21,9 +21,13 @@ import { DialogType } from "@/types/dialog"
 import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { openDialog } from "../dialog"
+import { useDbStore } from "@/store/db-store"
 export function DropdownMenuConnect() {
   const [connections, setConnections] = React.useState<ConnectionConfig[]>([]);
-  const [currentConnection, setCurrentConnection] = React.useState<ConnectionConfig | null>(null);
+  
+  const connection=useDbStore((state)=>state.connection);
+  const setConnection=useDbStore((state)=>state.setConnection);
+
   useEffect(() => {
     const getConnectionConfiging = (connections: ConnectionConfig[]) => {
       setConnections(connections);
@@ -31,8 +35,8 @@ export function DropdownMenuConnect() {
     window.api.on("storage:getConnectionConfiging", getConnectionConfiging);
     getConnectionConfig();
     const openConnectioning = (conf: ConnectionConfig) => {
-      console.log("openConnectioning", conf)
-      setCurrentConnection(conf);
+    
+      setConnection(conf);
     }
     window.api.on("storage:openConnectioning", openConnectioning);
     return () => {
@@ -46,10 +50,10 @@ export function DropdownMenuConnect() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size={"sm"} className="h-[24px] items-center flex gap-1 font-normal text-foreground/90">
           <div className="rounded-md bg-amber-800 px-[2px] py-[2px] text-sm text-white ">
-            {currentConnection && currentConnection.name.substring(0, 2).toUpperCase()}
+            {connection && connection.name.substring(0, 2).toUpperCase()}
           </div>
-          {currentConnection && currentConnection.name}
-          {currentConnection == null && t("title.bar.select.connection")}
+          {connection && connection.name}
+          {connection == null && t("title.bar.select.connection")}
           <ChevronDownIcon size={14} />
         </Button>
       </DropdownMenuTrigger>
@@ -73,7 +77,7 @@ export function DropdownMenuConnect() {
             {
               connections.map((conf) =>
                 <DropdownMenuItem key={conf.name} onClick={() => {
-                  setCurrentConnection(conf);
+                  setConnection(conf);
                   openConnection(conf);
                 }}>
                   <div className="flex items-center gap-2">
@@ -90,7 +94,7 @@ export function DropdownMenuConnect() {
                     </div>
                     <div>
                       {
-                        currentConnection && currentConnection.name == conf.name && <CheckIcon size={14} className="text-primary" />
+                        connection && connection.name == conf.name && <CheckIcon size={14} className="text-primary" />
                       }
                     </div>
                   </div>

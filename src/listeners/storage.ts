@@ -280,7 +280,7 @@ export function registerStorageListeners(mainWindow: Electron.BrowserWindow) {
   });
   //获取配置
   ipcMain.handle("storage:getConfig", (event, args: string) => {
-    console.log("storage:getConfig", args);
+    
     const config = getConfig();
     return config;
   });
@@ -296,7 +296,7 @@ export function registerStorageListeners(mainWindow: Electron.BrowserWindow) {
   });
   //获取配置
   ipcMain.handle("storage:getConfigItem", (event, args: string) => {
-    console.log("storage:getConfigItem", args);
+    
     const config = getConfigItem(args);
     return config;
   });

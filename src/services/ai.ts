@@ -5,10 +5,11 @@ import { getTableNames } from "@/utils/sql";
 import OpenAI from "openai";
 import { ChatCompletionTool } from "openai/resources/chat";
 import { executeSql } from "./db-client";
-import { IMCPServer } from "./mcp/mcp-server";
-import { SqlMcpServer } from "./mcp/sql-server";
+import { IMCPServer } from "../mcp/mcp-server";
+import { SqlMcpServer } from "../mcp/sql-server";
 import { getConfigItem } from "./storage";
 import { IResult } from "@/types/db";
+import { L } from "vitest/dist/chunks/reporters.d.C-cu31ET";
 
 let history: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [];
 const mcpServers: IMCPServer[] = [
@@ -28,7 +29,7 @@ export async function ask(
   model: any,
   context: string,
   agent: string | null,
-  sender: (content: string, finished: boolean,status?:number) => void,
+  sender: (content: string, finished: boolean, status?: number) => void,
 ) {
   let message: OpenAI.Chat.Completions.ChatCompletionMessageParam = {
     role: "user",
@@ -57,7 +58,7 @@ export async function askInner(
   lastFunction: string,
   context: string,
   agent: string | null,
-  sender: (content: string, finished: boolean,status?:number) => void,
+  sender: (content: string, finished: boolean, status?: number) => void,
 ) {
   console.log("askInner",
     agent, sender
@@ -117,7 +118,7 @@ export async function askInner(
   }
 
   //如果有上下文，添加到消息中
-  if (context&&context.length > 0) {
+  if (context && context.length > 0) {
     _messages.push({
       role: "system",
       content: context.length > 0 ? "当前软件展示内容如下：\n" + context : "",
@@ -243,7 +244,7 @@ export async function askInner(
                       sender
                     );
                   } else {
-                    sender(res.message+"", true,res.status);
+                    sender(res.message + "", true, res.status);
                   }
                 };
                 console.log("aiToolCallArguments", aiToolCallArguments);
@@ -266,25 +267,40 @@ export async function askInner(
   }
 }
 
-export async function mergeSql(input: string, model: any, context: string, prompt:string, original:string,
-  newly:string,sender: (content: string,  status: number) => void) {
-  const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
-    {
-      role: "user",
-      content:
-      original+":\n"+
-      context,
-    },
-    {
-      role: "user",
-      content: newly+":\n"+
-      input,
-    },
-    {
-      role: "user",
-      content: prompt,
-    }
-  ];
+export async function mergeSql(input: string, model: any, context: string, prompt: string, original: string,
+  newly: string, sender: (content: string, status: number) => void) {
+
+  let messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [];
+  //如果有打开数据库，添加到消息中
+  const currentDataSource = getCurrentDataSource();
+  if (currentDataSource != null) {
+    messages.push({
+      role: "system",
+      content: "DB:" + JSON.stringify({
+        name: currentDataSource.name,
+        type: currentDataSource.type,
+        host: currentDataSource.host,
+        port: currentDataSource.port,
+        database: currentDataSource.database,
+      }),
+    });
+  }
+  messages.push({
+
+    role: "user",
+    content: original + ":\n" + context
+  });
+  messages.push({
+    role: "user",
+    content: newly + ":\n" + input
+  });
+  messages.push({
+    role: "user",
+    content: prompt
+  });
+
+
+
   let client: OpenAI = new OpenAI({
     apiKey: model.apiKey,
     baseURL: model.baseUrl,
@@ -297,7 +313,7 @@ export async function mergeSql(input: string, model: any, context: string, promp
   // Save ai's reply
   let aiContent = "";
   for await (const chunk of stream) {
-     if (chunk.choices[0].delta.content) {
+    if (chunk.choices[0].delta.content) {
       const content = chunk.choices[0].delta.content;
       aiContent += content;
       sender(content, 800);
@@ -317,5 +333,5 @@ export async function mergeSql(input: string, model: any, context: string, promp
       }
     }
   }
-  
+
 }

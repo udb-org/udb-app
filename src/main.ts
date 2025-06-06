@@ -14,6 +14,9 @@ import { app, BrowserWindow } from "electron";
 import path from "path";
 import { registerListeners, unregisterListeners } from "./listeners";
 import { getThemeBg } from "./listeners/app";
+const isDev = process.env.NODE_ENV === "development";
+
+
 function createWindow() {
   const preload = path.join(__dirname, "preload.js");
   const mainWindow = new BrowserWindow({
@@ -33,7 +36,9 @@ function createWindow() {
     },
   });
   registerListeners(mainWindow);
-  // mainWindow.webContents.openDevTools();
+  if(isDev){
+    mainWindow.webContents.openDevTools();
+  }
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
   } else {
@@ -47,8 +52,12 @@ function createWindow() {
 }
 async function installExtensions() {
   try {
-    // const result = await installExtension(REACT_DEVELOPER_TOOLS);
-    // console.log(`Extensions installed successfully: ${result.name}`);
+    if(isDev){
+      const { REACT_DEVELOPER_TOOLS ,installExtension} = require("electron-devtools-installer");
+      const result = await installExtension(REACT_DEVELOPER_TOOLS);
+      console.log(`Extensions installed successfully: ${result.name}`);
+    }
+    
   } catch {
     console.error("Failed to install extensions");
   }

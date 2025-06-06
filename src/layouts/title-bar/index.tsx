@@ -23,7 +23,7 @@ export default function TitleBar() {
     //Get platform info
     getPlatformInfo().then((info: any) => {
       setPlatform(info);
-      console.log(info);
+    
       let cls = "mac";
       if (info.os === "win32") {
         cls = "windows";
