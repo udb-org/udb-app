@@ -1,34 +1,32 @@
-import { getConnectionConfig, openConnection } from "@/api/storage";
+
 import { Button } from "@/components/ui/button";
-import { ConnectionConfig } from "@/types/db";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ConnectionConfig, IResult } from "@/types/db";
+import { DialogType } from "@/types/dialog";
 import { LinkIcon } from "lucide-react";
 import React, { useEffect } from "react";
-import { openDialog } from "../dialog";
-import { DialogType } from "@/types/dialog";
 import { useTranslation } from "react-i18next";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { openDialog } from "../dialog";
+import { useDbStore } from "@/store/db-store";
+import { openConnection } from "@/api/db";
 export function Webcome() {
   const [connections, setConnections] = React.useState<ConnectionConfig[]>([]);
   const [showConnections, setShowConnections] = React.useState<
     ConnectionConfig[]
   >([]);
+  const connection=useDbStore((state)=>state.connection);
+  const setConnection=useDbStore((state)=>state.setConnection);
   useEffect(() => {
-    const getConnectionConfiging = (connections: ConnectionConfig[]) => {
-      setConnections(connections);
-      if (connections.length > 4) {
-        setShowConnections(connections.slice(0, 4));
-      } else {
-        setShowConnections(connections);
+    window.api.invoke<IResult>("db:getConnectionConfig").then((res) => {
+      if (res.status == 200) {
+        setConnections(res.data);
+        if (res.data.length > 3) {
+          setShowConnections(res.data.slice(0, 3));
+        }else{
+          setShowConnections(res.data);
+        }
       }
-    };
-    window.api.on("storage:getConnectionConfiging", getConnectionConfiging);
-    getConnectionConfig();
-    return () => {
-      window.api.removeListener(
-        "storage:getConnectionConfiging",
-        getConnectionConfiging,
-      );
-    };
+    });
   }, []);
   const { t } = useTranslation();
   return (
@@ -57,6 +55,7 @@ export function Webcome() {
               className="mb-1 w-full gap-1 text-sm"
               onClick={() => {
                 openConnection(connection);
+                // setConnection(connection);
               }}
             >
               <LinkIcon size={12}></LinkIcon>

@@ -14,7 +14,7 @@ import { app, BrowserWindow } from "electron";
 import path from "path";
 import { registerListeners, unregisterListeners } from "./listeners";
 import { getThemeBg } from "./listeners/app";
-const isDev = process.env.NODE_ENV === "development";
+const isDev =true;
 
 
 function createWindow() {

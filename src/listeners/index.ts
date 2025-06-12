@@ -1,6 +1,6 @@
 import { registerAiListeners, unregisterAiListeners } from "./ai";
 import { registerAppListeners, unregisterAppListeners } from "./app";
-import { registerDbListeners, unregisterDbListeners } from "./db";
+import { registerDbListeners, unregisterDbListeners } from "./database";
 import { registerDialogListeners, unregisterDialogListeners } from "./dialog";
 import { registerExplorerListeners, unregisterExplorerListeners } from "./explorer";
 import { registerHistoryListeners, unregisterHistoryListeners } from "./history";

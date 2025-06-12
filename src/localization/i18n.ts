@@ -65,14 +65,22 @@ i18n.use(initReactI18next).init({
         "status.500": "Internal Server Error",
         "status.799": "Starting...",
         "status.800": "Running",
+        "status.801": "Get port failed",
+        "status.802": "Downloading java jdk...",
+        "status.803": "Downloading udb-java jar...",
+        "status.804": "Downloading udb-java jar failed",
         "status.810": "Too many tasks, please try again later.",
         "status.820": "Task does not exist.",
         "status.830": "Data source does not exist.",
         "status.831": "Please select a database!",
+        "status.832": "Please select a connection!",
+        "status.833": "Connection name already exists!",
         "status.840": "Dump is running.",
         "status.850": "Transaction has been rollback or commited.",
         "status.860": "Server not started.",
         "status.870": "Token length exceeds the limit.",
+        "status.880": "Unsupported database type!",
+
 
 
 
@@ -114,6 +122,9 @@ i18n.use(initReactI18next).init({
 
         "view.table.index.title": "Indexes",
         "view.table.ddl.title": "DDL",
+
+        "view.db.connecting": "Connecting...",
+        "view.db.error": "Connection failed",
 
 
 
@@ -175,13 +186,19 @@ i18n.use(initReactI18next).init({
         "status.500": "内部服务器错误",
         "status.799": "启动中...",
         "status.800": "运行中",
+        "status.801": "获取端口失败",
         "status.810": "任务数过多，请稍后再试",
+        
         "status.820": "任务不存在",
         "status.830": "数据源不存在",
+        "status.831": "请选择一个数据库！",
+        "status.832": "请选择一个连接！",
+        "status.833": "连接名称已存在！",
         "status.840": "导出任务正在运行",
         "status.850": "事务已经回滚或者提交",
         "status.860": "服务器未启动",
         "status.870": "Token长度超过限制",
+        "status.880": "不支持的数据库类型！",
 
         "tree.no.children": "空空如也",
 
@@ -220,6 +237,9 @@ i18n.use(initReactI18next).init({
         "view.table.constraint.title": "约束信息",
         "view.table.index.title": "索引信息",
         "view.table.ddl.title": "DDL",
+
+        "view.db.connecting": "连接中...",
+        "view.db.error": "连接失败",
 
 
 

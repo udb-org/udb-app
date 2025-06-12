@@ -1,8 +1,8 @@
-import { AiMode, ask } from "@/services/ai";
+import { ask } from "@/services/ai";
 import { getHistory } from "@/services/history";
 import { ipcMain } from "electron";
-import { getCurrentDataSource } from "./db";
-import { getCurrentConnection } from "./storage";
+import { getCurrentDataSource } from "./database/db-conf";
+import { getCurrentConnection } from "./database/db-conf";
 export function unregisterHistoryListeners() {
     ipcMain.removeAllListeners("history:get");
 }

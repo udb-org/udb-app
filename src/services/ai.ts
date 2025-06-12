@@ -1,5 +1,5 @@
 // AI Service
-import { getCurrentDataSource } from "@/listeners/db";
+import { getCurrentDataSource } from "@/listeners/database/db-conf";
 import { AiAgent } from "@/types/ai";
 import { getTableNames } from "@/utils/sql";
 import OpenAI from "openai";

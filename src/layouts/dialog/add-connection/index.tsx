@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -27,6 +27,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { saveAndOpenConnection, testConnection } from "@/api/storage";
 import { ConnectionConfig } from "@/types/db";
 import { Textarea } from "@/components/ui/textarea";
+import { ChevronsDownIcon, ChevronsUpIcon } from "lucide-react";
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
   type: z.string().min(1, "Database type is required"),
@@ -105,6 +106,15 @@ export function AddConnectionDialog(props: {
     };
     saveAndOpenConnection(conf);
   }
+  const [supportDatabases, setSupportDatabases] = React.useState<{
+    name: string;
+    supportVersions: string[];
+  }[]>([]);
+  useEffect(() => {
+    window.api.invoke<any>("db:getSupportDatabases").then((res) => {
+      setSupportDatabases(res);
+    });
+  }, []);
   return (
     <Dialog open={true} onOpenChange={props.onClose}>
       <DialogContent className="w-[600px]">
@@ -142,14 +152,11 @@ export function AddConnectionDialog(props: {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="mysql">MySQL</SelectItem>
-                      <SelectItem value="postgresql">PostgreSQL</SelectItem>
-                      <SelectItem value="sqlite">SQLite</SelectItem>
-                      <SelectItem value="mongodb">MongoDB</SelectItem>
-                      <SelectItem value="oracle">Oracle</SelectItem>
-                      <SelectItem value="sqlserver">SQL Server</SelectItem>
-                      <SelectItem value="cassandra">Cassandra</SelectItem>
-                      <SelectItem value="redis">Redis</SelectItem>
+                      {supportDatabases.map((db) => (
+                        <SelectItem key={db.name} value={db.name+"("+db.supportVersions.join(",")+")"}>
+                          {db.name}({ db.supportVersions.join(", ")  })
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -217,7 +224,10 @@ export function AddConnectionDialog(props: {
               e.preventDefault();
               setIsExpand(!isExpand);
             }}>
-              {isExpand ? "Collapse" : "More Options"}
+              {isExpand ? <ChevronsDownIcon size={14}/> : <ChevronsUpIcon size={14}/>}
+             <span className="text-xs">
+             {isExpand ? "Collapse" : "More Options"}
+             </span>
             </Button>
             {isExpand&&<>
             <FormField
@@ -246,19 +256,7 @@ export function AddConnectionDialog(props: {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="driver"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Driver</FormLabel>
-                  <FormControl>
-                    <Input placeholder="" type="file" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+         
             </>}
             <div className="flex gap-2 justify-end">
               <Button size={"sm"}

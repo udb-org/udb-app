@@ -22,7 +22,7 @@ export function ResizablePanel(
     }
 ) {
     return <div className={
-        cn("relative rounded-xl overflow-hidden",
+        cn("relative rounded-xl",
             (props.height != undefined || props.width != undefined) ? `flex-shrink-0` : "flex-1"
         )
     }

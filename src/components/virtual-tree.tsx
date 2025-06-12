@@ -323,10 +323,21 @@ export function VirtualTree(props: {
             {
               //level
             }
-            <div
+            {
+              Array(row.level).fill(0).map((item, index) => (
+                <div
+                  key={index}
+                  // style={{ width: 14 }}
+                  className="flex-shrink-0 border-r border-foreground/10 h-full pr-[7px] w-[7px]"
+                >
+                  
+                </div>
+              ))
+            }
+            {/* <div
               style={{ width: row.level * 14 }}
               className="flex-shrink-0"
-            ></div>
+            ></div> */}
             {row.isLoading && (
               <LoaderIcon className="w-[14px] h-[14px] animate-spin ml-2" />
             )}
@@ -371,7 +382,7 @@ export function VirtualTree(props: {
                   <>
                     <div className="bg-accent-foreground/5 mr-1 ml-1 h-2 w-2 flex-shrink-0 rounded-full"></div>
                     {row.icon && row.icon}
-                    {!row.icon && <FileIcon size={14} className="flex-shrink-0" />}
+                    {/* {!row.icon && <FileIcon size={14} className="flex-shrink-0" />} */}
                   </>
                 )}
                 {props.onRowRename &&

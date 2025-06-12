@@ -6,7 +6,7 @@
   "main": ".vite/build/main.js",
   "private": true,
   "scripts": {
-    "start": "electron-forge start",
+    "start": "electron-forge start ",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
@@ -90,6 +90,7 @@
     "@tanstack/react-virtual": "^3.13.6",
     "@tanstack/router-devtools": "^1.117.1",
     "@vitejs/plugin-react": "^4.4.1",
+    "adm-zip": "^0.5.16",
     "axios": "^1.9.0",
     "babel-plugin-react-compiler": "^19.0.0-beta-e993439-20250328",
     "class-variance-authority": "^0.7.1",

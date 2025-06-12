@@ -48,8 +48,13 @@ export async function getLatestRelease(serverJarPath:any) {
 
     await pipeline(downloadResponse.data, writer);
     console.log(`下载完成！保存路径: ${outputPath}`);
+    //解压jar 
+    const  AdmZip = require('adm-zip');
+    const zip = new AdmZip(outputPath);
+    zip.extractAllTo(serverJarPath, true);
+    console.log('解压完成！');
 
-  } catch (error) {
+  } catch (error:any) {
     console.error('发生错误:', error.message);
     if (error.response) {
       console.error(`API响应状态: ${error.response.status}`, error.response.data);

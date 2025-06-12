@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 import { IMCPServer } from "./mcp-server";
-import { getCurrentDataSource } from "@/listeners/db";
+import { getCurrentDataSource } from "@/listeners/database/db-conf";
 import { executeSql } from "../services/db-client";
 /**
  * sql Mcp Server

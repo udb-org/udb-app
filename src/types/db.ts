@@ -1,57 +1,58 @@
+export interface IDataBaseEXCall{
+    sql:string;
+    callback?:(res:IResult)=>IResult;
+} 
 export interface IDataBaseEX {
-    /**
-     * get database name
-     */
     getName(): string;
+    getSupportVersions(): string[];
     /**
-     * get database version
+     * get driver jar path
+     * support :
+     * 2.https://repo1.maven.org/maven2/com/mysql/mysql-connector-j/9.3.0/mysql-connector-j-9.3.0.jar
+     * 3./Users/xxx/driver/mysql/mysql-connector-java-8.0.33.jar
+     * 4.C:\Users\xxx\driver\mysql\mysql-connector-java-8.0.33.jar
+     * @returns 
      */
-    getVersion(): string;
+    getDriverPath(): string;
+    getDriverJdbcUrl(datasource: IDataSource): string;
+    getDriverMainClass(): string;
+    getDriverInstallUri(): string;
+
+    showDatabases():IDataBaseEXCall;
+    newDatabase(databaseName:string):IDataBaseEXCall;
+    dropDatabase(databaseName:string):IDataBaseEXCall;
+
+    showTables(databaseName:string):IDataBaseEXCall;
+    showTable(databaseName:string,tableName:string):IDataBaseEXCall;
+    /**
+     * 
+     * @param databaseName 
+     * @param tableName 
+     * @return data:ddl
+     */
+    showTableDDL(databaseName:string,tableName:string):IDataBaseEXCall;
+    copyTableStructure(databaseName:string,tableName:string,newTableName:string):IDataBaseEXCall;
+    dropTable(databaseName:string,tableName:string):IDataBaseEXCall;
+    clearTable(databaseName:string,tableName:string):IDataBaseEXCall;
+
+    showColumns(databaseName:string,tableName:string):IDataBaseEXCall;
+    showConstraints(databaseName:string,tableName:string):IDataBaseEXCall;
+    showIndexes(databaseName:string,tableName:string):IDataBaseEXCall;
+    /**
+     * 对比表对象差异，生成增量SQL
+     * @param originalTable 
+     * @param newTable 
+     */
+    generateSqlByMergeTable(originalTable:IDataBaseTable,newTable:IDataBaseTable):string;
+
+    getChatsets(): string[];
     /**
      * get database field types
      * @returns string[]
      */
     getSupportFieldTypes(): FieldType[];
-    /**
-     * get show databases sql
-     * @returns string
-     */
-    getDatabasesSql(): string;
-    /**
-     * This method is used to get the database list after executing the show databases sql
-     * 
-     * @param res 
-     */
-    getDatabasesByResult(rows: any): IDataBase[];
-    /**
-     * get show tables sql
-     * @param databaseName
-     * @returns string
-     * 
-     */
-    getTablesSql(databaseName: string): string;
-    /**
-     * This method is used to get the table list after executing the show tables sql
-     * 
-     * @param res
-     */
-    getTablesByResult(rows: any): IDataBaseTable[];
-    getTableInfoSql(databaseName: string, tableName: string): string;
-    getTableInfoByResult(rows: any): IDataBaseTable;
-    /**
-     * get show columns sql
-     * @param databaseName
-     * @param tableName
-     * @returns string
-     * 
-     */
-    getColumnsSql(database: string, tableName: string): string;
-    /**
-     * This method is used to get the column list after executing the show columns sql
-     * 
-     * @param res
-     */
-    getColumnsByResult(rows: any): IDataBaseTableColumn[];
+
+
     /**
      * 
      * This method is used to generate a table object from the DDL
@@ -66,12 +67,9 @@ export interface IDataBaseEX {
      * @param table 
      */
     objToDdl(table: IDataBaseTable): string;
-    getConstraintSql(databaseName: string, tableName: string): string;
-    getConstraintByResult(rows: any): IDataBaseTableConstraint[];
-    getIndexSql(databaseName: string, tableName: string): string;
-    getIndexByResult(rows: any): IDataBaseTableIndex[];
+   
 
-    getChatsets(): string[];
+  
 }
 export interface ConnectionConfig {
     name: string;
@@ -113,6 +111,9 @@ export interface IDataSource {
     driver?: string;
     database?: string;
     params?: string;
+    driverPath?:string;
+    driverMainClass?:string;
+    driverJdbcUrl?:string;
 }
 export interface IDataBase {
     //数据库名称
@@ -133,6 +134,7 @@ export interface IDataBaseTable {
     expand?: boolean;
     //列展开
     columnsExpand?: boolean;
+    chatset?:string;
 }
 export enum DataBaseTableConstraintEnum {
     PRIMARY = 'primary key',     // 主键

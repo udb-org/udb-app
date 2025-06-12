@@ -1,10 +1,3 @@
-import {
-  CheckIcon,
-  ChevronDownIcon,
-  LinkIcon
-} from "lucide-react"
-import * as React from "react"
-import { getConnectionConfig, openConnection } from "@/api/storage"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -16,37 +9,38 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
-import { ConnectionConfig } from "@/types/db"
+import { useDbStore } from "@/store/db-store"
+import { ConnectionConfig, IResult } from "@/types/db"
 import { DialogType } from "@/types/dialog"
+import {
+  CheckIcon,
+  ChevronDownIcon,
+  LinkIcon
+} from "lucide-react"
+import * as React from "react"
 import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { openDialog } from "../dialog"
-import { useDbStore } from "@/store/db-store"
+import { openConnection } from "@/api/db"
 export function DropdownMenuConnect() {
   const [connections, setConnections] = React.useState<ConnectionConfig[]>([]);
   
   const connection=useDbStore((state)=>state.connection);
   const setConnection=useDbStore((state)=>state.setConnection);
-
-  useEffect(() => {
-    const getConnectionConfiging = (connections: ConnectionConfig[]) => {
-      setConnections(connections);
-    }
-    window.api.on("storage:getConnectionConfiging", getConnectionConfiging);
-    getConnectionConfig();
-    const openConnectioning = (conf: ConnectionConfig) => {
-    
-      setConnection(conf);
-    }
-    window.api.on("storage:openConnectioning", openConnectioning);
-    return () => {
-      window.api.removeListener("storage:openConnectioning", openConnectioning);
-      window.api.removeListener("storage:getConnectionConfiging", getConnectionConfiging);
-    }
-  }, []);
   const { t } = useTranslation();
+  const [open, setOpen] = React.useState(false);
+  useEffect(() => {
+    if(open){
+      window.api.invoke<IResult>("db:getConnectionConfig").then((res) => {
+        if (res.status == 200) {
+          setConnections(res.data);
+        }
+      });
+    }  
+  }, [open]);
+
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size={"sm"} className="h-[24px] items-center flex gap-1 font-normal text-foreground/90">
           <div className="rounded-md bg-amber-800 px-[2px] py-[2px] text-sm text-white ">
@@ -77,7 +71,7 @@ export function DropdownMenuConnect() {
             {
               connections.map((conf) =>
                 <DropdownMenuItem key={conf.name} onClick={() => {
-                  setConnection(conf);
+         
                   openConnection(conf);
                 }}>
                   <div className="flex items-center gap-2">

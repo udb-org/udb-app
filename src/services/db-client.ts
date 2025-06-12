@@ -1,4 +1,4 @@
-import { IDataSource } from "@/types/db";
+import { ConnectionConfig, IDataBaseEX, IDataSource, IResult } from "@/types/db";
 import { dialog } from "electron";
 import net from "net";
 import path from "path";
@@ -8,6 +8,8 @@ import fs from "fs";
 import { getLatestRelease } from "./github";
 import os from "os";
 import { downloadJdk } from "./jdk";
+import { boolean } from "zod";
+import { getDataBaseEX } from "@/extension/db";
 /**
  *
  * The server returns an id, and the client can use this id to fetch the result
@@ -20,11 +22,20 @@ import { downloadJdk } from "./jdk";
 export function db_exec(
   sql: string,
   datasource: IDataSource,
+  dbEx: IDataBaseEX,
   isTransaction: boolean,
 ) {
+  const db = {
+    name: datasource.name,
+    database: datasource.database,
+    username: datasource.username,
+    password: datasource.password,
+    driverMainClass: dbEx.getDriverMainClass(),
+    driverJdbcUrl: dbEx.getDriverJdbcUrl(datasource),
+  }
   return db_func("exec", {
     sql: sql,
-    datasource: JSON.stringify(datasource),
+    datasource: JSON.stringify(db),
     isTransaction: isTransaction,
   });
 }
@@ -125,8 +136,16 @@ export function execFuntion(url: string, args: any) {
  *  rows:[]
  * }}
  */
-export function executeSql(sql: string, datasource: IDataSource) {
-  console.log("executeSql", sql, datasource);
+export function executeSql(sql: string, datasource: IDataSource, dbEx: IDataBaseEX) {
+  const db = {
+    name: datasource.name,
+    database: datasource.database,
+    username: datasource.username,
+    password: datasource.password,
+    driverMainClass: dbEx.getDriverMainClass(),
+    driverJdbcUrl: dbEx.getDriverJdbcUrl(datasource),
+  }
+  console.log("executeSql", sql, db);
   return fetch("http://localhost:" + PORT + "/api/base/executeSql", {
     method: "POST",
     headers: {
@@ -134,7 +153,7 @@ export function executeSql(sql: string, datasource: IDataSource) {
     },
     body: JSON.stringify({
       sql: sql,
-      datasource: JSON.stringify(datasource),
+      datasource: JSON.stringify(db),
     }),
   })
     .then((res) => res.json())
@@ -149,114 +168,19 @@ export function executeSql(sql: string, datasource: IDataSource) {
 }
 let PORT: number = 10001;
 /**
- * 检查服务器是否正在运行
- * 根据java启动的目录
+ * This method is used to get the jdk bin path
+ * 
+ * @returns 
  */
-function checkServerRunning() {
-  try {
-    const javaPath = path.join(udbFolderPath, "server", "java");
-    let javaBinPath = "";
-    const platform = os.platform();
-    if (platform === "win32") {
-      javaBinPath = path.join(javaPath, "jdk-21.0.2.jdk", "bin", "java.exe");
-    } else if (platform === "darwin") {
-      javaBinPath = path.join(
-        javaPath,
-        "jdk-21.0.2.jdk",
-        "Contents",
-        "Home",
-        "bin",
-        "java",
-      );
-    } else if (platform === "linux") {
-      javaBinPath = path.join(javaPath, "jdk-21.0.2.jdk", "bin", "java");
-    }
-    // 检查 当前正在运行的进程，如果有 java.exe 或者 java 进程，则认为服务器正在运行
-
-    const { execSync } = require('child_process');
-
-    const stdout = execSync(process.platform === 'win32' ? 'tasklist /fi "IMAGENAME eq java.exe"' : 'ps -e | grep "java"', { encoding: 'utf-8' });
-    console.log("stdout", stdout);
-    const lines = stdout.split('\n');
-    let pids = [];
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      if (line.includes(javaBinPath)) {
-        console.log("进程名称：", line);
-        //获取进程ID
-        const pid = line.split(' ')[1];
-        console.log("进程ID：", pid);
-        //获取端口 .jar [port]
-        const port = line.split(".jar ")[1];
-        console.log("端口：", port);
-        pids.push({
-          pid: pid,
-          port: port,
-        });
-      }
-    }
-    return pids;
-  } catch (e) {
-    console.log("checkServerRunning", e);
-    return [];
-  }
-  
-
-}
-
-/**
- * 启动服务器
- */
-export function runServer(callback: (status: string, message: string) => void) {
-  return ;
-  const pids = checkServerRunning();
-  if (pids.length > 0) {
-    //如果有进程在运行，则不需要启动新的服务器
-    PORT=pids[0].port;
-    callback("success", "Server is running, port:"+PORT);
-    return;
-  }
-  getAvailablePort(10001, (err, port) => {
-    if (err) {
-      console.log("获取端口失败", err);
-      callback("error", err.message);
-      isServerRunning = false;
-      return;
-    }
-    console.log("获取到的闲置端口:", port);
-    callback("running", "Getting port...");
-    if (port) {
-      PORT = port;
-      try {
-        RunJar(callback);
-      } catch (e) {
-        callback("error", e.message);
-        isServerRunning = false;
-      }
-    }
-  });
-}
-async function RunJar(callback: (status: string, message: string) => void) {
-  const serverpath = path.join(udbFolderPath, "server");
-  //如果不存在的话，则创建
-  if (!fs.existsSync(serverpath)) {
-    fs.mkdirSync(serverpath);
-  }
-  callback("running", "Found server folder");
-  const javaPath = path.join(serverpath, "java");
-  if (!fs.existsSync(javaPath)) {
-    //需要从服务下载
-    fs.mkdirSync(javaPath);
-    callback("running", "Downloading java...");
-    await downloadJdk(javaPath);
-  }
-  let javaBinPath = "";
+function getJdkBinPath(): string {
   const platform = os.platform();
   if (platform === "win32") {
-    javaBinPath = path.join(javaPath, "jdk-21.0.2.jdk", "bin", "java.exe");
+    return path.join(udbFolderPath, "server", "java", "jdk-21.0.2.jdk", "bin", "java.exe");
   } else if (platform === "darwin") {
-    javaBinPath = path.join(
-      javaPath,
+    return path.join(
+      udbFolderPath,
+      "server",
+      "java",
       "jdk-21.0.2.jdk",
       "Contents",
       "Home",
@@ -264,61 +188,273 @@ async function RunJar(callback: (status: string, message: string) => void) {
       "java",
     );
   } else if (platform === "linux") {
-    javaBinPath = path.join(javaPath, "jdk-21.0.2.jdk", "bin", "java");
+    return path.join(udbFolderPath, "server", "java", "jdk-21.0.2.jdk", "bin", "java");
   }
+  return "";
+}
+
+
+/**
+* This method is used to got the server running
+ *  java -cp "udb-java-0.0.2:udb-java-0.0.2/BOOT-INF/classes:udb-java-0.0.2/BOOT-INF/lib/*:/Users/taoyongwen/.udb/server/driver/com/mysql/mysql-connector-j/9.3.0/mysql-connector-j-9.3.0.jar"
+ *  com.udb.server.UdbApplication   10001 "mysql(2,3)"
+ */
+function getServersRunning(): {
+  pid: string,
+  port: string,
+  dbType: string
+}[] {
+  try {
+    let pids: {
+      pid: string,
+      port: string,
+      dbType: string
+    }[] = [];
+    const { execSync } = require('child_process');
+    if (process.platform === 'win32') {
+      const stdout = execSync(`wmic process where "name like '%%java%%'" get ProcessId, CommandLine | findstr "udb-java"`, { encoding: 'utf-8' });
+      if (stdout || stdout.length > 0) {
+        const lines = stdout.split('\n');
+        lines.forEach((line: string) => {
+          if(line.length>10){
+            const items = line.split(' ');
+            pids.push({
+              pid: items[0],
+              port: items[items.length - 2],
+              dbType: items[items.length - 1],
+            })
+  
+          }
+         
+        })
+      }
+
+    } else if (process.platform === 'darwin' || process.platform === 'linux') {
+      const stdout = execSync(`ps -e -o pid,args | grep -F "udb-java" | grep -v grep`, { encoding: 'utf-8' });
+      if (stdout || stdout.length > 0) {
+        const lines = stdout.split('\n');
+        lines.forEach((line: string) => {
+         if(line.length>10){
+          const items = line.split(' ');
+          pids.push({
+            pid: items[0],
+            port: items[items.length - 2],
+            dbType: items[items.length - 1],
+          })
+         }
+
+        })
+      }
+
+
+    }
+    return pids;
+  } catch (e) {
+    console.log("checkServerRunning", e);
+    return [];
+  }
+
+
+}
+
+/**
+ * 启动服务器
+ */
+export function runServer(conf: ConnectionConfig,
+  callback: (result: IResult) => void
+) {
+  try {
+    const pids = getServersRunning();
+    console.log("runServer", pids);
+    if (pids.length > 0) {
+      //如果有进程在运行
+      let has = false;
+      //判断是否是同一个数据库
+      for (let i = 0; i < pids.length; i++) {
+        if (pids[i].dbType == conf.type) {
+          PORT = pids[i].port;
+          has = true;
+        } else {
+          //如果是同一个数据库，则关闭其他的服务器
+          killServer(pids[i].pid);
+        }
+      }
+      if (has) {
+        callback({
+          status: 200,
+          message: "Server is running, port:" + PORT,
+        });
+      } else {
+        //启动新的服务器
+        return runNewServer(conf, callback);
+      }
+
+    } else {
+      //启动新的服务器
+      return runNewServer(conf, callback);
+    }
+
+  } catch (e) {
+    callback({
+      status: 500,
+      message: "Internal Server Error",
+    })
+  }
+
+
+}
+function killServer(pid: string) {
+  if(pid.length<=0){
+    return;
+  }
+  const platform = os.platform();
+  const { execSync } = require('child_process');
+  if (platform === "win32") {
+    execSync(`taskkill /F /PID ${pid}`);
+  } else if (platform === "darwin" || platform === "linux") {
+    execSync(`kill -9 ${pid}`);
+  }
+}
+function runNewServer(conf: ConnectionConfig, callback: (result: IResult) => void) {
+
+  getAvailablePort(10001, (err, port) => {
+    if (err) {
+
+      callback({
+        status: 810,
+        message: "Get port failed"
+      });
+
+    } else if (port) {
+      PORT = port;
+      const dbEx = getDataBaseEX(conf.type);
+      if (dbEx == null) {
+        callback({
+          status: 880,
+          message: "Unsupported database type!"
+        });
+      } else {
+        runJar(conf.type,
+          path.join(udbFolderPath, "server", "driver", dbEx.getDriverPath())
+          , callback);
+      }
+
+    }
+
+  });
+
+}
+async function runJar(dbType: string, driverPath: string, callback: (result: IResult) => void) {
+  const serverpath = path.join(udbFolderPath, "server");
+  //如果不存在的话，则创建
+  if (!fs.existsSync(serverpath)) {
+    fs.mkdirSync(serverpath);
+  }
+
+  const javaPath = path.join(serverpath, "java");
+  if (!fs.existsSync(javaPath)) {
+    //需要从服务下载
+    fs.mkdirSync(javaPath);
+    callback({
+      status: 802,
+      message: "Downloading java..."
+    });
+    await downloadJdk(javaPath);
+  }
+
+  const javaBinPath = getJdkBinPath();
+
   const jarPath = path.join(serverpath, "jar");
   //如果不存在的话，则创建
   if (!fs.existsSync(jarPath)) {
     fs.mkdirSync(jarPath);
   }
+
   const serverJarPath = path.join(jarPath, "udb-java.jar");
   //如果不存在的话，则创建
   if (!fs.existsSync(serverJarPath)) {
     //需要从服务下载
-    callback("running", "Downloading jar...");
+    callback({
+      status: 803,
+      message: "Downloading jar..."
+    });
     getLatestRelease(serverJarPath)
       .then(() => {
-        runJar(javaBinPath, serverJarPath, callback);
+        spawnJar(javaBinPath, jarPath, PORT, dbType, driverPath, callback);
       })
       .catch((e) => {
-        console.log("Download failed", e);
-        callback("error", e.message);
+        console.log("Downloading udb-java jar failed", e);
+        callback({
+          status: 804,
+          message: "Downloading udb-java jar failed"
+        });
       });
   } else {
-    runJar(javaBinPath, serverJarPath, callback);
-    callback("success", "Server started successfully");
+    spawnJar(javaBinPath, jarPath, PORT, dbType, driverPath, callback);
+
   }
 }
-function runJar(
+/**
+ * 
+ *  java -cp "udb-java-0.0.2:udb-java-0.0.2/BOOT-INF/classes:udb-java-0.0.2/BOOT-INF/lib/*:/Users/taoyongwen/.udb/server/driver/com/mysql/mysql-connector-j/9.3.0/mysql-connector-j-9.3.0.jar"
+ *  com.udb.server.UdbApplication 
+ *   10001 "mysql(2,3)"
+ * 
+ */
+function spawnJar(
   javaBinPath: string,
-  serverJarPath: string,
-  callback: (status: string, message: string) => void,
+  jarPath: string,
+  port: number,
+  dbType: string,
+  driverPath: string,
+  callback: (result: IResult) => void,
 ) {
-  const childProcess = require("child_process");
-  childProcess.execFile(
+  const cp = `udb-java:udb-java/BOOT-INF/classes:udb-java/BOOT-INF/lib/*:${driverPath}`;
+  const { spawn } = require("child_process");
+  console.log("spawnJar", javaBinPath, jarPath, port, dbType);
+  //cd jarPath
+  const child = spawn(
     javaBinPath,
-    ["-jar", serverJarPath, PORT],
-    (error: any, stdout: any, stderr: any) => {
-      //如果有错误
-      if (error) {
-        //显示提示
-        dialog.showErrorBox("服务器启动失败", error.message);
-        callback("error", error.message);
-        return;
-      } else {
-        callback("success", "Server started successfully");
-      }
-      console.log(stdout);
-      console.log(stderr);
-    },
+    ["-cp", cp, "com.udb.server.UdbApplication", port, dbType],
+    {
+      cwd: jarPath,
+    }
   );
+  //打印完整的命令
+  console.log(child.spawnargs);
+
+  child.stdout.on("data", (data: string) => {
+    console.log(`输出: ${data}`);
+    if(data.includes("Started UdbApplication")){
+      callback({
+        status: 200,
+        message: "Server started successfully"
+      });
+    }
+  });
+
+  child.stderr.on("data", (data: any) => {
+    console.error(`错误: ${data}`);
+    callback({
+      status: 500,
+      message: "Server started successfully"
+    });
+  });
+
+  child.on("close", (code: any) => {
+    console.log(`子进程退出，代码 ${code}`);
+  });
+
+
 }
+
 function getAvailablePort(
   startPort: number,
   callback: (err: any, port?: number) => void,
 ) {
   let port = startPort;
   const server = net.createServer();
+  server.on
   server.on("error", (err: any) => {
     if (err.code === "EADDRINUSE") {
       // 端口被占用，尝试下一个端口

@@ -4,6 +4,7 @@ import {
   CodeIcon,
   ColumnsIcon,
   DatabaseIcon,
+  Loader,
   MoreHorizontalIcon,
   TableIcon,
 } from "lucide-react";
@@ -12,6 +13,7 @@ import { IVirtualTreeItem, VirtualTree } from "@/components/virtual-tree";
 import { openMenu } from "@/api/menu";
 import { useProjectStore } from "@/store/project-store";
 import {
+  ConnectionConfig,
   IDataBase,
   IDataBaseTable,
   IDataBaseTableColumn,
@@ -32,12 +34,21 @@ import FolderContext from "@/components/icons/folder-context";
 import { toast } from "sonner";
 import { useDbStore } from "@/store/db-store";
 export function ExplorerDb(props: { isVisible: boolean }) {
+  //Global store connection
+  const connection = useDbStore((state) => state.connection);
+  const setConnection = useDbStore((state) => state.setConnection);
   const [files, setFiles] = React.useState<IVirtualTreeItem[]>([]);
+  /**
+   * Transform files to virtual tree items
+   * 
+   * @param files 
+   * @returns 
+   */
   function transformFiles(files: any[]) {
     const _files: IVirtualTreeItem[] = [];
     files.forEach((file) => {
       _files.push({
-        name: file.Database,
+        name: file.name,
         isFolder: true,
         expandIcon: <FolderDatabaseOpen size={14} className="flex-shrink-0" />,
         collapseIcon: <FolderDatabase size={14} className="flex-shrink-0" />,
@@ -46,19 +57,45 @@ export function ExplorerDb(props: { isVisible: boolean }) {
     });
     return _files;
   }
+  const [status, setStatus] = React.useState<"welcome" | "connecting" | "showDatabases" | "error">("welcome");
+  //Listen for connection change, if connection change, get databases
   useEffect(() => {
-    //打开项目
-    const getDatabasesing = (res: IResult) => {
-     
-      if (res.status == 200) {
-        const _files = transformFiles(res.data.rows as IDataBase[]);
-        setFiles(_files);
-        // setDatabases((pre)=>res.data.data as IDataBase[]);
-      }else{
-        toast.error(t("status." + res.status));
+    window.api.on("db:openConnectioning", (res: IResult) => {
+      console.log("db:openConnectioning", res);
+      if (res.status == 799) {
+        //Starting...
+        setStatus("connecting");
       }
+      else if (res.status == 200) {
+        setStatus("connected");
+        //Success
+        setConnection(res.data);
+
+        window.api.invoke<IResult>("db:getDatabases", connection).then((res) => {
+          if (res.status == 200) {
+            setStatus("showDatabases");
+            const _files = transformFiles(res.data.rows as IDataBase[]);
+            setFiles(_files);
+          } else {
+            toast.error(t("status." + res.status));
+            setStatus("error");
+          }
+        });
+      } else {
+        //Error
+        toast.error(t("status." + res.status));
+        setStatus("error");
+      }
+    });
+    return () => {
+      window.api.removeAllListeners("db:openConnectioning");
     };
-    window.api.on("db:getDatabasesing", getDatabasesing);
+
+
+  }, []);
+  //Listen for db-actioning event, if event is triggered, open dialog or view
+  useEffect(() => {
+
     const explorer_db_actioning = (params: any) => {
       console.log("explorer-db-actioning", params);
       if (params.command === "addDatabase") {
@@ -127,12 +164,12 @@ export function ExplorerDb(props: { isVisible: boolean }) {
     };
     window.api.on("explorer:db-actioning", explorer_db_actioning);
     return () => {
-      window.api.removeAllListeners("db:getDatabasesing");
       window.api.removeAllListeners("explorer:db-actioning");
+
     };
   }, []);
   const { t } = useTranslation();
-  // const database = useDbStore((state: any) => state.database);
+  //Global store setDatabase
   const setDatabase = useDbStore((state: any) => state.setDatabase);
   return (
     <div
@@ -152,15 +189,8 @@ export function ExplorerDb(props: { isVisible: boolean }) {
           <MoreHorizontalIcon size={14}></MoreHorizontalIcon>
         </Button>
       </div>
-      {/* <ScrollArea className="flex-1">
-      <ScrollBar orientation="vertical" />
-    </ScrollArea> */}
-      {/* <VirtualList items={rows}  estimateHeight={32} renderItem={(item: IExplorerDbRow, i: number) => {
-      return <div></div>
-    }}></VirtualList> */}
 
-
-      {files.length > 0 && <VirtualTree
+      {status == "showDatabases" && <VirtualTree
         data={files}
         onLoad={(path: string[]) => {
           console.log("onLoad", path);
@@ -169,7 +199,7 @@ export function ExplorerDb(props: { isVisible: boolean }) {
             //选择数据库
             window.api.send("db:selectDatabase", path[0]);
             setDatabase(path[0]);
-         
+
             //数据库,返回Tables,Views,Functions,Procedures
             return new Promise((resolve) => {
               const _files: IVirtualTreeItem[] = [];
@@ -201,8 +231,8 @@ export function ExplorerDb(props: { isVisible: boolean }) {
               return window.api
                 .invoke("db:getTables", databaseName)
                 .then((getTablesResult: IResult) => {
-                
-                  if (getTablesResult.status==200) {
+
+                  if (getTablesResult.status == 200) {
                     const _files: IVirtualTreeItem[] = [];
                     const tables = getTablesResult.data.rows as IDataBaseTable[];
                     tables.forEach((table) => {
@@ -216,7 +246,7 @@ export function ExplorerDb(props: { isVisible: boolean }) {
                       });
                     });
                     console.log("_files", _files);
-                    if (_files.length==0){
+                    if (_files.length == 0) {
                       _files.push({
                         name: "No Tables",
                         isFolder: false,
@@ -224,7 +254,7 @@ export function ExplorerDb(props: { isVisible: boolean }) {
                       });
                     }
                     return _files;
-                  }else{
+                  } else {
                     toast.error(t("status." + getTablesResult.status));
                     return [{
                       name: "error",
@@ -252,7 +282,7 @@ export function ExplorerDb(props: { isVisible: boolean }) {
                       });
                     });
                     console.log("_files", _files);
-                    if (_files.length==0){
+                    if (_files.length == 0) {
                       _files.push({
                         name: "No Views",
                         isFolder: false,
@@ -260,7 +290,7 @@ export function ExplorerDb(props: { isVisible: boolean }) {
                       });
                     }
                     return _files;
-                  }else{
+                  } else {
                     toast.error(t("status." + res.status));
                     return [{
                       name: "error",
@@ -288,7 +318,7 @@ export function ExplorerDb(props: { isVisible: boolean }) {
                       });
                     });
                     console.log("_files", _files);
-                    if (_files.length==0){
+                    if (_files.length == 0) {
                       _files.push({
                         name: "No Functions",
                         isFolder: false,
@@ -296,13 +326,13 @@ export function ExplorerDb(props: { isVisible: boolean }) {
                       });
                     }
                     return _files;
-                  }else{
+                  } else {
                     toast.error(t("status." + res.status));
                     return [{
                       name: "error",
                       isFolder: false,
                       isError: true,
-                    }]; 
+                    }];
                   }
                 });
             }
@@ -324,7 +354,7 @@ export function ExplorerDb(props: { isVisible: boolean }) {
                       });
                     });
                     console.log("_files", _files);
-                    if (_files.length==0){
+                    if (_files.length == 0) {
                       _files.push({
                         name: "No Procedures",
                         isFolder: false,
@@ -332,7 +362,7 @@ export function ExplorerDb(props: { isVisible: boolean }) {
                       });
                     }
                     return _files;
-                  }else{
+                  } else {
                     toast.error(t("status." + res.status));
                     return [{
                       name: "error",
@@ -382,13 +412,13 @@ export function ExplorerDb(props: { isVisible: boolean }) {
                         name: column.name + "",
                         isFolder: false,
                         icon: (
-                          <ColumnsIcon size={14} className="flex-shrink-0" />
+                          <ColumnsIcon size={10} className="flex-shrink-0" />
                         ),
                         description: column.comment,
                       });
                     });
                     console.log("_files", _files);
-                    if (_files.length==0){
+                    if (_files.length == 0) {
                       _files.push({
                         name: "No Columns",
                         isFolder: false,
@@ -396,7 +426,7 @@ export function ExplorerDb(props: { isVisible: boolean }) {
                       });
                     }
                     return _files;
-                  }else{
+                  } else {
                     toast.error(t("status." + res.status));
                     return [{
                       name: "error",
@@ -510,7 +540,23 @@ export function ExplorerDb(props: { isVisible: boolean }) {
       ></VirtualTree>}
 
       {
-        files.length==0&&<Webcome/>
+        status == "welcome" && <Webcome />
+      }
+
+      {
+        status == "connecting" && <div className="flex h-full w-full flex-col items-center justify-center">
+          <Loader size={32} className="text-primary animate-spin" />
+          <div className="mt-5 text-sm">
+            {t("view.db.connecting")}
+          </div>
+        </div>
+      }
+      {
+        status == "error" && <div className="flex h-full w-full flex-col items-center justify-center">
+          <div className="text-red-500 text-sm">
+            {t("view.db.error")}
+          </div>
+        </div>
       }
 
 

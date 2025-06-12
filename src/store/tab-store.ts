@@ -56,6 +56,7 @@ export interface TabStore {
     type: string;
     name: string;
     path: string[];
+    isChanged?: boolean;
   };
   
   /** 
@@ -65,6 +66,7 @@ export interface TabStore {
   setTab: (tab: {
     type: string;
     name: string;
+    isChanged?: boolean;
     path: string[];
   }) => void;
 }
