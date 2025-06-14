@@ -1,33 +1,30 @@
-import React, { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
+  DialogTitle
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
+  FormMessage
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { saveAndOpenConnection, testConnection } from "@/api/storage";
-import { ConnectionConfig } from "@/types/db";
+import { zodResolver } from "@hookform/resolvers/zod";
+import React, { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
 import { Textarea } from "@/components/ui/textarea";
+import { ConnectionConfig } from "@/types/db";
 import { ChevronsDownIcon, ChevronsUpIcon } from "lucide-react";
+import { saveAndOpenConnection, testConnection } from "@/api/db";
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
   type: z.string().min(1, "Database type is required"),

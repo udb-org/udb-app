@@ -1,9 +1,9 @@
 import { ConnectionConfig, IDataSource } from "@/types/db";
 import { ipcMain } from "electron";
 // import { dialog } from "electron/main";
-import { testConnection } from "@/api/storage";
 import { readConnectionConfig, writeConnectionConfig } from "@/services/storage";
 import { runServer } from "@/services/db-client";
+import { testConnection } from "@/api/db";
 export function unregisterDbConfListeners() {
   // Unregister all 'handle' and 'on' listeners related to the database operations
   // Unregister all the handlers registered in registerDbConfListeners function

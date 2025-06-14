@@ -48,7 +48,7 @@ export function SqlResults(props: { data: any[] }) {
     if (tab && tab.status === "success") {
       setData({
         columns: tab.columns,
-        data: tab.data,
+        rows: tab.rows,
       });
       setStatus(tab.status);
       setMessage(tab.message);

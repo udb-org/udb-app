@@ -58,6 +58,8 @@ export function VirtualData(props: { source: any; height?: number }) {
   const containerWidth = useRef(0);
   const containerHeight = useRef(0);
   useEffect(() => {
+
+    console.log("props.source",props.source);
     //清楚状态
     setScrollTop(0);
     setScrollLeft(0);
@@ -89,8 +91,9 @@ export function VirtualData(props: { source: any; height?: number }) {
     if (props.source.columns) {
       setColumns(props.source.columns);
     }
-    if (props.source.data) {
-      setData([...props.source.data]);
+    if (props.source.rows) {
+     
+      setData([...props.source.rows]);
     }
   }, [props.source]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
