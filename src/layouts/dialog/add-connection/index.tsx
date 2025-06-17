@@ -103,9 +103,11 @@ export function AddConnectionDialog(props: {
     };
     saveAndOpenConnection(conf);
   }
+
   const [supportDatabases, setSupportDatabases] = React.useState<{
     name: string;
     supportVersions: string[];
+
   }[]>([]);
   useEffect(() => {
     window.api.invoke<any>("db:getSupportDatabases").then((res) => {

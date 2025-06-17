@@ -117,13 +117,14 @@ export class MysqlEx implements IDataBaseEX {
             sql: "truncate table " + tableName,
         }
     }
-    showColumns(databaseName: string, tableName: string): IDataBaseEXCall {
+    showColumns(databaseName: string, tableName?: string): IDataBaseEXCall {
+        let sql = "select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA='" +
+            databaseName + "'";
+        if (tableName) {
+            sql += " and TABLE_NAME='" + tableName + "'";
+        }
         return {
-            sql: "select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME='" +
-                tableName +
-                "' and TABLE_SCHEMA='" +
-                databaseName +
-                "'",
+            sql: sql,
             callback: (res: IResult) => {
                 if (res.data && res.data.rows) {
                     res.data.rows = res.data.rows.map((row: any) => {
@@ -140,6 +141,7 @@ export class MysqlEx implements IDataBaseEX {
                             }
                         }
                         return {
+                            table: row.TABLE_NAME,
                             name: row.COLUMN_NAME,
                             type: row.DATA_TYPE,
                             comment: row.COLUMN_COMMENT,

@@ -283,7 +283,7 @@ export function registerDbUniformListeners(mainWindow: Electron.BrowserWindow) {
     return result;
   });
   //getColumns
-  ipcMain.handle("db:getColumns", async (event, tableName: string) => {
+  ipcMain.handle("db:getColumns", async (event, tableName?: string) => {
     const currentDataSource = getCurrentDataSource();
     if (currentDataSource == null) {
       return {

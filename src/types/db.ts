@@ -35,7 +35,7 @@ export interface IDataBaseEX {
     dropTable(databaseName:string,tableName:string):IDataBaseEXCall;
     clearTable(databaseName:string,tableName:string):IDataBaseEXCall;
 
-    showColumns(databaseName:string,tableName:string):IDataBaseEXCall;
+    showColumns(databaseName:string,tableName?:string):IDataBaseEXCall;
     showConstraints(databaseName:string,tableName:string):IDataBaseEXCall;
     showIndexes(databaseName:string,tableName:string):IDataBaseEXCall;
     /**
@@ -159,6 +159,7 @@ export enum KeyType {
     FOREIGN = 'FOREIGN'     // 外键
 }
 export interface IDataBaseTableColumn {
+    table: string;
     name: string;
     type: string;
     displayType?: string;

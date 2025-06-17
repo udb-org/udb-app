@@ -24,8 +24,9 @@ import { getSqlSuggestionsKeywords } from "./sql-suggestions";
 import { getTableNames } from "@/utils/sql";
 import { openMenu } from "@/api/menu";
 import { ActionParam, IAction } from "@/types/view";
-import { IResult } from "@/types/db";
+import { IDataBaseTableColumn, IResult } from "@/types/db";
 import { useTranslation } from "react-i18next";
+import { useDbStore } from "@/store/db-store";
 
 
 export default function ViewSQL(props: { viewKey: string }) {
@@ -70,6 +71,8 @@ export default function ViewSQL(props: { viewKey: string }) {
     showActions("view:sql-actioning", actions);
   }
 
+
+
   const [results, setResults] = React.useState<any[]>([]);
   const [view, setView] = React.useState<any>(null);
   const { model } = useAiStore();
@@ -96,6 +99,55 @@ export default function ViewSQL(props: { viewKey: string }) {
     setResultHeight(_resultHeight);
 
   }, [props.viewKey]);
+  //Global store setDatabase
+  const database = useDbStore((state: any) => state.database);
+  const [databaseMetadata, setDatabaseMetadata] = React.useState<any>({
+    tables: {
+      'users': ['id', 'name', 'email', 'created_at'],
+      'orders': ['order_id', 'user_id', 'amount', 'order_date'],
+      'products': ['product_id', 'product_name', 'price', 'category']
+    },
+    functions: ['COUNT', 'SUM', 'AVG', 'MAX', 'MIN', 'CONCAT', 'DATE_FORMAT']
+
+  });
+  useEffect(() => {
+    if (database) {
+      setDatabaseMetadata({
+        tables: {
+        },
+        functions: ['COUNT', 'SUM', 'AVG', 'MAX', 'MIN', 'CONCAT', 'DATE_FORMAT']
+      });
+      //更新数据词典
+      window.api.invoke("db:getColumns").then((res: any) => {
+
+        if (res.status == 200) {
+          const rows = res.data.rows;
+          if (rows.length > 0) {
+            //按照表名分组
+            const tables: any = {};
+            rows.forEach((row: any) => {
+              if (!tables[row.table]) {
+                tables[row.table] = [];
+              }
+              tables[row.table].push(row);
+            });
+            setDatabaseMetadata({
+              tables: tables,
+              functions: ['COUNT', 'SUM', 'AVG', 'MAX', 'MIN', 'CONCAT', 'DATE_FORMAT']
+            });
+
+          }
+
+
+        }
+
+      }
+      );
+
+    }
+  }, [database]);
+
+
   const [editor, setEditor] = React.useState<any>(null);
   const editorRef = React.useRef<any>(null);
   const [sql, setSql] = React.useState<string>("");
@@ -300,155 +352,324 @@ export default function ViewSQL(props: { viewKey: string }) {
     // 创建装饰器集合
     decorationsCollection.current =
       editor.createDecorationsCollection(decorations);
+
+
+    // 预处理函数：去除注释
+    function removeComments(sql: string) {
+      // 去除单行注释
+      sql = sql.replace(/--.*$/gm, '');
+      // 去除多行注释
+      sql = sql.replace(/\/\*[\s\S]*?\*\//g, '');
+      return sql;
+    }
+
+    // 预处理函数：匹配表别名
+    function parseTableAliases(sql: string) {
+      const aliases = {};
+      const regex = /FROM\s+([\w]+)(?:\s+AS)?\s+([\w]+)|JOIN\s+([\w]+)(?:\s+AS)?\s+([\w]+)/gi;
+      let match;
+
+      while ((match = regex.exec(sql)) !== null) {
+        if (match[1] && match[2]) aliases[match[2]] = match[1];
+        if (match[3] && match[4]) aliases[match[4]] = match[3];
+      }
+
+      return aliases;
+    }
+
+    // 获取当前SQL语句（从分号分隔）
+    function getCurrentStatement(model: any, position: any) {
+      const sql = model.getValue();
+      const offset = model.getOffsetAt(position);
+
+      // 找到前一个分号位置
+      let prevSemicolon = sql.lastIndexOf(';', offset - 1);
+      prevSemicolon = prevSemicolon === -1 ? 0 : prevSemicolon + 1;
+
+      // 找到后一个分号位置
+      let nextSemicolon = sql.indexOf(';', offset);
+      nextSemicolon = nextSemicolon === -1 ? sql.length : nextSemicolon;
+
+      return sql.substring(prevSemicolon, nextSemicolon);
+    }
+
     // 注册代码提示提供者，并保存返回的 disposable 对象
     const completionItemProvider =
       monaco.languages.registerCompletionItemProvider("sql", {
-        provideCompletionItems: async (model, position, context, token) => {
-          console.log(
-            "provideCompletionItems",
-            model,
-            position,
-            context,
-            token,
-          );
-          // 获取当前行内容
-          const lineLeftText = model.getValueInRange({
-            startLineNumber: position.lineNumber,
+        provideCompletionItems: (model, position) => {
+          const textUntilPosition = model.getValueInRange({
+            startLineNumber: 1,
             startColumn: 1,
             endLineNumber: position.lineNumber,
-            endColumn: position.column,
+            endColumn: position.column
           });
-          const lineRightText = model.getValueInRange({
-            startLineNumber: position.lineNumber,
-            startColumn: position.column,
-            endLineNumber: position.lineNumber,
-            endColumn: model.getLineMaxColumn(position.lineNumber),
-          });
-          const lineText = lineLeftText + lineRightText;
-          console.log("lineText", lineText);
-          //以下情况下，返回所有的表名
-          if (
-            lineLeftText.trim().toUpperCase().endsWith("FROM") ||
-            lineLeftText.trim().toUpperCase().endsWith("JOIN") ||
-            lineLeftText.trim().toUpperCase().endsWith("INNER JOIN") ||
-            lineLeftText.trim().toUpperCase().endsWith("LEFT JOIN") ||
-            lineLeftText.trim().toUpperCase().endsWith("RIGHT JOIN") ||
-            lineLeftText.trim().toUpperCase().endsWith("FULL JOIN") ||
-            lineLeftText.trim().toUpperCase().endsWith("CROSS JOIN") ||
-            lineLeftText.trim().toUpperCase().endsWith("ON")
-          ) {
-            const tables = [];
-            const res = await window.api.invoke("db:getTables", "");
-            console.log("res", res);
-            if (res.status === "success") {
-              const dbs = res.data.data;
-              const suggestions = dbs.map((db: any) => {
-                return {
-                  label: db.TABLE_NAME,
-                  kind: monaco.languages.CompletionItemKind.Class,
-                  insertText: db.TABLE_NAME,
-                };
-              });
-              return {
-                suggestions: suggestions,
-              };
-            }
+
+          console.log("textUntilPosition", textUntilPosition);
+
+          // 一、预处理
+          const cleanSQL = removeComments(textUntilPosition);
+          const currentStatement = getCurrentStatement(model, position);
+          const tableAliases = parseTableAliases(cleanSQL);
+
+          // 二、特殊提示处理
+          // 1. 开头提示：位于SQL起始位置
+          if (/^\s*$/.test(textUntilPosition)) {
             return {
-              suggestions: tables.map((table) => {
-                return {
-                  label: table,
-                  kind: monaco.languages.CompletionItemKind.Class,
-                  insertText: table,
-                };
-              }),
+              suggestions: [
+                { label: 'SELECT', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'SELECT ' },
+                { label: 'CREATE', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'CREATE TABLE ' },
+                { label: 'INSERT', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'INSERT INTO ' },
+                { label: 'UPDATE', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'UPDATE ' },
+                { label: 'DELETE', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'DELETE FROM ' },
+                { label: 'DROP', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'DROP TABLE ' }
+              ]
             };
           }
-          //以下情况下返回表字段，1、以SELECT结束，2、以,结束，3、以WHERE、AGROUP BY、HAVING、ORDER BY、AND、OR、(、结尾
-          if (
-            lineLeftText.trim().toUpperCase().endsWith("SELECT") ||
-            lineLeftText.trim().toUpperCase().endsWith(",") ||
-            lineLeftText.trim().toUpperCase().endsWith("WHERE") ||
-            lineLeftText.trim().toUpperCase().endsWith("GROUP BY") ||
-            lineLeftText.trim().toUpperCase().endsWith("HAVING") ||
-            lineLeftText.trim().toUpperCase().endsWith("ORDER BY") ||
-            lineLeftText.trim().toUpperCase().endsWith("AND") ||
-            lineLeftText.trim().toUpperCase().endsWith("OR") ||
-            lineLeftText.trim().toUpperCase().endsWith("(")
-          ) {
-            //从lineText 获取表名
-            const tableNames = getTableNames(lineText);
-            console.log("tableName", tableNames);
-            const res = await window.api.invoke("db:getColumns", tableNames[0]);
-            console.log("res", res);
-            if (res.status === "success") {
-              const dbs = res.data.data;
-              const suggestions = dbs.map((db: any) => {
-                return {
-                  label: db.COLUMN_NAME,
-                  kind: monaco.languages.CompletionItemKind.Class,
-                  insertText: db.COLUMN_NAME,
-                };
-              });
-              return {
-                suggestions: suggestions,
-              };
-            }
+
+          // 2. 表名提示：FROM、JOIN、ON等后跟表名
+          const tableNameTriggers = [
+            { regex: /(FROM|JOIN|INTO)\s*$/i, position: 'after' },
+            { regex: /(UPDATE)\s+$/i, position: 'after' },
+            { regex: /(DELETE\s+FROM)\s+$/i, position: 'after' }
+          ];
+
+          if (tableNameTriggers.some(trigger => trigger.regex.test(textUntilPosition))) {
             return {
-              suggestions: [],
+              suggestions: Object.keys(databaseMetadata.tables).map(table => ({
+                label: table,
+                kind: monaco.languages.CompletionItemKind.Struct,
+                insertText: table
+              }))
             };
           }
-          //如何是.结束，说明.前面是表，后面是字段
-          if (lineLeftText.trim().toUpperCase().endsWith(".")) {
-            //从获取.前面的表名
-            const lLT = lineLeftText.trim();
-            console.log("endsWith . ", lLT);
-            const lLTs = lLT.substring(0, lLT.length - 1).split(" ");
-            let tableName = lLTs[lLTs.length - 1];
-            //判断tableName 是真实表名还是别名，使用正侧表达式匹配[a-zA-Z0-9_]+ tableName 存在
-            const regex = new RegExp(`[a-zA-Z0-9_]+ ${tableName}`, "i");
-            //使用#替代所有的关键字
-            let lineTextRp = lineText.toUpperCase().replaceAll(" FROM ", " # ");
-            lineTextRp = lineTextRp.replaceAll(" JOIN ", " # ");
-            lineTextRp = lineTextRp.replaceAll(" ON ", " # ");
-            lineTextRp = lineTextRp.replaceAll("SELECT ", "# ");
-            console.log("lineTextRp", lineTextRp);
-            if (regex.test(lineTextRp)) {
-              //如果是别名，则获取别名对应的表名
-              const matches = lineTextRp.match(regex);
-              if (matches) {
-                tableName = matches[0].split(" ")[0];
+
+          // 3. 字段提示：点后提示字段名
+          const dotFieldTrigger = /([\w]+)\.$/i;
+          const dotMatch = textUntilPosition.match(dotFieldTrigger);
+
+          if (dotMatch) {
+            const aliasOrTable = dotMatch[1];
+            const tableName = tableAliases[aliasOrTable] || aliasOrTable;
+
+            if (databaseMetadata.tables[tableName]) {
+              return {
+                suggestions: databaseMetadata.tables[tableName].map((field: IDataBaseTableColumn) => ({
+                  label: field.name,
+                  kind: monaco.languages.CompletionItemKind.Field,
+                  insertText: field.name,
+                  detail: field.comment
+                }))
+              };
+            }
+          }
+
+          // 4. 表名后提示关键字
+          const afterTableTriggers = [
+            { regex: /(FROM|JOIN)\s+[\w]+\s$/i, suggestions: ['WHERE', 'JOIN', 'ON', 'GROUP BY', 'HAVING', 'ORDER BY'] },
+            { regex: /(UPDATE)\s+[\w]+\s$/i, suggestions: ['SET'] },
+            { regex: /(DELETE\s+FROM)\s+[\w]+\s$/i, suggestions: ['WHERE'] }
+          ];
+
+          const afterTableMatch = afterTableTriggers.find(trigger => trigger.regex.test(textUntilPosition));
+          if (afterTableMatch) {
+            return {
+              suggestions: afterTableMatch.suggestions.map(keyword => ({
+                label: keyword,
+                kind: monaco.languages.CompletionItemKind.Keyword,
+                insertText: keyword + ' '
+              }))
+            };
+          }
+
+          // 三、单表查询逻辑
+          if (currentStatement.toUpperCase().startsWith('SELECT')) {
+            // 获取表名
+            const tableMatch = currentStatement.match(/FROM\s+(\w+)/i);
+            if (tableMatch) {
+              const tableName = tableMatch[1];
+
+              // 1. SELECT之后，FROM之前
+              if (/SELECT\s/i.test(textUntilPosition) && !/FROM\s/i.test(textUntilPosition)) {
+
+                const fieldSuggestions = databaseMetadata.tables[tableName].map((field: IDataBaseTableColumn) => ({
+                  label: field.name,
+                  kind: monaco.languages.CompletionItemKind.Field,
+                  insertText: field.name,
+                  detail: field.comment
+
+                }));
+
+                const funcSuggestions = databaseMetadata.functions.map(func => ({
+                  label: func,
+                  kind: monaco.languages.CompletionItemKind.Function,
+                  insertText: `${func}($1)`,
+                  insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+
+                }));
+
+                return { suggestions: [...fieldSuggestions, ...funcSuggestions] };
+              }
+
+              // 2. FROM之后，WHERE之前
+              if (/FROM\s+\w+\s$/i.test(textUntilPosition)) {
+                return {
+                  suggestions: ['WHERE', 'GROUP BY', 'HAVING', 'ORDER BY', 'LIMIT'].map(item => ({
+                    label: item,
+                    kind: monaco.languages.CompletionItemKind.Keyword,
+                    insertText: item + ' '
+                  }))
+                };
+              }
+
+              // 3. WHERE之后
+              if (/WHERE\s/i.test(textUntilPosition)) {
+                return {
+                  suggestions: [
+                    ...databaseMetadata.tables[tableName].map((field: IDataBaseTableColumn) => ({
+                      label: field.name,
+                      kind: monaco.languages.CompletionItemKind.Field,
+                      insertText: field.name,
+                      detail: field.comment
+                    })),
+                    ...['AND', 'OR', 'NOT'].map(keyword => ({
+                      label: keyword,
+                      kind: monaco.languages.CompletionItemKind.Keyword,
+                      insertText: keyword + ' '
+                    }))
+                  ]
+                };
               }
             }
-            console.log("tableName", tableName);
-            if (tableName) {
-              const res = await window.api.invoke("db:getColumns", tableName);
-              console.log("res", res);
-              if (res.status === "success") {
-                const dbs = res.data.data;
-                const suggestions = dbs.map((db: any) => {
-                  return {
-                    label: db.COLUMN_NAME,
-                    kind: monaco.languages.CompletionItemKind.Class,
-                    insertText: db.COLUMN_NAME,
-                  };
+          }
+
+          // 四、单表删除逻辑
+          if (currentStatement.toUpperCase().startsWith('DELETE')) {
+            const tableMatch = currentStatement.match(/FROM\s+(\w+)/i);
+            if (tableMatch) {
+              const tableName = tableMatch[1];
+
+              // 1. WHERE之前
+              if (/FROM\s+\w+\s$/i.test(textUntilPosition)) {
+                return {
+                  suggestions: ['WHERE'].map(item => ({
+                    label: item,
+                    kind: monaco.languages.CompletionItemKind.Keyword,
+                    insertText: item + ' '
+                  }))
+                };
+              }
+
+              // 2. WHERE之后
+              if (/WHERE\s$/i.test(textUntilPosition)) {
+                return {
+                  suggestions: [
+                    ...databaseMetadata.tables[tableName].map((field: IDataBaseTableColumn) => ({
+                      label: field.name,
+                      kind: monaco.languages.CompletionItemKind.Field,
+                      insertText: field.name,
+                      detail: field.comment
+                    })),
+                    ...['AND', 'OR', 'NOT'].map(keyword => ({
+                      label: keyword,
+                      kind: monaco.languages.CompletionItemKind.Keyword,
+                      insertText: keyword + ' '
+                    }))
+                  ]
+                };
+              }
+            }
+          }
+
+          // 五、单表修改逻辑
+          if (currentStatement.toUpperCase().startsWith('UPDATE')) {
+            const tableMatch = currentStatement.match(/UPDATE\s+(\w+)/i);
+            if (tableMatch) {
+              const tableName = tableMatch[1];
+
+              // 1. SET之后，WHERE之前
+              if (/SET\s$/i.test(textUntilPosition) ||
+                /,\s*$/i.test(textUntilPosition) ||
+                /=\s*$/i.test(textUntilPosition)) {
+
+                const suggestions = [];
+
+                // 字段建议
+                databaseMetadata.tables[tableName].forEach((field: IDataBaseTableColumn) => {
+                  suggestions.push({
+                    label: field.name,
+                    kind: monaco.languages.CompletionItemKind.Field,
+                    insertText: field.name,
+                    detail: field.comment
+                  });
+
+                  // 字段=值格式
+                  suggestions.push({
+                    label: `${field.name}=`,
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: `${field.name} = \${1:value}\$0`,
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    detail: field.comment
+                  });
                 });
+
+                // 逗号分隔建议
+                suggestions.push({
+                  label: ',',
+                  kind: monaco.languages.CompletionItemKind.Operator,
+                  insertText: ', '
+                });
+
+                // WHERE建议
+                suggestions.push({
+                  label: 'WHERE',
+                  kind: monaco.languages.CompletionItemKind.Keyword,
+                  insertText: '\nWHERE '
+                });
+
+                return { suggestions };
+              }
+
+              // 2. WHERE之后
+              if (/WHERE\s$/i.test(textUntilPosition)) {
                 return {
-                  suggestions: suggestions,
+                  suggestions: [
+                    ...databaseMetadata.tables[tableName].map((field: IDataBaseTableColumn) => ({
+                      label: field.name,
+                      kind: monaco.languages.CompletionItemKind.Field,
+                      insertText: field.name,
+                      detail: field.comment
+                    })),
+                    ...['AND', 'OR', 'NOT'].map(keyword => ({
+                      label: keyword,
+                      kind: monaco.languages.CompletionItemKind.Keyword,
+                      insertText: keyword + ' '
+                    }))
+                  ]
                 };
               }
-              return {
-                suggestions: [],
-              };
             }
           }
-          // 如果当前行内容为空，则返回空数组
-          if (lineText === "") {
-            return { suggestions: [] };
-          }
+
+          // 默认提示：基本SQL关键字
+          const keywords = [
+            'SELECT', 'FROM', 'WHERE', 'AND', 'OR', 'NOT',
+            'INSERT INTO', 'VALUES', 'UPDATE', 'SET', 'DELETE',
+            'JOIN', 'INNER JOIN', 'LEFT JOIN', 'RIGHT JOIN', 'ON',
+            'GROUP BY', 'HAVING', 'ORDER BY', 'ASC', 'DESC',
+            'LIMIT', 'OFFSET', 'AS', 'DISTINCT', 'BETWEEN',
+            'LIKE', 'IN', 'IS NULL', 'IS NOT NULL', 'CASE', 'WHEN'
+          ];
+
           return {
-            suggestions: getSqlSuggestionsKeywords(),
+            suggestions: keywords.map(keyword => ({
+              label: keyword,
+              kind: monaco.languages.CompletionItemKind.Keyword,
+              insertText: keyword.includes(' ') ? keyword + ' ' : keyword + ' '
+            }))
           };
         },
+
+        triggerCharacters: ['.', ',', '=', '>', '<', '(', ')', ' ']
       });
     return () => {
       decorationsCollection.current?.clear();
@@ -459,7 +680,7 @@ export default function ViewSQL(props: { viewKey: string }) {
       completionItemProvider.dispose();
       aiInlineCommand.dispose();
     };
-  }, [execStatus, editor, currentViewZoneId]);
+  }, [execStatus, editor, currentViewZoneId, databaseMetadata]);
 
   const [isMark, setIsMark] = React.useState<boolean>(false);
 
@@ -582,7 +803,7 @@ export default function ViewSQL(props: { viewKey: string }) {
       setResults(_results);
     };
     window.api.on("db:execSqlEnd", execSqlingEnd);
- 
+
     const aiMergeSqling = (params: {
       content: string,
       status: number
