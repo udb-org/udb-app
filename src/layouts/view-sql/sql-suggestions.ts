@@ -46,6 +46,7 @@ export function getSqlSuggestionsKeywords() {
     "DEFAULT",
     "DESC",
     "ASC",
+    "DROP TABLE",
   ];
   const suggestions = keywords.map((keyword) => ({
     label: keyword,
