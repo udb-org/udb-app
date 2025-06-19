@@ -1,8 +1,9 @@
 import {
-  db_dump,
-  db_dump_result,
-  db_dump_stop,
-  executeSql
+ 
+  executeSql,
+  task_result,
+  task_run_dump,
+  task_stop
 } from "@/services/db-client";
 import { ConnectionConfig, IDataSource } from "@/types/db";
 import { dialog, ipcMain } from "electron";
@@ -384,7 +385,14 @@ export function registerDbUniformListeners(mainWindow: Electron.BrowserWindow) {
       dialog.showErrorBox("Error", "Please select a connection!");
       return;
     }
-    const datasource: IDataSource = {
+    const dbEx = getDataBaseEX(conf.type);
+    if (dbEx == null) {
+      return {
+        status: 880,
+        message: "Unsupported database type!"
+      }
+    }
+    let datasource: IDataSource = {
       name: conf.name + "_" + args.database,
       type: conf.type,
       driver: conf.driver,
@@ -393,21 +401,33 @@ export function registerDbUniformListeners(mainWindow: Electron.BrowserWindow) {
       username: conf.username,
       password: conf.password,
       database: args.database,
+      driverMainClass: dbEx.getDriverMainClass()
     };
+    datasource.driverJdbcUrl = dbEx.getDriverJdbcUrl(datasource);
+ 
     const arg = {
       ...args,
-      datasource: JSON.stringify(datasource)
+      datasource: JSON.stringify(datasource),
+      identifierQuoteSymbol:dbEx.getIdentifierQuoteSymbol(),
+      //删除表sql
+      dropTableSql: dbEx.dropTable(args.database,"{table}").sql,
+      //dd sql
+      ddlSql: dbEx.showTableDDL(args.database, "{table}").sql,
+      //分页查询表数据
+      pageSql: dbEx.getPageSql(1,2,"{}").sql,
+      //字段类型
+      fieldTypes: JSON.stringify(dbEx.getSupportFieldTypes()),
     }
-    const res = await db_dump(arg);
+    const res = await task_run_dump(arg);
     console.log("db:dump", res);
     return res;
   });
   ipcMain.handle("db:dump_result", async (event, id: string) => {
-    const res = await db_dump_result(id);
+    const res = await task_result(id);
     console.log("db:dump_result", res);
     return res;
   });
   ipcMain.handle("db:dump_stop", (event, id: string) => {
-    return db_dump_stop(id);
+    return task_stop(id);
   })
 }

@@ -1,10 +1,11 @@
 import {
-  db_commit,
-  db_exec,
-  db_getTasks,
-  db_result,
-  db_rollback,
-  db_stop,
+  task_commit,
+  task_list,
+  task_result,
+  task_run_dump,
+  task_run_sql,
+  task_stop,
+  task_rollback,
   executeSql
 } from "@/services/db-client";
 import { ipcMain } from "electron";
@@ -62,7 +63,7 @@ export function registerDbExecListeners(mainWindow: Electron.BrowserWindow) {
         message: "Unsupported database type!"
       }
     }
-    return executeSql(sql, currentDataSource,dbEx);
+    return executeSql(sql, currentDataSource, dbEx);
   });
   //execSql
   ipcMain.on("db:execSql", async (event, sql: string) => {
@@ -98,7 +99,7 @@ export function registerDbExecListeners(mainWindow: Electron.BrowserWindow) {
           index: i,
           sql: sql,
         });
-        executeSql(sql,currentDataSource,dbEx).then((res) => {
+        executeSql(sql, currentDataSource, dbEx).then((res) => {
           console.log("db:execSql", res);
           mainWindow.webContents.send("db:execSqlEnd", {
             index: i,
@@ -140,23 +141,23 @@ export function registerDbExecListeners(mainWindow: Electron.BrowserWindow) {
         }
       }
       addHistory(currentConnection.name, currentDataSource.database + "", args.sql);
-      return db_exec(args.sql, currentDataSource,dbEx, args.isTransaction);
+      return task_run_sql(args.sql, currentDataSource, dbEx, args.isTransaction);
     },
   );
   ipcMain.handle("db:result", (event, id) => {
-    return db_result(id);
+    return task_result(id);
   });
   ipcMain.handle("db:stop", (event, id) => {
-    return db_stop(id);
+    return task_stop(id);
   });
   ipcMain.handle("db:commit", (event, id) => {
-    return db_commit(id);
+    return task_commit(id);
   });
   ipcMain.handle("db:rollback", (event, id) => {
-    return db_rollback(id);
+    return task_rollback(id);
   });
   ipcMain.handle("db:getTasks", (event) => {
-    return db_getTasks();
+    return task_list();
   });
 
 }

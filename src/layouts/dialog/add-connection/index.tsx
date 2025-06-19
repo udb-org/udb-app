@@ -22,9 +22,11 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { Textarea } from "@/components/ui/textarea";
-import { ConnectionConfig } from "@/types/db";
+import { ConnectionConfig, IResult } from "@/types/db";
 import { ChevronsDownIcon, ChevronsUpIcon } from "lucide-react";
-import { saveAndOpenConnection, testConnection } from "@/api/db";
+import { saveAndOpenConnection, saveConnection, testConnection } from "@/api/db";
+import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
   type: z.string().min(1, "Database type is required"),
@@ -40,17 +42,18 @@ export function AddConnectionDialog(props: {
   params: any,
   onClose: () => void
 }) {
+  const { t } = useTranslation();
   const [isExpand, setIsExpand] = useState(false)
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "My Connection",
-      type: "mysql",
+      type: "",
       host: "localhost",
       port: 3306,
-      username: "root",
-      password: "tyw@0321",
+      username: "",
+      password: "",
       driver: "",
       database: "",
       params: ""
@@ -74,17 +77,8 @@ export function AddConnectionDialog(props: {
       params: form.watch("params")
     };
     setTesting("testing")
-    testConnection(conf).then((res: any) => {
-      console.log(res)
-      setTesting("success")
-      if (res.status == "success") {
-        alert("Connection Success")
-      } else {
-        alert(res.message)
-      }
-    }).catch(() => {
-      setTesting("fail")
-    })
+    testConnection(conf);
+
   }
   // 保存配置处理
   const handleSaveConfig = (values: z.infer<typeof formSchema>) => {
@@ -101,18 +95,46 @@ export function AddConnectionDialog(props: {
       database: form.watch("database"),
       params: form.watch("params")
     };
-    saveAndOpenConnection(conf);
+    saveConnection(conf).then((res: IResult) => {
+      if (res.status == 200) {
+        //save success
+        //open connection
+        window.api.send("db:openConnection", conf);
+        props.onClose();
+      } else {
+        toast.error(t("status." + res.status));
+      }
+    }).catch((err) => {
+      toast.error(t("status." + err.status));
+    })
   }
 
   const [supportDatabases, setSupportDatabases] = React.useState<{
     name: string;
     supportVersions: string[];
-
   }[]>([]);
   useEffect(() => {
     window.api.invoke<any>("db:getSupportDatabases").then((res) => {
       setSupportDatabases(res);
     });
+  }, []);
+  useEffect(() => {
+    const testConnectionResult = (result: IResult) => {
+      setTesting("success")
+      if (result.status == 200) {
+        toast.success("Connection Success");
+        setTesting("success")
+      } else {
+
+        toast.error(t("status." + result.status));
+        setTesting("fail")
+      }
+
+    };
+    window.api.on("db:testConnectionResult", testConnectionResult);
+    return () => {
+      window.api.removeAllListeners("db:testConnectionResult");
+    }
   }, []);
   return (
     <Dialog open={true} onOpenChange={props.onClose}>
@@ -152,8 +174,8 @@ export function AddConnectionDialog(props: {
                     </FormControl>
                     <SelectContent>
                       {supportDatabases.map((db) => (
-                        <SelectItem key={db.name} value={db.name+"("+db.supportVersions.join(",")+")"}>
-                          {db.name}({ db.supportVersions.join(", ")  })
+                        <SelectItem key={db.name} value={db.name + "(" + db.supportVersions.join(",") + ")"}>
+                          {db.name}({db.supportVersions.join(", ")})
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -223,39 +245,39 @@ export function AddConnectionDialog(props: {
               e.preventDefault();
               setIsExpand(!isExpand);
             }}>
-              {isExpand ? <ChevronsDownIcon size={14}/> : <ChevronsUpIcon size={14}/>}
-             <span className="text-xs">
-             {isExpand ? "Collapse" : "More Options"}
-             </span>
+              {isExpand ? <ChevronsDownIcon size={14} /> : <ChevronsUpIcon size={14} />}
+              <span className="text-xs">
+                {isExpand ? "Collapse" : "More Options"}
+              </span>
             </Button>
-            {isExpand&&<>
-            <FormField
-              control={form.control}
-              name="database"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Default Database</FormLabel>
-                  <FormControl>
-                    <Input placeholder="test" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="params"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Params</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder="characterEncoding=utf8&rewriteBatchedStatements=true" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-         
+            {isExpand && <>
+              <FormField
+                control={form.control}
+                name="database"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Default Database</FormLabel>
+                    <FormControl>
+                      <Input placeholder="test" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="params"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Params</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="characterEncoding=utf8&rewriteBatchedStatements=true" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
             </>}
             <div className="flex gap-2 justify-end">
               <Button size={"sm"}

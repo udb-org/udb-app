@@ -15,6 +15,13 @@ export function registerPlatformListeners(mainWindow: Electron.BrowserWindow) {
   ipcMain.on("platfrom:open", (event, args) => {
     console.log("platfrom:open", args);
     const exec=require("child_process").exec;
-    exec(`open ${args.path}`);
+    //判断是哪个平台
+    if(process.platform === "darwin"){
+      exec(`open ${args.path}`);
+    }else if(process.platform === "win32"){
+      exec(`start ${args.path}`);
+    }else if(process.platform === "linux"){
+      exec(`xdg-open ${args.path}`);
+    }   
   });
 }

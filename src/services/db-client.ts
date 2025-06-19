@@ -1,15 +1,19 @@
+import { getDataBaseEX } from "@/extension/db";
 import { ConnectionConfig, IDataBaseEX, IDataSource, IResult } from "@/types/db";
-import { dialog } from "electron";
+import fs from "fs";
 import net from "net";
+import os from "os";
 import path from "path";
+import { getLatestRelease } from "./github";
+import { downloadJdk } from "./jdk";
 const userHomeDir = require("os").homedir();
 const udbFolderPath = path.join(userHomeDir, ".udb");
-import fs from "fs";
-import { getLatestRelease } from "./github";
-import os from "os";
-import { downloadJdk } from "./jdk";
-import { boolean } from "zod";
-import { getDataBaseEX } from "@/extension/db";
+
+export function testConnection(sql: string, datasource: IDataSource, dbEx: IDataBaseEX) {
+  return executeSql(sql, datasource, dbEx);
+}
+
+
 /**
  *
  * The server returns an id, and the client can use this id to fetch the result
@@ -19,7 +23,7 @@ import { getDataBaseEX } from "@/extension/db";
  * @param isTransaction
  * @returns  {status:string,message:string,id:string,}
  */
-export function db_exec(
+export function task_run_sql(
   sql: string,
   datasource: IDataSource,
   dbEx: IDataBaseEX,
@@ -33,10 +37,18 @@ export function db_exec(
     driverMainClass: dbEx.getDriverMainClass(),
     driverJdbcUrl: dbEx.getDriverJdbcUrl(datasource),
   }
-  return db_func("exec", {
+  return task_func("run", {
+    type: "sql",
     sql: sql,
     datasource: JSON.stringify(db),
     isTransaction: isTransaction,
+  });
+}
+
+export function task_run_dump(args: any) {
+  return task_func("run", {
+    type: "dump",
+    ...args
   });
 }
 /**
@@ -44,8 +56,8 @@ export function db_exec(
  * @param id
  * @returns {status:string,message:string,startTime:string,endTime:string,results:any}
  */
-export function db_result(id: string) {
-  return db_func("getResult", {
+export function task_result(id: string) {
+  return task_func("result", {
     id: id,
   });
 }
@@ -54,8 +66,8 @@ export function db_result(id: string) {
  * @param id
  * @returns {status:string,message:string}
  */
-export function db_stop(id: string) {
-  return db_func("stop", {
+export function task_stop(id: string) {
+  return task_func("stop", {
     id: id,
   });
 }
@@ -65,8 +77,8 @@ export function db_stop(id: string) {
  * @param id
  * @returns  {status:string,message:string}
  */
-export function db_commit(id: string) {
-  return db_func("commit", {
+export function task_commit(id: string) {
+  return task_func("commit", {
     id: id,
   });
 }
@@ -76,8 +88,8 @@ export function db_commit(id: string) {
  * @param id
  * @returns  {status:string,message:string}
  */
-export function db_rollback(id: string) {
-  return db_func("rollback", {
+export function task_rollback(id: string) {
+  return task_func("rollback", {
     id: id,
   });
 }
@@ -86,25 +98,14 @@ export function db_rollback(id: string) {
  *
  * @returns
  */
-export function db_getTasks() {
-  return db_func("getTasks", {});
+export function task_list() {
+  return task_func("list", {});
 }
-export function db_dump(args: any) {
-  return db_func("dump", args);
-}
-export function db_dump_result(id: string) {
-  return db_func("dump_result", {
-    id: id,
-  });
-}
-export function db_dump_stop(id: string) {
-  return db_func("dump_stop", {
-    id: id,
-  });
-}
-function db_func(url: string, args: any) {
+
+
+function task_func(url: string, args: any) {
   console.log("db_func", url, args);
-  return fetch("http://localhost:" + PORT + "/api/base/" + url, {
+  return fetch("http://localhost:" + PORT + "/api/task/" + url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -112,20 +113,7 @@ function db_func(url: string, args: any) {
     body: JSON.stringify(args),
   }).then((res) => res.json());
 }
-/**
- * Method to get database list
- * @returns Promise that resolves to database list
- */
-export function execFuntion(url: string, args: any) {
-  console.log("execFuntion", url, args);
-  return fetch("http://localhost:" + PORT + "/api/base/" + url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(args),
-  }).then((res) => res.json());
-}
+
 /**
  * This method is used to execute sql
  * 
@@ -216,16 +204,16 @@ function getServersRunning(): {
       if (stdout || stdout.length > 0) {
         const lines = stdout.split('\n');
         lines.forEach((line: string) => {
-          if(line.length>10){
+          if (line.length > 10) {
             const items = line.split(' ');
             pids.push({
               pid: items[0],
               port: items[items.length - 2],
               dbType: items[items.length - 1],
             })
-  
+
           }
-         
+
         })
       }
 
@@ -234,14 +222,14 @@ function getServersRunning(): {
       if (stdout || stdout.length > 0) {
         const lines = stdout.split('\n');
         lines.forEach((line: string) => {
-         if(line.length>10){
-          const items = line.split(' ');
-          pids.push({
-            pid: items[0],
-            port: items[items.length - 2],
-            dbType: items[items.length - 1],
-          })
-         }
+          if (line.length > 10) {
+            const items = line.split(' ');
+            pids.push({
+              pid: items[0],
+              port: items[items.length - 2],
+              dbType: items[items.length - 1],
+            })
+          }
 
         })
       }
@@ -304,7 +292,7 @@ export function runServer(conf: ConnectionConfig,
 
 }
 function killServer(pid: string) {
-  if(pid.length<=0){
+  if (pid.length <= 0) {
     return;
   }
   const platform = os.platform();
@@ -412,10 +400,18 @@ function spawnJar(
   const cp = `udb-java:udb-java/BOOT-INF/classes:udb-java/BOOT-INF/lib/*:${driverPath}`;
   const { spawn } = require("child_process");
   console.log("spawnJar", javaBinPath, jarPath, port, dbType);
+  const a="--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.time=ALL-UNNAMED"
   //cd jarPath
   const child = spawn(
     javaBinPath,
-    ["-cp", cp, "com.udb.server.UdbApplication", port, dbType],
+    ["-cp", cp,
+      "--add-opens",
+      "java.base/java.lang=ALL-UNNAMED",
+      "--add-opens",
+      "java.base/java.util=ALL-UNNAMED",
+      "--add-opens",
+      "java.base/java.time=ALL-UNNAMED"
+      , "com.udb.server.UdbApplication", port, dbType],
     {
       cwd: jarPath,
     }
@@ -425,7 +421,7 @@ function spawnJar(
 
   child.stdout.on("data", (data: string) => {
     console.log(`输出: ${data}`);
-    if(data.includes("Started UdbApplication")){
+    if (data.includes("Started UdbApplication")) {
       callback({
         status: 200,
         message: "Server started successfully"

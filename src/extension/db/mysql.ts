@@ -1,6 +1,9 @@
 import { DataBaseTableConstraintEnum, FieldType, FieldTypeCategory, IDataBase, IDataBaseEX, IDataBaseEXCall, IDataBaseTable, IDataBaseTableColumn, IDataBaseTableConstraint, IDataBaseTableIndex, IDataSource, IResult } from "@/types/db";
 import { Parser } from "node-sql-parser";
 export class MysqlEx implements IDataBaseEX {
+    getIdentifierQuoteSymbol(): string {
+        return "`";
+    }
 
     getName(): string {
         return "Mysql";
@@ -89,7 +92,7 @@ export class MysqlEx implements IDataBaseEX {
     }
     showTableDDL(databaseName: string, tableName: string): IDataBaseEXCall {
         return {
-            sql: "show create table " + tableName,
+            sql: "show create table `" + tableName+"`",
             callback: (res: IResult) => {
                 if (res.data && res.data.rows && res.data.rows.length > 0) {
                     const row = res.data.rows[0];
@@ -104,17 +107,28 @@ export class MysqlEx implements IDataBaseEX {
     }
     copyTableStructure(databaseName: string, tableName: string, newTableName: string): IDataBaseEXCall {
         return {
-            sql: "alter table " + tableName + " like " + newTableName,
+            sql: "alter table `" + tableName + "` like " + newTableName,
         }
     }
     dropTable(databaseName: string, tableName: string): IDataBaseEXCall {
         return {
-            sql: "drop table " + tableName,
+            sql: "drop table `" + tableName+"`",
         }
     }
     clearTable(databaseName: string, tableName: string): IDataBaseEXCall {
         return {
-            sql: "truncate table " + tableName,
+            sql: "truncate table `" + tableName+"`",
+        }
+    }
+    getPageSql(offset:number,fetch:number,replace?:string): IDataBaseEXCall {
+        if(replace&&replace.length>0){
+            return {
+                sql: " limit " + replace.charAt(0) + offset +replace.charAt(1)  +","
+                +replace.charAt(0) + fetch + replace.charAt(1)
+            }
+        }
+        return {
+            sql: " limit " + offset + +"," + fetch,
         }
     }
     showColumns(databaseName: string, tableName?: string): IDataBaseEXCall {

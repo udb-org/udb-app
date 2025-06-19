@@ -52,7 +52,7 @@ export function Webcome() {
               key={i}
               size={"sm"}
               variant={"ghost"}
-              className="mb-1 w-full gap-1 text-sm"
+              className="mb-1 w-full gap-1 text-sm max-w-[180px]"
               onClick={() => {
                 openConnection(connection);
                 // setConnection(connection);
@@ -61,7 +61,7 @@ export function Webcome() {
               <LinkIcon size={12}></LinkIcon>
               <div>{connection.name}</div>
               <div className="flex-1"></div>
-              <div className="text-muted-foreground">{connection.host}</div>
+              <div className="text-muted-foreground overflow-hidden overflow-ellipsis">{connection.host}</div>
             </Button>
           ))}
         </div>

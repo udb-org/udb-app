@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { Views } from "../view";
 export function ViewTabs() {
   return (
     <div className="flex h-[32px] w-full items-center">
@@ -168,6 +169,17 @@ export function ViewTabsItem(props: {
   onClick?: () => void;
   onClose?: (e: any) => void;
 }) {
+  function getIcon(t){
+    console.log("getIcon",t);
+    if (Views.hasOwnProperty(t)) {
+      // const _view = Views[t.name].view;
+      console.log("view",Views[t]);
+
+      return Views[t].icon;
+    }else{
+      return <FileIcon className="w-[12px]" />
+    }
+  }
   return (
     <div
       className="group mr-1 inline-block h-[24px] select-none"
@@ -183,16 +195,8 @@ export function ViewTabsItem(props: {
         onClick={props.onClick}
       >
         <div>
-          {props.type === "sql" && <CodeIcon className="w-[12px]" />}
-          {props.type === "setting" && <CogIcon className="w-[12px]" />}
-          {props.type === "table" && <TableIcon className="w-[12px]" />}
-          {props.type === "welcome" && <HouseIcon className="w-[12px]" />}
-          {props.type === "text" && <FileIcon className="w-[12px]" />}
-          {props.type === "dump" && <HardDriveDownloadIcon className="w-[12px]" />}
-          {props.type === "tables" && <Table2 className="w-[12px]" />}
-          {props.type === "user-protocal" && <FileIcon className="w-[12px]" />}
-          {props.type === "privacy-policy" && <FileIcon className="w-[12px]" />}
-          {props.type === "open-source" && <FileIcon className="w-[12px]" />}
+          {getIcon(props.type)}
+         
         </div>
         <div className="max-w-[200px] overflow-hidden overflow-ellipsis whitespace-nowrap">
           {props.name}

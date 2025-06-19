@@ -22,4 +22,18 @@ export function registerDialogListeners(mainWindow: Electron.BrowserWindow) {
     console.log("folder", folder);
     return folder;
   });
+  //选择文件对话框
+  ipcMain.handle("dialog:openFile", async (event, filters: any) => {
+    console.log("dialog:openFile", filters);
+    const result = await dialog.showOpenDialog(mainWindow, {
+      properties: ["openFile"],
+      filters: filters,
+    });
+    if (result.canceled) {
+      return null;
+    }
+    const file = result.filePaths[0];
+    console.log("file", file);
+    return file;
+  });
 }

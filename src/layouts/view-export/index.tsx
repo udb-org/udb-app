@@ -16,10 +16,7 @@ import { IDataBaseTable, IResult } from "@/types/db";
 import { toast } from "sonner";
 import { setServers } from "dns";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { FolderOpenIcon, Grid2x2CheckIcon, Grid2x2XIcon } from "lucide-react";
-export default function ViewDump(
+export default function ViewExport(
     props: {
         viewKey: string;
     }
@@ -35,10 +32,6 @@ export default function ViewDump(
         view?.sessionId || "",
     );
     const [message, setMessage] = useState<string>("");
-
-    const [fileType, setFileType] = useState<"csv" | "xlsx" | "json" | "sql">("sql");
-    const [fileName, setFileName] = useState("");
-
     useEffect(() => {
         //加载执行结果
         let _view = getView(props.viewKey);
@@ -72,20 +65,18 @@ export default function ViewDump(
             tables: JSON.stringify(selectedTables),
             path: outFolder,
             dumpType: exportType,
-            fileType: fileType,
-            fileName: fileName,
         }).then((res: any) => {
             console.log("dump", res);
             if (res.status === 800) {
                 setSessionId(res.id);
                 setStatus("loading");
-            } else {
-                setMessage(res.message || "Export failed");
+            }else{
+                setMessage(res.message||"Export failed");
                 setStatus("failed");
             }
         }).catch((err: any) => {
             toast.error(err.message);
-
+        
         });
     }
     function stop() {
@@ -99,7 +90,7 @@ export default function ViewDump(
                     setStatus("ready");
                 } else {
                     toast.error(res.message);
-
+                  
                 }
             });
         } else {
@@ -123,7 +114,7 @@ export default function ViewDump(
                     } else {
                         toast.error(res.message);
                         setSessionId("");
-                        setMessage(res.message || "Export failed");
+                        setMessage(res.message||"Export failed");
                         setStatus("failed");
 
                     }
@@ -142,39 +133,8 @@ export default function ViewDump(
                 Export the database to a file.
             </div>
             {
-                status == "ready" && <div className=" flex gap-5 ">
+                status == "ready" && <div className="flex-1 flex gap-5 ">
                     <ScrollArea className="border h-[400px] min-w-[200px] rounded-lg p-5">
-                        <div className="flex items-center gap-2">
-                        <div className="p-2 text-sm">
-                            you have selected {selectedTables.length} tables
-                        </div>
-                            <Button
-                                variant={"outline"}
-                                className="bg-card"
-                                onClick={() => {
-                                    setSelectedTables(tables.map((item) => item.name));
-                                }}
-                            >
-                               <Grid2x2CheckIcon size={14}></Grid2x2CheckIcon>
-                            </Button>
-                            <Button
-                                variant={"outline"}
-                                className="bg-card"
-                                onClick={() => {
-                                    setSelectedTables(
-                                        tables
-                                            .filter(
-                                                (item) => !selectedTables.includes(item.name),
-                                            )
-                                            .map((item) => item.name),
-                                    );
-                                }}
-                            >
-                               <Grid2x2XIcon size={14}></Grid2x2XIcon>
-                            </Button>
-                        </div>
-                        
-                        <Separator className="mt-2 mb-2"></Separator>
                         {tables.map((table, index) => (
                             <div className="flex items-center space-x-2 pb-2" key={index}>
                                 <Checkbox
@@ -199,59 +159,55 @@ export default function ViewDump(
                         ))}
                     </ScrollArea>
                     <div className="border rounded-lg p-5">
-
-                     
-                        <div className="pb-2">
-                            <Tabs value={fileType} onValueChange={(value) => {
-                                setFileType(value);
-                            }}>
-                                <TabsList className="bg-transparent border m-auto">
-                                    <TabsTrigger value="sql">SQL</TabsTrigger>
-                                    <TabsTrigger value="csv">CSV</TabsTrigger>
-                                    <TabsTrigger value="xlsx">Excel</TabsTrigger>
-                                    <TabsTrigger value="json">JSON</TabsTrigger>
-                                </TabsList>
-                            </Tabs>
-                        </div>
-                        {
-                            fileType == "sql" && <>
-                                <div>
-                                    <Select
-
-                                        value={exportType}
-                                        onValueChange={(value) => {
-                                            setExportType(value);
-                                        }}
-                                    >
-                                        <SelectTrigger className="bg-card w-full">
-                                            <SelectValue className="w-full" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="sd">Dump Structure and Data</SelectItem>
-                                            <SelectItem value="d">Dump Data Only</SelectItem>
-                                            <SelectItem value="s">Dump Structure Only</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </>
-                        }
-                        <div className="pt-2 text-sm">File Name</div>
-                        <div className="flex gap-2">
-                            <Input className="bg-card" value={fileName}
-                                onChange={(value) => {
-                                    setFileName(value.target.value);
+                        <div className="flex items-center justify-between gap-2">
+                            <Button
+                                variant={"outline"}
+                                className="bg-card"
+                                onClick={() => {
+                                    setSelectedTables(tables.map((item) => item.name));
                                 }}
-                            ></Input>
-                            .{fileType}
-
-                        </div>
-                        <div className="pt-2 text-sm">Export Folder</div>
-                        <div className="flex gap-2">
-                            <Input className="bg-card" value={outFolder}
-                                onChange={(value) => {
-                                    setOutFolder(value.target.value);
+                            >
+                                Select All
+                            </Button>
+                            <Button
+                                variant={"outline"}
+                                className="bg-card"
+                                onClick={() => {
+                                    setSelectedTables(
+                                        tables
+                                            .filter(
+                                                (item) => !selectedTables.includes(item.name),
+                                            )
+                                            .map((item) => item.name),
+                                    );
                                 }}
-                            ></Input>
+                            >
+                                Deselect All
+                            </Button>
+                        </div>
+                        <div className="p-2 text-sm">
+                            you have selected {selectedTables.length} tables
+                        </div>
+                        <div>
+                            <Select
+
+                                value={exportType}
+                                onValueChange={(value) => {
+                                    setExportType(value);
+                                }}
+                            >
+                                <SelectTrigger className="bg-card w-full">
+                                    <SelectValue className="w-full" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="sd">Dump Structure and Data</SelectItem>
+                                    <SelectItem value="d">Dump Data Only</SelectItem>
+                                    <SelectItem value="s">Dump Structure Only</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="p-2 text-sm">Export to a file</div>
+                        <div>
                             <Button
                                 variant={"outline"}
                                 className="bg-card max-w-[200px] justify-end overflow-hidden text-ellipsis"
@@ -260,12 +216,12 @@ export default function ViewDump(
                                         if (res == null) {
                                             setOutFolder("");
                                         } else {
-                                            setOutFolder(res);
+                                            setOutFolder(res + "/" + database + ".sql");
                                         }
                                     });
                                 }}
                             >
-                            <FolderOpenIcon size={14}></FolderOpenIcon>
+                                {outFolder == "" ? "Select Folder" : outFolder}
                             </Button>
                         </div>
 
@@ -293,47 +249,47 @@ export default function ViewDump(
             }
             {
                 status == "success" && <div className="flex-1 flex gap-5  justify-center items-center">
-                    <div className="space-y-5">
-                        <Label>Export success</Label>
-                        <Button variant={"outline"} className="bg-card"
-                            onClick={() => {
-                                window.api.send("platfrom:open", { path: outFolder });
-                            }}
-                        >
-                            Open File
-                        </Button>
-                        <Button variant={"outline"} className="bg-card"
-                            onClick={() => {
-                                setStatus("ready");
-                                setProgress(0);
-                                setSessionId("");
-                            }}
-                        >
-                            Again Export
-                        </Button>
+                   <div className="space-y-5">
+                   <Label>Export success</Label>
+                    <Button variant={"outline"} className="bg-card"
+                     onClick={()=>{
+                        window.api.send("platfrom:open",{path:outFolder});
+                     }}
+                    >
+                        Open File
+                    </Button>
+                    <Button variant={"outline"} className="bg-card"
+                        onClick={()=>{
+                            setStatus("ready");
+                            setProgress(0);
+                            setSessionId("");
+                        }}
+                    >
+                        Again Export
+                    </Button>
                     </div>
                 </div>
             }
             {
                 status == "failed" && <div className="flex-1 flex gap-5  justify-center items-center">
-                    <div className="space-y-5">
-                        <Label>Export Failed</Label>
-                        <Label>{message}</Label>
+                   <div className="space-y-5">
+                   <Label>Export Failed</Label>
+                   <Label>{message}</Label>
 
-                        <Button variant={"outline"} className="bg-card"
-                            onClick={start}
-                        >
-                            Retry
-                        </Button>
-                        <Button variant={"outline"} className="bg-card"
-                            onClick={() => {
-                                setStatus("ready");
-                                setProgress(0);
-                                setSessionId("");
-                            }}
-                        >
-                            Again Export
-                        </Button>
+                    <Button variant={"outline"} className="bg-card"
+                         onClick={start}
+                    >
+                        Retry
+                    </Button>
+                    <Button variant={"outline"} className="bg-card"
+                        onClick={()=>{
+                            setStatus("ready");
+                            setProgress(0);
+                            setSessionId("");
+                        }}
+                    >
+                        Again Export
+                    </Button>
                     </div>
                 </div>
             }

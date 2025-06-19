@@ -1,38 +1,33 @@
-import React, { useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  CodeIcon,
-  ColumnsIcon,
-  DatabaseIcon,
-  Loader,
-  MoreHorizontalIcon,
-  TableIcon,
-} from "lucide-react";
-import VirtualList from "@/components/virtual-scroll";
-import { IVirtualTreeItem, VirtualTree } from "@/components/virtual-tree";
 import { openMenu } from "@/api/menu";
-import { useProjectStore } from "@/store/project-store";
+import { openView } from "@/api/view";
+import FolderContent from "@/components/icons/folder-content";
+import FolderContentOpen from "@/components/icons/folder-content-open";
+import FolderContext from "@/components/icons/folder-context";
+import FolderContextOpen from "@/components/icons/folder-context-open";
+import FolderDatabase from "@/components/icons/folder-database";
+import FolderDatabaseOpen from "@/components/icons/folder-database-open";
+import { Button } from "@/components/ui/button";
+import { IVirtualTreeItem, VirtualTree } from "@/components/virtual-tree";
+import { useDbStore } from "@/store/db-store";
 import {
-  ConnectionConfig,
   IDataBase,
   IDataBaseTable,
   IDataBaseTableColumn,
-  IResult,
+  IResult
 } from "@/types/db";
-import { openView } from "@/api/view";
-import { openDialog } from "../dialog";
 import { DialogType } from "@/types/dialog";
 import { ViewType } from "@/types/view";
+import {
+  CodeIcon,
+  ColumnsIcon,
+  Loader,
+  MoreHorizontalIcon
+} from "lucide-react";
+import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Webcome } from "./welcome";
-import FolderDatabase from "@/components/icons/folder-database";
-import FolderDatabaseOpen from "@/components/icons/folder-database-open";
-import FolderContentOpen from "@/components/icons/folder-content-open";
-import FolderContent from "@/components/icons/folder-content";
-import FolderContextOpen from "@/components/icons/folder-context-open";
-import FolderContext from "@/components/icons/folder-context";
 import { toast } from "sonner";
-import { useDbStore } from "@/store/db-store";
+import { openDialog } from "../dialog";
+import { Webcome } from "./welcome";
 export function ExplorerDb(props: { isVisible: boolean }) {
   //Global store connection
   const connection = useDbStore((state) => state.connection);
@@ -157,6 +152,24 @@ export function ExplorerDb(props: { isVisible: boolean }) {
           type: ViewType.Dump,
           params: {
             database: params.params.database,
+          },
+          path: [params.params.database],
+        });
+      }else if (params.command === "import-data") {
+        openView({
+          type: ViewType.ImportData,
+          params: {
+            database: params.params.database,
+            table: params.params.table,
+          },
+          path: [params.params.database],
+        });
+      }else if (params.command === "export-data") {
+        openView({
+          type: ViewType.ExportData,
+          params: {
+            database: params.params.database,
+            table: params.params.table,
           },
           path: [params.params.database],
         });
@@ -522,13 +535,23 @@ export function ExplorerDb(props: { isVisible: boolean }) {
                     type: "separator",
                   },
                   {
-                    name: "Export Table",
-                    command: "exportTable",
+                    name:"Import data from file",
+                    command:"import-data",
                   },
                   {
-                    name: "Import Table",
-                    command: "importTable",
+                    name: "Export data to file",
+                    command: "export-data",
                   },
+                  {
+                    type: "separator",
+                  },
+                  {
+                    name: "Dump",
+                    command: "dumpTable",
+                  },{
+                    name:"Execute sql",
+                    command:"executeSql"
+                  }
                 ],
               });
             } else if (path[1] === "Views") {

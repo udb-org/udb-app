@@ -7,10 +7,10 @@
  * @version 1.0.0
  */
 import { app, BrowserWindow } from "electron";
-// import {
-//   installExtension,
-//   REACT_DEVELOPER_TOOLS,
-// } from "electron-devtools-installer";
+import {
+  installExtension,
+  REACT_DEVELOPER_TOOLS,
+} from "electron-devtools-installer";
 import path from "path";
 import { registerListeners, unregisterListeners } from "./listeners";
 import { getThemeBg } from "./listeners/app";
@@ -34,7 +34,7 @@ function createWindow() {
       y: 12,
     },
   });
-  // mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
   registerListeners(mainWindow);
  
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
@@ -51,8 +51,8 @@ function createWindow() {
 async function installExtensions() {
   try {
 
-    // const result = await installExtension(REACT_DEVELOPER_TOOLS);
-    // console.log(`Extensions installed successfully: ${result.name}`);
+    const result = await installExtension(REACT_DEVELOPER_TOOLS);
+    console.log(`Extensions installed successfully: ${result.name}`);
     
   } catch {
     console.error("Failed to install extensions");

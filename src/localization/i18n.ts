@@ -199,6 +199,7 @@ i18n.use(initReactI18next).init({
         "status.860": "服务器未启动",
         "status.870": "Token长度超过限制",
         "status.880": "不支持的数据库类型！",
+        
 
         "tree.no.children": "空空如也",
 

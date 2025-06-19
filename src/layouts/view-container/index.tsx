@@ -9,6 +9,10 @@ import ViewText from "../view-text";
 import ViewUserProtocal from "../view-user-protocal";
 import ViewPrivacyPolicy from "../view-privacy-policy";
 import ViewOpenSource from "../view-open-source";
+import ViewImport from "../view-import";
+import ViewExport from "../view-export";
+import { Views } from "../view";
+
 
 /**
  *
@@ -19,36 +23,18 @@ import ViewOpenSource from "../view-open-source";
  */
 export function ViewContainer() {
   const { tab } = useTabStore();
+  function getView(t){
+    if (Views.hasOwnProperty(t.type)) {
+      const _view = Views[t.type].view(t.name);
+      // const _icon=Views[t.name].icon;
+      return _view;
+    }else{
+      return <div>No view {t.type}</div>;
+    }
+  }
   return (
     <div className="box-border h-full w-full">
-      {tab.name.length > 0 && tab.type === "sql" && (
-        <ViewSQL viewKey={tab.name} />
-      )}
-      {tab.name.length > 0 && tab.type === "table" && (
-        <ViewTable viewKey={tab.name} />
-      )}
-      {tab.name.length > 0 && tab.type === "data" && (
-        <ViewData viewKey={tab.name} />
-      )}
-   
-      {tab.name.length > 0 && tab.type === "text" && (
-        <ViewText viewKey={tab.name} />
-      )}
-      {tab.name.length > 0 && tab.type === "tables" && (
-        <ViewTables viewKey={tab.name} />
-      )}
-       {tab.name.length > 0 && tab.type === "dump" && (
-        <ViewDump viewKey={tab.name} />
-      )}
-          {tab.name.length > 0 && tab.type === "user-protocal" && (
-        <ViewUserProtocal viewKey={tab.name} />
-      )}
-          {tab.name.length > 0 && tab.type === "privacy-policy" && (
-        <ViewPrivacyPolicy viewKey={tab.name} />
-      )}
-          {tab.name.length > 0 && tab.type === "open-source" && (
-        <ViewOpenSource viewKey={tab.name} />
-      )}
+      {getView(tab)}
     </div>
   );
 }

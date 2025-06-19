@@ -34,6 +34,14 @@ export interface IDataBaseEX {
     copyTableStructure(databaseName:string,tableName:string,newTableName:string):IDataBaseEXCall;
     dropTable(databaseName:string,tableName:string):IDataBaseEXCall;
     clearTable(databaseName:string,tableName:string):IDataBaseEXCall;
+    //实现分页查询
+    /**
+     * 
+     * @param offset 
+     * @param fetch 
+     * @param replace  比如:[] 或者{}
+     */
+    getPageSql(offset:number,fetch:number,replace?:string):IDataBaseEXCall;
 
     showColumns(databaseName:string,tableName?:string):IDataBaseEXCall;
     showConstraints(databaseName:string,tableName:string):IDataBaseEXCall;
@@ -67,6 +75,9 @@ export interface IDataBaseEX {
      * @param table 
      */
     objToDdl(table: IDataBaseTable): string;
+
+    //标识符引用符号
+    getIdentifierQuoteSymbol(): string;
    
 
   
@@ -89,6 +100,7 @@ export interface IResult {
     id?: string;
     startTime?: string;
     endTime?: string;
+    progress?: number;
 }
 /**
  * 支持的数据库类型

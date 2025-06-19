@@ -7,9 +7,11 @@ export enum ViewType {
   Welcome = "welcome",
   Tables = "tables",
   Dump = "dump",
-  UserProtocal = "user-protocal",
-  PrivacyPolicy = "privacy-policy",
-  OpenSource = "open-source",
+  UserProtocal = "user_protocal",
+  PrivacyPolicy = "privacy_policy",
+  OpenSource = "open_source",
+  ExportData = "export_data",
+  ImportData = "import_data",
 }
 export interface ViewParams {
   name?: string;
