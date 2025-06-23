@@ -80,6 +80,8 @@ i18n.use(initReactI18next).init({
         "status.860": "Server not started.",
         "status.870": "Token length exceeds the limit.",
         "status.880": "Unsupported database type!",
+        "status.890": "File not found!",
+        "status.891": "File format is incorrect! It should be csv, xlsx or json.",
 
 
 
@@ -125,6 +127,7 @@ i18n.use(initReactI18next).init({
 
         "view.db.connecting": "Connecting...",
         "view.db.error": "Connection failed",
+
 
 
 
@@ -199,6 +202,8 @@ i18n.use(initReactI18next).init({
         "status.860": "服务器未启动",
         "status.870": "Token长度超过限制",
         "status.880": "不支持的数据库类型！",
+        "status.890": "文件不存在！",
+        "status.891": "文件格式不正确！需要为csv、xlsx或者json格式",
         
 
         "tree.no.children": "空空如也",

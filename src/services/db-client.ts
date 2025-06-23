@@ -51,6 +51,13 @@ export function task_run_dump(args: any) {
     ...args
   });
 }
+
+export function task_run_import(args: any) {
+  return task_func("run", {
+    type: "import",
+    ...args
+  });
+}
 /**
  * Get execution result
  * @param id
@@ -111,7 +118,13 @@ function task_func(url: string, args: any) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(args),
-  }).then((res) => res.json());
+  }).then((res) => res.json()).catch((err) => {
+    console.log("task_func", err);
+    return {
+      status: 500,
+      message: err.message,
+    };
+  });
 }
 
 /**
@@ -431,14 +444,14 @@ function spawnJar(
 
   child.stderr.on("data", (data: any) => {
     console.error(`错误: ${data}`);
-    callback({
-      status: 500,
-      message: "Server started successfully"
-    });
+    
   });
 
   child.on("close", (code: any) => {
-    console.log(`子进程退出，代码 ${code}`);
+    console.log(`子进程退出，代码 ${code}`);  callback({
+      status: 500,
+      message: "Server started successfully"
+    });
   });
 
 

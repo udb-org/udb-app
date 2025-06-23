@@ -37,11 +37,9 @@ export default function StatusBar() {
       }
     };
     window.api.on("status:tasked", tasked);
-    //start server
-    window.api.send("db:startServer");
+
     return () => {
       window.api.removeAllListeners("status:tasked");
-    
     };
   }, []);
   useEffect(() => {
@@ -77,6 +75,7 @@ export default function StatusBar() {
                 )}
                 {tasks[showTask].status == "error" && <CircleXIcon size={12} />}
                 {tasks[showTask].id}:{tasks[showTask].message}
+           
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto space-y-2">
@@ -99,6 +98,7 @@ export default function StatusBar() {
             </PopoverContent>
           </Popover>
         )}
+      
       </div>
       <Button
         size={"icon"}

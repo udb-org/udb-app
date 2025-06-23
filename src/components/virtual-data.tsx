@@ -16,6 +16,7 @@ import VirtualList from "./virtual-scroll";
 import { cn } from "@/utils/tailwind";
 import * as d3 from "d3";
 import { Button } from "./ui/button";
+import { cloneDeep } from 'lodash';
 import {
   ArrowDownAZIcon,
   ArrowDownNarrowWideIcon,
@@ -26,6 +27,7 @@ import {
   ChartPieIcon,
   DownloadIcon,
   FunnelPlus,
+  PlusIcon,
   RecycleIcon,
   SaveIcon,
 } from "lucide-react";
@@ -50,6 +52,8 @@ import { SelectValue } from "@radix-ui/react-select";
 import { ScrollArea, ScrollBar } from "./ui/scroll-area";
 import { Checkbox } from "./ui/checkbox";
 import { Input } from "./ui/input";
+import { toast } from "sonner";
+import { openMenu } from "@/api/menu";
 export function VirtualData(props: { source: any; height?: number }) {
   const [data, setData] = React.useState<any[]>([]);
   const [columns, setColumns] = React.useState<any[]>([]);
@@ -57,9 +61,10 @@ export function VirtualData(props: { source: any; height?: number }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const containerWidth = useRef(0);
   const containerHeight = useRef(0);
+  const [pks, setPks] = React.useState<any[]>(["id"]);//主键
   useEffect(() => {
 
-    console.log("props.source",props.source);
+    console.log("props.source", props.source);
     //清楚状态
     setScrollTop(0);
     setScrollLeft(0);
@@ -92,8 +97,7 @@ export function VirtualData(props: { source: any; height?: number }) {
       setColumns(props.source.columns);
     }
     if (props.source.rows) {
-     
-      setData([...props.source.rows]);
+      setData(cloneDeep(props.source.rows));
     }
   }, [props.source]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -397,6 +401,61 @@ export function VirtualData(props: { source: any; height?: number }) {
   >(new Map());
   //选择项
   const [filterSelected, setFilterSelected] = React.useState<string[]>([]);
+
+//监听右键菜单
+useEffect(()=>{
+  window.api.on("view:data-actioning",(params:any)=>{
+    console.log("view:data-actioning",params);
+    if(params.command=="deleteRow"){
+      //删除行
+      const rowIndex = params.params.rowIndex;
+      const _data = [...data];
+      if(rowIndex>=0 && rowIndex<_data.length){
+      
+         _data.splice(rowIndex,1);
+         setData(_data);
+      }
+    }else if(params.command=="insertRow"){
+      //插入行
+      const rowIndex = params.params.rowIndex;
+      const _data = [...data];
+      if(rowIndex>=0 && rowIndex<_data.length){
+        const newRow:any = {};
+        _data.splice(rowIndex,0,newRow);
+        setData(_data);
+      }
+    }else if(params.command=="duplicateRow"){
+      //复制行
+      const rowIndex = params.params.rowIndex;
+      const _data = [...data];
+      if(rowIndex>=0 && rowIndex<_data.length){
+        const newRow:any = cloneDeep(_data[rowIndex]);
+        _data.splice(rowIndex,0,newRow);
+        setData(_data);
+      }
+    }else if(params.command=="clearRow"){
+      //清空行
+      const rowIndex = params.params.rowIndex;
+      const _data = [...data];
+      if(rowIndex>=0 && rowIndex<_data.length){
+        _data[rowIndex]={};
+        setData(_data);
+      }
+    }else if(params.command=="clearCell"){
+      //清空单元格
+      const rowIndex = params.params.rowIndex;
+      const columnIndex = params.params.columnIndex;
+      const _data = [...data];
+      if(rowIndex>=0 && rowIndex<_data.length){
+        _data[rowIndex][columns[columnIndex].columnName]="";
+        setData(_data);
+      }
+    }
+
+
+  });
+},[data])
+
   return (
     <div
       className="flex h-full w-full flex-col text-sm"
@@ -717,7 +776,7 @@ export function VirtualData(props: { source: any; height?: number }) {
               variant={"ghost"}
               size={"sm"}
               className="h-6 w-6 p-[5px]"
-              onClick={() => {}}
+              onClick={() => { }}
             >
               <TooltipProvider>
                 <Tooltip>
@@ -742,7 +801,7 @@ export function VirtualData(props: { source: any; height?: number }) {
               variant={"ghost"}
               size={"sm"}
               className="h-6 w-6 p-[5px]"
-              onClick={() => {}}
+              onClick={() => { }}
             >
               <TooltipProvider>
                 <Tooltip>
@@ -811,23 +870,66 @@ export function VirtualData(props: { source: any; height?: number }) {
               oldValue: any;
               newValue: any;
             }[] = [];
-            for (let row = 0; row < data.length; row++) {
-              for (let col = 0; col < columns.length; col++) {
-                const columnName = columns[col].columnLable;
-                if (
-                  props.source[row] &&
-                  props.source[row][columnName] !== data[row][columnName]
-                ) {
-                  changedCells.push({
-                    row,
-                    col,
-                    oldValue: props.source[row][columnName],
-                    newValue: data[row][columnName],
+            console.log("props.source.rows", props.source.rows);
+            console.log("data", data);
+            const arr1 = props.source.rows;
+            const arr2 = data;
+            const map1 = new Map(arr1.map(item => [item.id, item]));
+            const map2 = new Map(arr2.map(item => [item.id, item]));
+
+            // 新增：存在于 arr2 但不存在于 arr1
+            const added = arr2.filter(item => !map1.has(item.id));
+
+            // 删除：存在于 arr1 但不存在于 arr2
+            const deleted = arr1.filter(item => !map2.has(item.id));
+
+            // 修改：id 相同但内容有变化
+            const modified:any[] = [];
+            arr1.forEach(oldItem => {
+              if (map2.has(oldItem.id)) {
+                const newItem = map2.get(oldItem.id);
+                const changes = {};
+
+                // 收集所有唯一字段（包括两个对象的所有字段）
+                const allKeys = new Set([
+                  ...Object.keys(oldItem),
+                  ...Object.keys(newItem)
+                ]);
+
+                let hasChanges = false;
+                allKeys.forEach(key => {
+                  const oldValue = oldItem[key];
+                  const newValue = newItem[key];
+
+                  // 比较规则：新增字段、删除字段或值变更
+                  if (
+                    // 字段在旧对象不存在（新增）
+                    !oldItem.hasOwnProperty(key) ||
+                    // 字段在新对象不存在（删除）
+                    !newItem.hasOwnProperty(key) ||
+                    // 值不相同
+                    oldValue !== newValue
+                  ) {
+                    changes[key] = {
+                      oldValue: oldItem[key],
+                      newValue: newItem[key]
+                    };
+                    hasChanges = true;
+                  }
+                });
+
+                if (hasChanges) {
+                  modified.push({
+                    id: oldItem.id,
+                    ...newItem,       // 包含修改后的完整对象
+                    __changes: changes // 特殊字段记录变更详情
                   });
                 }
               }
-            }
-            console.log("Changed cells:", changedCells);
+            });
+            console.log("added", added);
+            console.log("deleted", deleted);
+            console.log("modified", modified);
           }}
         >
           <TooltipProvider>
@@ -930,7 +1032,7 @@ export function VirtualData(props: { source: any; height?: number }) {
               <div className="flex h-full items-center justify-center">
                 <div
                   className="h-full w-[1px] flex-shrink-0"
-                  onMouseDown={(e) => {}}
+                  onMouseDown={(e) => { }}
                 ></div>
                 <div className="flex-1 overflow-hidden font-bold">
                   {col.columnLable}
@@ -1140,6 +1242,25 @@ export function VirtualData(props: { source: any; height?: number }) {
                   </div>
                 </div>
               ))}
+                <div
+               
+                  className={cn("absolute flex items-center justify-center cursor-pointer")}
+                  style={{
+                    top: rowTops[endRowIndex-1]+rowHeights[endRowIndex-1],
+                    left: 0,
+                    width: rowNoWidth,
+                    height: 24,
+                  }}
+                  onClick={()=>{
+                    //新增
+                    const newRow:any = {};
+                    setData([...data,newRow]);
+                  }}
+               
+                >
+                     <PlusIcon size={12}/>
+                </div>
+              
           </div>
         </div>
         <div
@@ -1175,27 +1296,33 @@ export function VirtualData(props: { source: any; height?: number }) {
                         height: rowHeights[rowIndex + startRowIndex],
                       }}
                       onDoubleClick={(e) => {
-                        if (selectSvgRef.current) {
-                          selectSvgRef.current.style.display = "none";
-                          setSelectRange({
-                            x0: columnIndex + startColumnIndex,
-                            y0: rowIndex + startRowIndex,
-                            x1: columnIndex + startColumnIndex,
-                            y1: rowIndex + startRowIndex,
-                          });
+                        if (pks.length == 0) {
+                          toast.error("You must set the primary key!");
+                          return;
                         }
+                        // if (selectSvgRef.current) {
+                        //   selectSvgRef.current.style.display = "none";
+                        //   setSelectRange({
+                        //     x0: columnIndex + startColumnIndex,
+                        //     y0: rowIndex + startRowIndex,
+                        //     x1: columnIndex + startColumnIndex,
+                        //     y1: rowIndex + startRowIndex,
+                        //   });
+                        // }
                         if (textareaRef.current) {
-                          textareaRef.current.value = row[col.columnName];
+                          textareaRef.current.value = row[col.columnName]||"";
                           textareaRef.current.style.display = "block";
                           textareaRef.current.focus();
                           textareaRef.current.style.top =
-                            rowTops[rowIndex + startRowIndex] + "px";
+                            (rowTops[rowIndex + startRowIndex] + 1) + "px";
                           textareaRef.current.style.left =
-                            columnLefts[columnIndex + startColumnIndex] + "px";
-                          textareaRef.current.style.height =
+                            (columnLefts[columnIndex + startColumnIndex] + 1) + "px";
+                          textareaRef.current.style.minHeight =
                             rowHeights[rowIndex + startRowIndex] + "px";
-                          textareaRef.current.style.width =
+                          textareaRef.current.style.minWidth =
                             columnWidths[columnIndex + startColumnIndex] + "px";
+                          textareaRef.current.style.height = "min-content";
+                          textareaRef.current.style.width = "min-content";
                           //修改后
                           textareaRef.current.onchange = () => {
                             const val = textareaRef.current?.value;
@@ -1210,6 +1337,11 @@ export function VirtualData(props: { source: any; height?: number }) {
                       onMouseDown={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
+                        //判断是否是右键
+                        if (e.button == 2) {
+                          return;
+                        }
+
                         console.log("onMouseDown", e);
                         if (textareaRef.current) {
                           textareaRef.current.style.display = "none";
@@ -1281,9 +1413,52 @@ export function VirtualData(props: { source: any; height?: number }) {
                         document.addEventListener("mousemove", move);
                         document.addEventListener("mouseup", up);
                       }}
+                      onContextMenu={()=>{
+                        openMenu({
+                          channel:"view:data-actioning",
+                          params:{
+                            rowIndex:rowIndex,
+                            columnIndex:columnIndex,
+                          },
+                          items:[
+                            {
+                              name:"Delete Row",
+                              command:"deleteRow",
+                           
+                            },
+                            {
+                              name:"Insert Row",
+                              command:"insertRow",
+                            },{
+                              name:"Duplicate Row",
+                              command:"duplicateRow",
+                            },{
+                              name:"Clear Row",
+                              command:"clearRow",
+                            },{
+                              type:"separator",
+                            },{
+                              name:"Clear Cell",
+                              command:"clearCell",
+                            },{
+                              type:"separator",
+                            },{
+                              name:"Copy Cell",
+                              command:"copyCell",
+                            },{
+                              name:"Copy Row",
+                              command:"copyRow",
+                            
+                            },{
+                              name:"Copy Selected",
+                              command:"copySelected",
+                            }
+                          ]
+                        });
+                      }}
                     >
                       <div className="flex h-full items-center justify-center overflow-hidden">
-                        {row[col.columnName]}
+                        {row[col.columnName]||""}
                       </div>
                     </div>
                   ))}
@@ -1299,7 +1474,7 @@ export function VirtualData(props: { source: any; height?: number }) {
             ></div>
             <textarea
               ref={textareaRef}
-              className="bg-card absolute top-0 left-0 hidden resize-none"
+              className="bg-card absolute top-0 left-0 hidden resize-none p-1 outline-none"
             ></textarea>
           </div>
           <div

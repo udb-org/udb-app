@@ -34,8 +34,8 @@ export function Webcome() {
       <div >
         <Button
           size={"sm"}
-          variant={"outline"}
-          className="w-full border border-primary/50"
+          variant={"default"}
+          className="w-full  shadow-md md:min-w-0"
           onClick={() => {
             openDialog({
               type: DialogType.AddConnection,
@@ -52,16 +52,16 @@ export function Webcome() {
               key={i}
               size={"sm"}
               variant={"ghost"}
-              className="mb-1 w-full gap-1 text-sm max-w-[180px]"
+              className="mb-1 w-full gap-1 text-sm  md:min-w-0"
               onClick={() => {
                 openConnection(connection);
                 // setConnection(connection);
               }}
             >
               <LinkIcon size={12}></LinkIcon>
-              <div>{connection.name}</div>
+              <div className="max-w-[90px]">{connection.name}</div>
               <div className="flex-1"></div>
-              <div className="text-muted-foreground overflow-hidden overflow-ellipsis">{connection.host}</div>
+              <div className="max-w-[40px] text-muted-foreground overflow-hidden overflow-ellipsis">{connection.host}</div>
             </Button>
           ))}
         </div>
@@ -72,7 +72,7 @@ export function Webcome() {
           <span className="text-muted-foreground ml-2 text-xs">{t("welcome.button.more")}</span>
         </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-[200px]">
+          <PopoverContent className="w-[200px] md:min-w-0">
           {connections.map((connection, i) => (
             <Button
               key={i}
@@ -86,7 +86,7 @@ export function Webcome() {
               <LinkIcon size={12}></LinkIcon>
               <div>{connection.name}</div>
               <div className="flex-1"></div>
-              <div className="text-muted-foreground">{connection.host}</div>
+              <div className="text-muted-foreground overflow-hidden overflow-ellipsis">{connection.host}</div>
             </Button>
           ))}
           </PopoverContent>

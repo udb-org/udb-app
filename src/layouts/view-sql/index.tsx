@@ -956,29 +956,38 @@ export default function ViewSQL(props: { viewKey: string }) {
   }
   useEffect(() => {
     if (sessionId && sessionId !== "") {
+      let resultTemp: any[] = [];
       const timer = setInterval(() => {
         dbResult(sessionId).then((res: IResult) => {
           console.log("dbResult", res);
           if (res.status === 800) {
             //继续执行
-            if (res.data.length > 0) {
+            if (res.data&&res.data.length > 0) {
               const resResults = JSON.parse(res.data);
-              if (resResults.length > 0) {
-                saveViewValue(props.viewKey, "results", resResults, true);
-                setResults([...results, ...resResults]);
+              if (resResults) {
+                resultTemp = [...resultTemp, ...resResults];
+                saveViewValue(props.viewKey, "results", resultTemp, true);
+                setResults(resultTemp);
               }
             }
           } else if (res.status === 200) {
+            console.log("res", res.data&&res.data.length > 0);
+               if (res.data&&res.data.length > 0) {
+              const resResults = JSON.parse(res.data);
+           
+            
+              if (resResults) {
+                  console.log("resResults", resultTemp);
+                resultTemp = [...resultTemp, ...resResults];
+                saveViewValue(props.viewKey, "results", resultTemp, true);
+                setResults(resultTemp);
+              }
+            }
+    
             //执行成功
             setSessionId("");
             showPlayAction();
-            if (res.data.length > 0) {
-              const resResults = JSON.parse(res.data);
-              if (resResults.length > 0) {
-                saveViewValue(props.viewKey, "results", resResults, true);
-                setResults([...results, ...resResults]);
-              }
-            }
+         
           } else {
             //执行失败
             setSessionId("");
@@ -993,7 +1002,7 @@ export default function ViewSQL(props: { viewKey: string }) {
         clearInterval(timer);
       };
     }
-  }, [sessionId]);
+  }, [sessionId, results]);
   React.useEffect(() => {
     const _editor = monaco.editor.create(editorRef.current, {
       value: sql || "",
