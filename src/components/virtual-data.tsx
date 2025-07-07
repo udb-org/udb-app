@@ -1,16 +1,6 @@
 /**
- * 虚拟电子表格
- *
- *
- * 1. 虚拟滚动
- * 2.支持大量数据
- * 3.支持列宽、行高调整
- * 4.支持多选单元格
- * 5.支持复制到剪切板
- * 6.支持拖拽
- *
- *
- */
+* Virtual Spreadsheet** 1. Virtual Scrolling* 2. Supports large amounts of data* 3. Supports column width and row height adjustments* 4. Supports multi-select cells* 5. Supports copying to clipboard* 6. Supports drag and drop
+* */
 import React, { useEffect, useRef } from "react";
 import VirtualList from "./virtual-scroll";
 import { cn } from "@/utils/tailwind";
